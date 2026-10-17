@@ -16,9 +16,9 @@ import {
 import path from "node:path";
 import { createServer } from "node:net";
 import type { Session } from "electron";
-import { execute } from "../core/process";
 import { safeEnv } from "../core/security";
 import { ideRelease } from "./release";
+import { runtimeArchiveError, runtimeTar } from "./archive";
 import type { IDERuntimeStatus, Project } from "../../shared/types";
 
 export function validateArchiveEntries(list: string) {
@@ -76,7 +76,18 @@ export class IDERuntime {
         const manifest = JSON.parse(
           await readFile(path.join(this.root, "aether-runtime.json"), "utf8"),
         );
-        if (manifest.version === 1 && manifest.sha256 === this.asset?.sha256)
+        if (
+          manifest.version === 1 &&
+          manifest.sha256 === this.asset?.sha256 &&
+          (await exists(
+            path.join(
+              this.root,
+              "lib",
+              process.platform === "win32" ? "node.exe" : "node",
+            ),
+          )) &&
+          (await exists(path.join(this.root, "out", "node", "entry.js")))
+        )
           this.state = { ...this.state, state: "ready", progress: 100 };
         else throw new Error("Invalid runtime manifest");
       } catch {
@@ -84,7 +95,7 @@ export class IDERuntime {
           ...this.state,
           state: "error",
           error:
-            "IDE installation metadata is damaged. Set up the full IDE again.",
+            "IDE installation is incomplete or damaged. Set up the full IDE again.",
         };
       }
     }
@@ -121,6 +132,8 @@ export class IDERuntime {
       error: undefined,
     };
     try {
+      await rm(staging, { recursive: true, force: true });
+      await rm(archive, { force: true });
       const disk = await statfs(parent);
       if (disk.bavail * disk.bsize < this.asset.bytes * 6)
         throw new Error(
@@ -179,28 +192,26 @@ export class IDERuntime {
           "IDE runtime checksum does not match the pinned release",
         );
       this.state.state = "installing";
-      const list = await execute("tar", ["-tzf", archive], {
-        signal: this.installationAbort.signal,
-        timeoutMs: 120000,
-        limit: 12_000_000,
-      });
+      const list = await runtimeTar(
+        ["-tzf", archive],
+        this.installationAbort.signal,
+      );
       if (list.code) throw new Error("Cannot inspect the IDE runtime archive");
       validateArchiveEntries(list.stdout);
-      await rm(staging, { recursive: true, force: true });
       await mkdir(staging, { mode: 0o700 });
-      const extracted = await execute(
-        "tar",
-        ["-xzf", archive, "--strip-components=1", "-C", staging],
-        {
-          signal: this.installationAbort.signal,
-          timeoutMs: 180000,
-          limit: 1_000_000,
-        },
+      const extracted = await runtimeTar(
+        [
+          "-xzf",
+          archive,
+          "--strip-components=1",
+          "--no-same-owner",
+          "-C",
+          staging,
+        ],
+        this.installationAbort.signal,
       );
       if (extracted.code)
-        throw new Error(
-          "Could not extract the IDE runtime. " + extracted.stderr.slice(-1000),
-        );
+        throw new Error(runtimeArchiveError(extracted.stderr));
       const node = path.join(
         staging,
         "lib",

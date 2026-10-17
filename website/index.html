@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Driftbar — Meadow Footer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Aether Code brings agent chat, a full Code-OSS IDE, project context and reviewed changes into one local-first desktop workspace."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #f1f1ee;
+        --ink: #0c0c0c;
+        --body: #6f6f6c;
+        --muted: #9c9c98;
+        --wordmark: #efefeb;
+        --mist: #e2e3f1;
+        --font:
+          "Inter", system-ui, -apple-system, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      :focus-visible {
+        outline: 2px solid #575387;
+        outline-offset: 5px;
+      }
+      .skip {
+        position: absolute;
+        left: 16px;
+        top: -80px;
+        padding: 12px;
+        background: white;
+        z-index: 4;
+      }
+      .skip:focus {
+        top: 16px;
+      }
+      .shell {
+        width: min(1180px, calc(100% - 64px));
+        margin: 0 auto;
+      }
+      .site-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 88px;
+        gap: 24px;
+        border-bottom: 1px solid #d9d9d5;
+      }
+      .site-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 19px;
+        font-weight: 600;
+        letter-spacing: -0.05em;
+        white-space: nowrap;
+      }
+      .ava {
+        display: inline-block;
+        width: 29px;
+        height: 31px;
+        border-radius: 42% 58% 57% 43% / 55% 40% 60% 45%;
+        background: #a8d9d2;
+        position: relative;
+        transform: rotate(-12deg);
+      }
+      .ava::after {
+        content: "";
+        width: 5px;
+        height: 9px;
+        border-radius: 5px;
+        background: #234b49;
+        position: absolute;
+        right: 7px;
+        top: 6px;
+        transform: rotate(-25deg);
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        font-size: 13px;
+      }
+      .nav-links a:hover,
+      .text-link:hover {
+        opacity: 0.55;
+      }
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 14px 21px;
+        background: var(--ink);
+        color: white;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        min-height: 46px;
+      }
+      .button:hover {
+        background: #292929;
+      }
+      .button--quiet {
+        background: transparent;
+        border: 1px solid #c5c5bf;
+        color: var(--ink);
+      }
+      .button--quiet:hover {
+        background: #e6e6e1;
+      }
+      .hero {
+        padding: 100px 0 76px;
+      }
+      .eyebrow {
+        margin: 0 0 24px;
+        color: #66665f;
+        font-size: 12px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+      .hero-copy {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        align-items: end;
+        gap: 80px;
+      }
+      h1 {
+        font-size: clamp(48px, 5.4vw, 78px);
+        line-height: 1.03;
+        font-weight: 500;
+        letter-spacing: -0.065em;
+        margin: 0;
+        max-width: 720px;
+      }
+      .intro {
+        font-size: 17px;
+        line-height: 1.65;
+        color: #62625c;
+        max-width: 390px;
+        margin: 0 0 25px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .product {
+        margin: 62px 0 0;
+        background: #dedee8;
+        border-radius: 18px;
+        padding: 36px 36px 0;
+        overflow: hidden;
+      }
+      .product img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 9px 9px 0 0;
+        border: 1px solid #33343a;
+      }
+      .product figcaption {
+        padding: 17px 0;
+        color: #525260;
+        font-size: 12px;
+      }
+      .section {
+        padding: 86px 0;
+        border-top: 1px solid #d9d9d5;
+      }
+      h2 {
+        font-size: clamp(30px, 3.5vw, 46px);
+        font-weight: 500;
+        letter-spacing: -0.055em;
+        line-height: 1.1;
+        margin: 0;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 120px;
+      }
+      .features h2 {
+        max-width: 370px;
+      }
+      .feature + .feature {
+        margin-top: 36px;
+      }
+      .feature h3 {
+        margin: 0 0 10px;
+        font-size: 20px;
+        font-weight: 500;
+        letter-spacing: -0.035em;
+      }
+      .feature p,
+      .step p,
+      .faq p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.7;
+        color: #62625c;
+        max-width: 500px;
+      }
+      .workflow {
+        background: #e5e5ed;
+        padding: 70px 56px;
+        border-radius: 18px;
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 42px;
+        margin-top: 50px;
+      }
+      .step span {
+        color: #747481;
+        font-size: 13px;
+      }
+      .step h3 {
+        font-size: 19px;
+        font-weight: 500;
+        letter-spacing: -0.035em;
+        margin: 22px 0 10px;
+      }
+      .download {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 40px;
+      }
+      .download p {
+        color: #62625c;
+        font-size: 15px;
+        line-height: 1.6;
+        max-width: 530px;
+        margin: 18px 0 0;
+      }
+      .faq {
+        display: grid;
+        grid-template-columns: 1fr 1.3fr;
+        gap: 100px;
+      }
+      .faq details {
+        border-bottom: 1px solid #d9d9d5;
+        padding: 21px 0;
+      }
+      .faq details:first-child {
+        padding-top: 0;
+      }
+      .faq summary {
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+      .faq p {
+        margin-top: 14px;
+      }
+      .faq p a {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .footer {
+        --u: min(100vw / 1440, 100vh / 672);
+        --u: min(100vw / 1440, 100svh / 672);
+        position: relative;
+        height: 100vh;
+        height: 100svh;
+        background: var(--paper);
+        overflow: hidden;
+        isolation: isolate;
+      }
+      .footer__stage {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      .footer__video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 100%;
+        transform: translateY(9%);
+      }
+      .footer__stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          var(--paper) 0%,
+          rgb(241 241 238 / 0.96) 26%,
+          rgb(241 241 238 / 0.72) 44%,
+          rgb(241 241 238 / 0) 70%
+        );
+      }
+      .footer__wordmark {
+        position: absolute;
+        left: 50%;
+        bottom: calc(-2 * var(--u));
+        transform: translateX(-50%);
+        z-index: 1;
+        margin: 0;
+        font-size: calc(390 * var(--u));
+        font-weight: 600;
+        line-height: 0.74;
+        letter-spacing: -0.045em;
+        white-space: nowrap;
+        pointer-events: none;
+        user-select: none;
+        color: rgb(232 234 250 / 0.4);
+        background: linear-gradient(
+          to bottom,
+          rgb(255 255 255 / 0.78),
+          rgb(214 218 246 / 0.36) 48%,
+          rgb(255 255 255 / 0.62)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 calc(-1 * var(--u)) 0 rgb(255 255 255 / 0.55))
+          drop-shadow(0 0 calc(18 * var(--u)) rgb(190 200 255 / 0.45));
+      }
+      .footer__fog {
+        position: absolute;
+        inset: auto 0 0;
+        z-index: 2;
+        height: 17%;
+        pointer-events: none;
+        background: linear-gradient(
+          to top,
+          var(--mist) 0%,
+          rgb(226 227 241 / 0.6) 30%,
+          rgb(226 227 241 / 0) 100%
+        );
+      }
+      .footer__content {
+        position: relative;
+        z-index: 3;
+        display: grid;
+        grid-template-columns:
+          calc(440 * var(--u)) calc(240 * var(--u)) calc(240 * var(--u))
+          1fr;
+        align-items: start;
+        width: calc(1440 * var(--u));
+        margin: 0 auto;
+        padding: calc(86 * var(--u)) calc(100 * var(--u)) 0 calc(160 * var(--u));
+      }
+      .brand__logo {
+        display: inline-flex;
+        align-items: center;
+        gap: calc(10 * var(--u));
+        font-size: calc(17 * var(--u));
+        font-weight: 500;
+        letter-spacing: -0.02em;
+      }
+      .brand__mark {
+        position: relative;
+        display: block;
+        width: calc(30 * var(--u));
+        height: calc(30 * var(--u));
+        border-radius: calc(8 * var(--u));
+        background: linear-gradient(to bottom, #2b2b2b, #0a0a0a 55%);
+        box-shadow: 0 calc(1 * var(--u)) calc(2 * var(--u)) rgb(0 0 0 / 0.25);
+      }
+      .brand__mark::after {
+        content: "";
+        position: absolute;
+        left: 13%;
+        right: 13%;
+        bottom: 14%;
+        height: 19%;
+        border-radius: 999px;
+        background: white;
+      }
+      .brand__title {
+        margin: calc(19 * var(--u)) 0 0;
+        font-size: calc(20 * var(--u));
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.045em;
+      }
+      .brand__text {
+        max-width: calc(412 * var(--u));
+        margin: calc(18 * var(--u)) 0 0;
+        color: var(--body);
+        font-size: calc(13.7 * var(--u));
+        line-height: 1.43;
+        letter-spacing: -0.012em;
+      }
+      .brand__cta {
+        display: inline-flex;
+        align-items: center;
+        gap: calc(6 * var(--u));
+        height: calc(32.5 * var(--u));
+        margin-top: calc(20 * var(--u));
+        padding: 0 calc(16 * var(--u)) 0 calc(15 * var(--u));
+        border-radius: calc(7 * var(--u));
+        background: black;
+        color: white;
+        font-size: calc(11.8 * var(--u));
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      .brand__cta svg {
+        width: calc(13 * var(--u));
+        height: calc(13 * var(--u));
+        margin-top: calc(-1.5 * var(--u));
+      }
+      .brand__cta:hover {
+        background: #262626;
+        transform: translateY(-1px);
+      }
+      .brand__copy {
+        margin: calc(23 * var(--u)) 0 0;
+        color: var(--muted);
+        font-size: calc(12.2 * var(--u));
+        letter-spacing: 0.01em;
+      }
+      .brand__by {
+        display: flex;
+        align-items: center;
+        gap: calc(5 * var(--u));
+        margin: calc(21 * var(--u)) 0 0;
+        font-size: calc(11.8 * var(--u));
+        font-weight: 500;
+        letter-spacing: -0.01em;
+      }
+      .brand__heart {
+        font-size: 0.95em;
+      }
+      .brand__author {
+        display: inline-flex;
+        align-items: center;
+        gap: calc(6 * var(--u));
+        margin-left: calc(5 * var(--u));
+      }
+      .brand__avatar {
+        display: inline-block;
+        width: calc(23 * var(--u));
+        height: calc(23 * var(--u));
+        border-radius: 50%;
+        overflow: hidden;
+        background: #e3e3e0;
+      }
+      .brand__avatar svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .brand__status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: calc(8 * var(--u));
+        margin-top: calc(16 * var(--u));
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: calc(6 * var(--u));
+        height: calc(25 * var(--u));
+        padding: 0 calc(10 * var(--u));
+        border: 1px solid rgb(12 12 12 / 0.12);
+        border-radius: 999px;
+        background: rgb(255 255 255 / 0.55);
+        font-size: calc(10.8 * var(--u));
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+      }
+      .chip svg {
+        width: calc(11 * var(--u));
+        height: calc(11 * var(--u));
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .chip__dot {
+        width: calc(6 * var(--u));
+        height: calc(6 * var(--u));
+        border-radius: 50%;
+        background: #2fb36a;
+        box-shadow: 0 0 0 calc(2.5 * var(--u)) rgb(47 179 106 / 0.18);
+      }
+      .col__title {
+        margin: 0;
+        font-size: calc(16 * var(--u));
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: -0.045em;
+      }
+      .col__list {
+        display: grid;
+        gap: calc(20.5 * var(--u));
+        margin-top: calc(24 * var(--u));
+        font-size: calc(13.7 * var(--u));
+        line-height: 1.24;
+        letter-spacing: 0.022em;
+        color: #161616;
+      }
+      .col--menu .col__list {
+        gap: calc(15 * var(--u));
+        margin-top: calc(21 * var(--u));
+        font-weight: 500;
+        letter-spacing: -0.025em;
+        color: var(--ink);
+      }
+      .col__list a {
+        transition: opacity 0.2s;
+      }
+      .col__list a:hover {
+        opacity: 0.55;
+      }
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .footer {
+          --u: min(100vw / 1040, 100svh / 672);
+        }
+        .footer__content {
+          grid-template-columns:
+            calc(400 * var(--u)) calc(190 * var(--u)) calc(210 * var(--u))
+            1fr;
+          width: calc(1040 * var(--u));
+          padding: calc(64 * var(--u)) calc(40 * var(--u)) 0;
+        }
+        .brand__text {
+          max-width: calc(350 * var(--u));
+        }
+        .footer__wordmark {
+          font-size: calc(286 * var(--u));
+          bottom: calc(10 * var(--u));
+        }
+        .hero-copy,
+        .features,
+        .faq {
+          gap: 40px;
+        }
+        .workflow {
+          padding: 45px 32px;
+        }
+        .steps {
+          gap: 24px;
+        }
+      }
+      @media (max-width: 767px) {
+        .shell {
+          width: calc(100% - 40px);
+        }
+        .site-nav {
+          min-height: 76px;
+          gap: 12px;
+        }
+        .nav-links {
+          gap: 16px;
+        }
+        .nav-links .optional {
+          display: none;
+        }
+        .site-logo {
+          font-size: 17px;
+        }
+        .hero {
+          padding: 58px 0;
+        }
+        .hero-copy,
+        .features,
+        .faq {
+          grid-template-columns: 1fr;
+          gap: 30px;
+        }
+        h1 {
+          font-size: clamp(44px, 9vw, 62px);
+        }
+        .intro {
+          font-size: 16px;
+        }
+        .product {
+          margin-top: 36px;
+          padding: 14px 14px 0;
+          border-radius: 10px;
+        }
+        .product figcaption {
+          font-size: 11px;
+          line-height: 1.5;
+        }
+        .section {
+          padding: 56px 0;
+        }
+        .workflow {
+          padding: 34px 24px;
+        }
+        .steps {
+          grid-template-columns: 1fr;
+          gap: 26px;
+          margin-top: 32px;
+        }
+        .step h3 {
+          margin-top: 10px;
+        }
+        .download {
+          align-items: start;
+          flex-direction: column;
+          gap: 24px;
+        }
+        .footer {
+          --u: 1px;
+          display: flex;
+          flex-direction: column;
+          height: auto;
+          min-height: 100svh;
+        }
+        .footer__stage::after {
+          background: linear-gradient(
+            to bottom,
+            var(--paper) 0%,
+            rgb(241 241 238 / 0.95) 50%,
+            rgb(241 241 238 / 0.8) 68%,
+            rgb(241 241 238 / 0) 90%
+          );
+        }
+        .footer__content {
+          grid-template-columns: auto auto auto;
+          justify-content: space-between;
+          column-gap: 12px;
+          row-gap: 36px;
+          width: 100%;
+          padding: 40px 20px 0;
+          margin-bottom: max(34vw, 150px);
+        }
+        .brand {
+          grid-column: 1 / -1;
+        }
+        .brand__title {
+          font-size: 21px;
+        }
+        .brand__text {
+          max-width: 34em;
+          font-size: 14px;
+        }
+        .brand__cta {
+          height: 38px;
+          padding: 0 18px 0 16px;
+          border-radius: 8px;
+          font-size: 13px;
+        }
+        .brand__cta svg {
+          width: 14px;
+          height: 14px;
+        }
+        .brand__copy,
+        .brand__by {
+          font-size: 12.5px;
+        }
+        .chip {
+          height: 28px;
+          font-size: 12px;
+        }
+        .col__title {
+          font-size: 15px;
+        }
+        .col__list,
+        .col--menu .col__list {
+          gap: 14px;
+          margin-top: 20px;
+          font-size: 13px;
+          letter-spacing: 0;
+          white-space: nowrap;
+        }
+        .footer__wordmark {
+          bottom: 5vw;
+          font-size: 27vw;
+        }
+        .footer__fog {
+          height: 7%;
+        }
+      }
+      @media (max-width: 359px) {
+        .footer__content {
+          grid-template-columns: 1fr 1fr;
+        }
+        .nav-links {
+          gap: 12px;
+          font-size: 12px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .brand__cta,
+        .col__list a {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-nav shell">
+      <a class="site-logo" href="#" aria-label="Aether Code home"
+        ><span class="ava" aria-hidden="true"></span>Aether Code</a
+      >
+      <nav class="nav-links" aria-label="Main navigation">
+        <a class="optional" href="#workspace">Workspace</a
+        ><a class="optional" href="#workflow">How it works</a
+        ><a href="#download">Download</a
+        ><a href="https://github.com/gecut/aether-agent">GitHub ↗</a>
+      </nav>
+    </header>
+    <main id="main">
+      <section class="hero shell" aria-labelledby="hero-title">
+        <p class="eyebrow">Your project. Your workspace.</p>
+        <div class="hero-copy">
+          <h1 id="hero-title">A little more flow.<br />A lot more built.</h1>
+          <div>
+            <p class="intro">
+              Meet Aether Code. Talk through an idea with Ava, work alongside
+              coding agents, and open your code in a full IDE. All in one
+              desktop workspace.
+            </p>
+            <div class="actions">
+              <a class="button" href="#download"
+                >Get Aether Code <span aria-hidden="true">↗</span></a
+              ><a
+                class="button button--quiet"
+                href="https://github.com/gecut/aether-agent"
+                >Explore the source</a
+              >
+            </div>
+          </div>
+        </div>
+        <figure class="product">
+          <img
+            src="https://raw.githubusercontent.com/gecut/aether-agent/main/docs/assets/workspace.png"
+            width="1600"
+            height="1050"
+            alt="Aether Code desktop workspace with project navigation, agent activity and a task inspector"
+            fetchpriority="high"
+          />
+          <figcaption>
+            A shared place for the conversation, the code, and what happens
+            next.
+          </figcaption>
+        </figure>
+      </section>
+      <section
+        class="section shell features"
+        id="workspace"
+        aria-labelledby="workspace-title"
+      >
+        <div>
+          <p class="eyebrow">Room to do the work</p>
+          <h2 id="workspace-title">Keep the whole project in view.</h2>
+        </div>
+        <div>
+          <article class="feature">
+            <h3>Start with a conversation</h3>
+            <p>
+              Ask a question, share project context, or turn an idea into a
+              reviewed plan. Ava keeps the conversation beside your work.
+            </p>
+          </article>
+          <article class="feature">
+            <h3>Step into a real IDE</h3>
+            <p>
+              Open the Code-OSS workbench for files, editing, Git, debugging and
+              an interactive terminal. Install compatible extensions from Open
+              VSX or a VSIX file.
+            </p>
+          </article>
+          <article class="feature">
+            <h3>Know what changed</h3>
+            <p>
+              Follow agent activity, inspect diffs and verification results, and
+              review changes before applying them to your original project.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="shell" id="workflow" aria-labelledby="workflow-title">
+        <div class="workflow">
+          <p class="eyebrow">From an idea to a change you can review</p>
+          <h2 id="workflow-title">A natural next step, every time.</h2>
+          <div class="steps">
+            <article class="step">
+              <span>Connect</span>
+              <h3>Bring your project</h3>
+              <p>
+                Choose a local folder and connect a supported provider. Pick the
+                model that fits the work.
+              </p>
+            </article>
+            <article class="step">
+              <span>Collaborate</span>
+              <h3>Give the work a direction</h3>
+              <p>
+                Chat with Ava, approve a scoped plan, and follow the agents as
+                they work in separate Git worktrees.
+              </p>
+            </article>
+            <article class="step">
+              <span>Review</span>
+              <h3>Make the final call</h3>
+              <p>
+                Read the results, inspect the changes, and apply the work when
+                you are ready.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section
+        class="section shell download"
+        id="download"
+        aria-labelledby="download-title"
+      >
+        <div>
+          <p class="eyebrow">Make some room for your next idea</p>
+          <h2 id="download-title">Your next project starts here.</h2>
+          <p>
+            Desktop downloads for macOS, Windows and Linux are available in
+            GitHub Releases. Choose the package for your system and
+            architecture.
+          </p>
+        </div>
+        <a class="button" href="https://github.com/gecut/aether-agent/releases"
+          >Choose your download <span aria-hidden="true">↗</span></a
+        >
+      </section>
+      <section class="section shell faq" aria-labelledby="faq-title">
+        <div>
+          <p class="eyebrow">A few useful details</p>
+          <h2 id="faq-title">Before you settle in.</h2>
+        </div>
+        <div>
+          <details>
+            <summary>Is Aether Code open source?</summary>
+            <p>
+              Yes. The project is MIT licensed. You can inspect the code, report
+              a problem, or contribute on
+              <a href="https://github.com/gecut/aether-agent">GitHub</a>.
+            </p>
+          </details>
+          <details>
+            <summary>Does it include the VS Code workbench?</summary>
+            <p>
+              The full IDE uses Code-OSS through code-server. Setup downloads a
+              verified runtime. Compatible extensions come from Open VSX or VSIX
+              files; Microsoft-only extensions and universal Marketplace
+              compatibility are not guaranteed.
+            </p>
+          </details>
+          <details>
+            <summary>Do I need a provider account?</summary>
+            <p>
+              Agent features need a configured provider and access to the model
+              you select. Provider availability and account eligibility vary.
+              See the
+              <a
+                href="https://github.com/gecut/aether-agent/tree/main/docs/providers"
+                >provider documentation</a
+              >
+              for current support.
+            </p>
+          </details>
+          <details>
+            <summary>Where does my project live?</summary>
+            <p>
+              Your workspace stays in a local folder. Approved coding runs use
+              separate Git worktrees. Review is required before applying their
+              changes to your original project.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">
+      <div class="footer__stage" aria-hidden="true">
+        <video
+          class="footer__video"
+          src="https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/4d01c727-d9c5-47c8-a778-35a451ffd39f.mp4"
+          poster="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20261014_121838_c97d0940-f430-4304-8573-4f47ee44f447.png"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        ></video>
+      </div>
+      <p class="footer__wordmark" aria-hidden="true">Driftbar</p>
+      <div class="footer__fog" aria-hidden="true"></div>
+      <div class="footer__content">
+        <div class="brand">
+          <a class="brand__logo" href="#" aria-label="Driftbar home"
+            ><span class="brand__mark"></span>Driftbar</a
+          >
+          <h2 class="brand__title">The calm bar for macOS</h2>
+          <p class="brand__text">
+            Driftbar gathers music, tasks, meetings, weather, search, focus
+            timers, quick notes, and more handy widgets into one calm floating
+            bar just above your Mac Dock.
+          </p>
+          <a class="brand__cta" href="#"
+            ><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M17.05 12.54c-.03-2.75 2.25-4.07 2.35-4.14-1.28-1.87-3.27-2.13-3.98-2.16-1.69-.17-3.3 1-4.16 1-.86 0-2.18-.97-3.59-.95-1.85.03-3.55 1.07-4.5 2.72-1.92 3.33-.49 8.25 1.38 10.95.91 1.32 2 2.8 3.43 2.75 1.38-.06 1.9-.89 3.56-.89 1.66 0 2.13.89 3.59.86 1.48-.03 2.42-1.34 3.33-2.67 1.05-1.53 1.48-3.02 1.5-3.1-.03-.01-2.88-1.1-2.91-4.37ZM14.31 4.46c.76-.92 1.27-2.2 1.13-3.46-1.09.04-2.41.73-3.19 1.64-.7.81-1.31 2.1-1.15 3.34 1.22.09 2.46-.62 3.21-1.52Z"
+              /></svg
+            >Get Driftbar today</a
+          >
+          <p class="brand__copy">© 2026 Driftbar Inc. - Made in Lisbon.</p>
+          <p class="brand__by">
+            Built with <span class="brand__heart" aria-label="love">💙</span> by
+            <span class="brand__author"
+              ><span class="brand__avatar" aria-hidden="true"
+                ><svg viewBox="0 0 24 24">
+                  <rect width="24" height="24" fill="#e6e6e3" />
+                  <circle cx="12" cy="9.2" r="4.4" fill="#1b1b1b" />
+                  <path
+                    d="M3 25c0-6 4-9.4 9-9.4S21 19 21 25Z"
+                    fill="#1b1b1b"
+                  /></svg></span
+              >Mira Okafor</span
+            >
+          </p>
+          <ul class="brand__status" aria-label="Driftbar status">
+            <li class="chip">
+              <span class="chip__dot" aria-hidden="true"></span>9,400 Macs in
+              sync
+            </li>
+            <li class="chip">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 11a8 8 0 1 0-2.3 5.7" />
+                <path d="M20 4v7h-7" /></svg
+              >v1.8 · Shipped today
+            </li>
+            <li class="chip">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6L3.2 9.4l6.1-.8Z"
+                /></svg
+              >Rated 4.8 avg
+            </li>
+          </ul>
+        </div>
+        <nav class="col col--menu" aria-label="Menu">
+          <h3 class="col__title">Menu</h3>
+          <ul class="col__list">
+            <li><a href="#">Tour</a></li>
+            <li><a href="#">Showcase</a></li>
+            <li><a href="#">Q&amp;A</a></li>
+            <li><a href="#">Licence</a></li>
+            <li><a href="#">Journal</a></li>
+          </ul>
+        </nav>
+        <nav class="col" aria-label="Essentials">
+          <h3 class="col__title">Essentials</h3>
+          <ul class="col__list">
+            <li><a href="#">Support</a></li>
+            <li><a href="#">Up next</a></li>
+            <li><a href="#">Privacy notice</a></li>
+            <li><a href="#">Usage guidelines</a></li>
+            <li><a href="#">Manage licences</a></li>
+          </ul>
+        </nav>
+        <nav class="col" aria-label="From our team">
+          <h3 class="col__title">From our team</h3>
+          <ul class="col__list">
+            <li><a href="#">Clipnest.io</a></li>
+            <li><a href="#">Tallyo.io</a></li>
+            <li><a href="#">Pinwell.io</a></li>
+            <li><a href="#">Glyfo.co</a></li>
+            <li><a href="#">Shelfmark.app</a></li>
+            <li><a href="#">Wireloom.com</a></li>
+            <li><a href="#">Gridcraft.app</a></li>
+          </ul>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>

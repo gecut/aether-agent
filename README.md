@@ -9,7 +9,7 @@
     <a href="#quick-start"><img src="https://img.shields.io/badge/tested_on-macOS_arm64-d2d5dd?style=flat-square&amp;labelColor=202329" alt="Tested on macOS arm64" /></a>
     <a href="docs/development/CHECKLIST.md"><img src="https://img.shields.io/badge/status-developer_preview-e9cc8a?style=flat-square&amp;labelColor=202329" alt="Developer preview" /></a>
   </p>
-  <p><a href="https://github.com/gecut/aether-agent/releases">Downloads</a> · <a href="#quick-start">Get started</a> · <a href="#a-workspace-you-can-inspect">Explore the workspace</a> · <a href="ARCHITECTURE.md">Architecture</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
+  <p><a href="https://gecut.github.io/aether-agent/">Website</a> · <a href="https://github.com/gecut/aether-agent/releases">Downloads</a> · <a href="#quick-start">Get started</a> · <a href="#a-workspace-you-can-inspect">Explore the workspace</a> · <a href="ARCHITECTURE.md">Architecture</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
 </div>
 
 ---

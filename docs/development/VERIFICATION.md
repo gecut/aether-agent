@@ -1,5 +1,11 @@
 # Verification record
 
+## October 18: runtime extraction and public website
+
+The extraction update passed a real fresh macOS arm64 Code-OSS installation, file save, interactive terminal command, VSIX installation/activation, scoped chat, pane collapse and Back to Aether acceptance. Desktop launch/IPC/restart E2E, production build and formatting also passed. Regression tests cover extraction with an unusable inherited PATH, bounded actionable failure diagnostics and rejection of a manifest whose runtime files are missing. The user's exact extraction failure did not reproduce locally; the update addresses inherited archive-tool selection, metadata restoration, timeouts, stale installation files and partial-runtime detection. Windows/Linux runtime extraction remains unverified locally.
+
+The static website was visually checked on desktop, tablet and mobile and tested across eight widths, 320–1440 pixels. The specified video decoded successfully, footer geometry matched the 1440×900 brief, and anchor navigation, expandable FAQ and reduced-motion transitions passed. A local throttled Lighthouse run scored 78 performance and 95 accessibility; the requested external font/media dominate load cost, and the specified muted footer copyright has low contrast. These literal design requirements are preserved rather than silently changed. Test screenshots and Lighthouse output stay in ignored local artifacts.
+
 ## October 18: Code-OSS, models and context efficiency
 
 Build, formatting and **109 tests across 18 files** passed on macOS arm64. The standard real Electron E2E passed, including quick-editor save/restoration, unsaved-edit navigation guards, persistent independent model settings, project recovery and restart. New regression coverage checks UTF-8 conversation windows, preservation of the latest request, repeated-log evidence, actual Codex model RPC/pagination via a subprocess fixture, catalog request coalescing and malformed entries, project-scoped chat, concurrent-send rejection, current chat settings, Economy helper suppression and IDE archive path boundaries.
