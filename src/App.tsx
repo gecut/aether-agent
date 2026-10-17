@@ -156,6 +156,7 @@ export function App() {
     [tab, setTab] = useState<Tab>("Session"),
     [inspector, setInspector] = useState(true),
     [objective, setObjective] = useState(""),
+    [planning, setPlanning] = useState(false),
     [events, setEvents] = useState<RunEvent[]>([]),
     [busy, setBusy] = useState(false),
     [toast, setToast] = useState(""),
@@ -178,6 +179,7 @@ export function App() {
     [checkingUpdate, setCheckingUpdate] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const refreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const bootStartedAt = useRef(performance.now());
   const notify = useCallback((message: string) => {
     setToast(message);
     clearTimeout(toastTimer.current);
@@ -207,12 +209,18 @@ export function App() {
   );
   const refresh = useCallback(async () => {
     if (!bridge) {
-      setLoading(false);
+      window.setTimeout(
+        () => setLoading(false),
+        Math.max(0, 450 - (performance.now() - bootStartedAt.current)),
+      );
       return;
     }
     const result = await call<Snapshot>("snapshot");
     if (result) setData(result);
-    setLoading(false);
+    window.setTimeout(
+      () => setLoading(false),
+      Math.max(0, 450 - (performance.now() - bootStartedAt.current)),
+    );
   }, [call]);
   useEffect(() => {
     void refresh();
@@ -382,7 +390,7 @@ export function App() {
     setCheckingUpdate(false);
   };
   const submit = async () => {
-    if (!project || chatId) {
+    if (!planning) {
       if (objective.trim().length < 1) return;
       setBusy(true);
       const conversation = await call<Chat>("chat.send", {
@@ -398,6 +406,10 @@ export function App() {
       setBusy(false);
       return;
     }
+    if (!project) {
+      notify("Choose a local project before creating a plan.");
+      return;
+    }
     if (objective.trim().length < 3) return;
     setBusy(true);
     const result = await call<Run>("run.create", {
@@ -409,6 +421,7 @@ export function App() {
       await refresh();
       setRunId(result.id);
       setChatId("");
+      setPlanning(false);
       setObjective("");
       setAttachments([]);
       setTab("Session");
@@ -712,78 +725,6 @@ export function App() {
               >
                 <DownloadSimple /> Update available
               </button>
-            ) : chat ? (
-              <div className="session-scroll chat-scroll">
-                <div className="session-heading">
-                  <div>
-                    <span className="eyebrow">AVA / LOCAL CONVERSATION</span>
-                    <h1 dir="auto">{chat.title}</h1>
-                    <p>
-                      Ask anything. Ava will flag requests that need a project
-                      plan.
-                    </p>
-                  </div>
-                </div>
-                <div className="chat-messages">
-                  {chat.messages.map((message) => (
-                    <div
-                      className={
-                        message.role === "user"
-                          ? "user-message"
-                          : "assistant-message"
-                      }
-                      key={message.id}
-                    >
-                      <div
-                        className={
-                          message.role === "user"
-                            ? "message-avatar"
-                            : "message-avatar aether-avatar"
-                        }
-                      >
-                        {message.role === "user" ? (
-                          "Y"
-                        ) : (
-                          <AsteriskSimple weight="bold" />
-                        )}
-                      </div>
-                      <div className="message-content">
-                        <div className="message-meta">
-                          {message.role === "user" ? "You" : "Ava"}{" "}
-                          <time>{relativeTime(message.at)}</time>
-                        </div>
-                        <p dir="auto">
-                          {message.content.replace(/^PROJECT_WORK:\s*/i, "")}
-                        </p>
-                        {message.role === "assistant" &&
-                          /^PROJECT_WORK:/i.test(message.content) && (
-                            <Button
-                              onClick={() => {
-                                setObjective(
-                                  [...chat.messages]
-                                    .reverse()
-                                    .find((item) => item.role === "user")
-                                    ?.content ?? "",
-                                );
-                                setChatId("");
-                                notify(
-                                  project
-                                    ? "Project request ready to plan."
-                                    : "Choose a project, then send this request to create a plan.",
-                                );
-                              }}
-                            >
-                              {project
-                                ? "Create project plan"
-                                : "Choose a project"}{" "}
-                              <ArrowRight />
-                            </Button>
-                          )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             ) : (
               <button
                 className="icon-button"
@@ -1276,6 +1217,79 @@ export function App() {
                   </div>
                 )}
               </>
+            ) : chat ? (
+              <div className="session-scroll chat-scroll">
+                <div className="session-heading">
+                  <div>
+                    <span className="eyebrow">AVA / LOCAL CONVERSATION</span>
+                    <h1 dir="auto">{chat.title}</h1>
+                    <p>
+                      Ask anything. Ava will flag requests that need a project
+                      plan.
+                    </p>
+                  </div>
+                </div>
+                <div className="chat-messages">
+                  {chat.messages.map((message) => (
+                    <div
+                      className={
+                        message.role === "user"
+                          ? "user-message"
+                          : "assistant-message"
+                      }
+                      key={message.id}
+                    >
+                      <div
+                        className={
+                          message.role === "user"
+                            ? "message-avatar"
+                            : "message-avatar aether-avatar"
+                        }
+                      >
+                        {message.role === "user" ? (
+                          "Y"
+                        ) : (
+                          <AsteriskSimple weight="bold" />
+                        )}
+                      </div>
+                      <div className="message-content">
+                        <div className="message-meta">
+                          {message.role === "user" ? "You" : "Ava"}{" "}
+                          <time>{relativeTime(message.at)}</time>
+                        </div>
+                        <p dir="auto">
+                          {message.content.replace(/^PROJECT_WORK:\s*/i, "")}
+                        </p>
+                        {message.role === "assistant" &&
+                          /^PROJECT_WORK:/i.test(message.content) && (
+                            <Button
+                              onClick={() => {
+                                setObjective(
+                                  [...chat.messages]
+                                    .reverse()
+                                    .find((item) => item.role === "user")
+                                    ?.content ?? "",
+                                );
+                                setChatId("");
+                                setPlanning(true);
+                                notify(
+                                  project
+                                    ? "Project request ready to plan."
+                                    : "Choose a project, then send this request to create a plan.",
+                                );
+                              }}
+                            >
+                              {project
+                                ? "Create project plan"
+                                : "Choose a project"}{" "}
+                              <ArrowRight />
+                            </Button>
+                          )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="welcome-scroll">
                 <div className="welcome">
@@ -1351,6 +1365,7 @@ export function App() {
                         key={s.title}
                         onClick={() => {
                           setObjective(s.prompt);
+                          setPlanning(true);
                           document.getElementById("objective")?.focus();
                         }}
                       >
@@ -1392,9 +1407,9 @@ export function App() {
                     value={objective}
                     onChange={(e) => setObjective(e.target.value)}
                     placeholder={
-                      project
-                        ? "Describe what you want to build, fix, or explore…"
-                        : "Message Ava, or add a project to plan and build…"
+                      planning
+                        ? "Describe the project work you want planned…"
+                        : "Message Ava…"
                     }
                     onKeyDown={(e) => {
                       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -1415,18 +1430,34 @@ export function App() {
                       >
                         <Paperclip size={15} /> Add files
                       </button>
+                      <button
+                        className={
+                          planning ? "composer-mode active" : "composer-mode"
+                        }
+                        onClick={() => setPlanning((value) => !value)}
+                        title="Toggle project planning mode"
+                      >
+                        <TreeStructure size={15} />{" "}
+                        {planning ? "Plan project" : "Chat with Ava"}
+                      </button>
                       <span className="composer-divider" />
                       <span>
                         <ShieldCheck size={14} />
-                        Plan before execution
+                        {planning
+                          ? "Plan before execution"
+                          : "Ava decides when project work is needed"}
                       </span>
                     </div>
                     <button
                       className="send-button"
-                      aria-label="Create implementation plan"
+                      aria-label={
+                        planning
+                          ? "Create implementation plan"
+                          : "Send chat message"
+                      }
                       onClick={() => void submit()}
                       disabled={
-                        busy || (!!project && objective.trim().length < 3)
+                        busy || objective.trim().length < (planning ? 3 : 1)
                       }
                     >
                       {busy ? (
@@ -1461,11 +1492,13 @@ export function App() {
                 </div>
                 <div className="composer-hint">
                   <span>
-                    <ShieldCheck size={12} /> Local execution. Explicit
-                    approvals. Your code stays yours.
+                    <ShieldCheck size={12} />{" "}
+                    {planning
+                      ? "Local execution. Explicit approvals. Your code stays yours."
+                      : "Ava chats first and asks before any project work."}
                   </span>
                   <span>
-                    <kbd>⌘</kbd> <kbd>↵</kbd> to plan
+                    <kbd>⌘</kbd> <kbd>↵</kbd> to send
                   </span>
                 </div>
               </div>

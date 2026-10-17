@@ -1436,9 +1436,58 @@ nav > button.active:before {
   font-size: 10px;
 }
 .aether-avatar {
-  background: #1d2a43;
-  color: #a9c3ff;
-  border-color: #34486a;
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 50%;
+  color: #eff5ff;
+  background:
+    radial-gradient(circle at 35% 30%, #d5eeff 0 7%, transparent 8%),
+    radial-gradient(circle at 68% 72%, #7f70ff 0 12%, transparent 13%),
+    linear-gradient(135deg, #5bd5ff, #6e72ff 56%, #c570ff);
+  box-shadow:
+    0 0 0 2px #171b29,
+    0 0 0 3px #44578d,
+    0 7px 18px #4a69be55;
+  animation: ava-bubble 3.2s ease-in-out infinite;
+}
+.aether-avatar svg {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 1px 2px #152244aa);
+}
+@keyframes ava-bubble {
+  50% {
+    transform: translateY(-2px) scale(1.04);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aether-avatar {
+    animation: none;
+  }
+}
+.chat-scroll .message-avatar.aether-avatar {
+  width: 34px;
+  height: 34px;
+  margin-left: -3px;
+}
+.chat-messages {
+  max-width: 780px;
+  margin: 8px auto 0;
+}
+.chat-messages .user-message,
+.chat-messages .assistant-message {
+  padding: 16px 0 25px;
+}
+.chat-messages .assistant-message > .message-content {
+  max-width: min(680px, calc(100% - 44px));
+  padding: 1px 0 1px 16px;
+  border-left: 1px solid #394567;
+}
+.composer-mode.active {
+  color: #cbd9ff;
+  border-color: #6079be;
+  background: #1c2945;
 }
 .message-meta {
   display: flex;

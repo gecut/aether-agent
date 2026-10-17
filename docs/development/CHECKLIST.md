@@ -145,5 +145,7 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Original-project Git commit and normal push controls; commits use the user's configured Git identity and pushes are never forced.
 - [x] A boot-loading surface and in-app release checker that opens only a verified Aether GitHub release page.
 - [x] Ava conversations can start without a repository, persist locally, and flag requests that need a reviewed project plan.
+- [x] Composer defaults to Ava chat; project planning is explicit and cannot send ordinary conversation through the task-plan schema.
+- [x] Ava chat messages use a reduced-motion-aware animated bubble avatar, and startup keeps a visible loading state through initial hydration.
 - [x] Prompt references accept bounded images, PDF, Word, and common text files; text references are included in planning while binary documents remain private files.
 - [x] Codex CLI stream-reset failures retry twice with bounded backoff before the session fails.
