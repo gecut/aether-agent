@@ -1,5 +1,6 @@
 import { CodingTeamActivity } from "./CodingTeamActivity";
 import { Companion } from "./companion/Companion";
+import { companionPose } from "./companion/state";
 import { SkillDiscovery } from "./SkillDiscovery";
 import { CodeGraph } from "./CodeGraph";
 import { TaskGraph } from "./TaskGraph";
@@ -11,6 +12,8 @@ import {
   useEffect,
   useCallback,
   useRef,
+  lazy,
+  Suspense,
   type ReactNode,
 } from "react";
 import {
@@ -96,6 +99,9 @@ const empty: Snapshot = {
   memories: [],
 };
 const bridge = window.aether;
+const AvaMascot = lazy(() =>
+  import("./companion/Avatar").then((module) => ({ default: module.Avatar })),
+);
 const formatStatus = (status: string) => status.replaceAll("_", " ");
 const relativeTime = (at: string) =>
   new Date(at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -126,6 +132,15 @@ function Button({
 }
 function StatusDot({ status }: { status: string }) {
   return <span className={"status-dot " + status} />;
+}
+function AvaChatAvatar() {
+  return (
+    <span className="ava-chat-avatar" aria-label="Ava">
+      <Suspense fallback={<span className="ava-chat-fallback" />}>
+        <AvaMascot state={companionPose("idle")} paused />
+      </Suspense>
+    </span>
+  );
 }
 function Tag({ children, kind = "" }: { children: ReactNode; kind?: string }) {
   return <span className={"tag " + kind}>{children}</span>;
@@ -625,7 +640,7 @@ export function App() {
                 }
               >
                 <button className="session-open" onClick={() => openChat(item)}>
-                  <span className="message-avatar aether-avatar">A</span>
+                  <AvaChatAvatar />
                   <bdi>{item.title}</bdi>
                   <StatusDot status="completed" />
                 </button>
@@ -723,21 +738,22 @@ export function App() {
                 title={`Open ${release.name}`}
                 onClick={() => void call("update.open")}
               >
-                <DownloadSimple /> Update available
+                <DownloadSimple /> Update Aether
               </button>
             ) : (
               <button
-                className="icon-button"
+                className="update-check"
                 aria-label="Check for updates"
-                title="Check for updates"
+                title="Check GitHub releases for a newer Aether build"
                 onClick={() => void checkForUpdate()}
                 disabled={checkingUpdate}
               >
                 {checkingUpdate ? (
                   <CircleNotch className="spin" />
                 ) : (
-                  <DownloadSimple size={18} />
+                  <DownloadSimple size={15} />
                 )}
+                Check updates
               </button>
             )}
             <button
@@ -1239,19 +1255,11 @@ export function App() {
                       }
                       key={message.id}
                     >
-                      <div
-                        className={
-                          message.role === "user"
-                            ? "message-avatar"
-                            : "message-avatar aether-avatar"
-                        }
-                      >
-                        {message.role === "user" ? (
-                          "Y"
-                        ) : (
-                          <AsteriskSimple weight="bold" />
-                        )}
-                      </div>
+                      {message.role === "user" ? (
+                        <div className="message-avatar">Y</div>
+                      ) : (
+                        <AvaChatAvatar />
+                      )}
                       <div className="message-content">
                         <div className="message-meta">
                           {message.role === "user" ? "You" : "Ava"}{" "}

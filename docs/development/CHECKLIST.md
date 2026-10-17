@@ -148,5 +148,6 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Composer defaults to Ava chat; project planning is explicit and cannot send ordinary conversation through the task-plan schema.
 - [x] Ava chat messages use a reduced-motion-aware animated bubble avatar, and startup keeps a visible loading state through initial hydration.
 - [x] Light mode saves and applies immediately, including chat, composer, sidebar, and boot surfaces.
+- [x] Ava chat uses the companion mascot and compact user-message bubbles; the header exposes a labeled Aether update action.
 - [x] Prompt references accept bounded images, PDF, Word, and common text files; text references are included in planning while binary documents remain private files.
 - [x] Codex CLI stream-reset failures retry twice with bounded backoff before the session fails.

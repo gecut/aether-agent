@@ -611,6 +611,21 @@ nav > button.active:before {
 .update-available:hover {
   background: #263b5b;
 }
+.update-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 9px;
+  font-size: 10px;
+}
+.update-check:hover:not(:disabled) {
+  color: var(--text);
+  border-color: #7187b5;
+}
 .model-bar {
   display: flex;
   align-items: center;
@@ -1471,6 +1486,42 @@ nav > button.active:before {
   height: 34px;
   margin-left: -3px;
 }
+.ava-chat-avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  color: #9fe6d6;
+  background: #142827;
+  border: 1px solid #28534e;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 5px 14px #173f3b3d;
+}
+.ava-chat-avatar .companion-avatar {
+  width: 34px;
+  height: 34px;
+  color: #9fe6d6;
+  --companion-eye: #153e43;
+  --companion-notice: #f1b87d;
+}
+.ava-chat-fallback {
+  width: 72%;
+  aspect-ratio: 1;
+  background: #9fe6d6;
+  clip-path: polygon(17% 12%, 78% 4%, 100% 37%, 79% 91%, 29% 100%, 0 62%);
+}
+.session-open .ava-chat-avatar {
+  width: 24px;
+  height: 24px;
+  flex-basis: 24px;
+  border-radius: 8px;
+}
+.session-open .ava-chat-avatar .companion-avatar {
+  width: 23px;
+  height: 23px;
+}
 .chat-messages {
   max-width: 780px;
   margin: 8px auto 0;
@@ -1478,6 +1529,22 @@ nav > button.active:before {
 .chat-messages .user-message,
 .chat-messages .assistant-message {
   padding: 16px 0 25px;
+}
+.chat-messages .user-message {
+  justify-content: flex-start;
+}
+.chat-messages .user-message .message-content {
+  max-width: min(590px, calc(100% - 44px));
+  padding: 10px 14px;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 4px 16px 16px 16px;
+}
+.chat-messages .user-message .message-meta {
+  margin-top: 0;
+}
+.chat-messages .user-message p {
+  margin-top: 5px;
 }
 .chat-messages .assistant-message > .message-content {
   max-width: min(680px, calc(100% - 44px));
