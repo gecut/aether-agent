@@ -3,7 +3,8 @@ import { Companion } from "./companion/Companion";
 import { companionPose } from "./companion/state";
 import { SkillDiscovery } from "./SkillDiscovery";
 import { CodeGraph } from "./CodeGraph";
-import { IDE } from "./IDE";
+import { IDEWorkspace } from "./IDEWorkspace";
+import { ModelPicker } from "./ModelPicker";
 import { FloatingPopover } from "./FloatingPopover";
 import { Collapsible } from "./Collapsible";
 import { TaskGraph } from "./TaskGraph";
@@ -37,6 +38,7 @@ import {
   FolderOpen,
   ArrowUp,
   ArrowRight,
+  ArrowLeft,
   ArrowUpRight,
   SidebarSimple,
   TerminalWindow,
@@ -187,7 +189,6 @@ export function App() {
       content: string;
     }>(),
     [projectMenu, setProjectMenu] = useState(false),
-    [modelMenu, setModelMenu] = useState<"planner" | "coder" | null>(null),
     [search, setSearch] = useState(""),
     [attachments, setAttachments] = useState<PromptAttachment[]>([]),
     [showSplash, setShowSplash] = useState(
@@ -198,9 +199,6 @@ export function App() {
     [release, setRelease] = useState<ReleaseInfo>(),
     [checkingUpdate, setCheckingUpdate] = useState(false);
   const projectAnchor = useRef<HTMLButtonElement>(null);
-  const modelAnchors = useRef<
-    Partial<Record<"planner" | "coder", HTMLButtonElement | null>>
-  >({});
   const [sessionMenu, setSessionMenu] = useState<{
     kind: "run" | "chat";
     id: string;
@@ -218,6 +216,11 @@ export function App() {
     if (!window.confirm("Discard unsaved editor changes and leave this file?"))
       return false;
     return true;
+  };
+  const navigate = (next: Page) => {
+    if (next !== page && !canLeaveEditor()) return;
+    setPage(next);
+    setSearch("");
   };
   useEffect(() => {
     const prevent = (event: BeforeUnloadEvent) => {
@@ -414,7 +417,7 @@ export function App() {
       await refresh();
       setProjectId(p.id);
       setRunId("");
-      setPage("Workspace");
+      setPage(page === "IDE" ? "IDE" : "Workspace");
     }
     setProjectMenu(false);
   };
@@ -597,7 +600,6 @@ export function App() {
         void openProject();
       }
       if (event.key === "Escape") {
-        setModelMenu(null);
         setProjectMenu(false);
         setFilePreview(undefined);
       }
@@ -618,7 +620,13 @@ export function App() {
   ];
   if (loading) return <BootScreen />;
   return (
-    <div className={"app " + (!inspector ? "inspector-hidden" : "")}>
+    <div
+      className={
+        "app " +
+        (!inspector ? "inspector-hidden " : "") +
+        (page === "IDE" ? "ide-mode" : "")
+      }
+    >
       <div className="titlebar">
         <div className="window-space" />
         <div className="titlebar-center">
@@ -876,6 +884,15 @@ export function App() {
       <main className="main">
         <header className="workspace-header">
           <div className="breadcrumbs">
+            {page === "IDE" && (
+              <button
+                className="back-to-aether"
+                onClick={() => navigate("Workspace")}
+              >
+                <ArrowLeft />
+                Back to Aether
+              </button>
+            )}
             <span>{page === "Workspace" ? "Workspace" : page}</span>
             {page === "Workspace" && (
               <>
@@ -887,6 +904,28 @@ export function App() {
             )}
           </div>
           <div className="header-actions">
+            {project && (
+              <button
+                className="project-folder-action"
+                aria-label="Show project folder"
+                title="Show project folder"
+                onClick={() => void call("project.reveal", project.id)}
+              >
+                <FolderOpen />
+                <span>Project folder</span>
+              </button>
+            )}
+            {page === "Workspace" && project && (
+              <button
+                className="open-ide-action"
+                title="Open IDE & terminal"
+                aria-label="Open IDE & terminal"
+                onClick={() => navigate("IDE")}
+              >
+                <TerminalWindow />
+                <span>Open IDE & terminal</span>
+              </button>
+            )}
             {release ? (
               <button
                 className="update-available"
@@ -947,93 +986,15 @@ export function App() {
                     )}
                     {role === "planner" ? "PLANNER" : "CODING MODEL"}
                   </span>
-                  <button
-                    ref={(element) => {
-                      modelAnchors.current[role] = element;
+                  <ModelPicker
+                    role={role}
+                    value={data.settings[role]}
+                    providers={data.providers}
+                    call={call}
+                    onSelect={async (patch) => {
+                      await updateModel(role, patch);
                     }}
-                    className="model-trigger"
-                    aria-expanded={modelMenu === role}
-                    onClick={() =>
-                      setModelMenu(modelMenu === role ? null : role)
-                    }
-                  >
-                    <span
-                      className={
-                        "provider-glyph " + data.settings[role].provider
-                      }
-                    >
-                      {data.settings[role].provider === "codex" ? (
-                        <AsteriskSimple weight="bold" />
-                      ) : (
-                        <Cpu />
-                      )}
-                    </span>
-                    {data.providers.find(
-                      (p) => p.id === data.settings[role].provider,
-                    )?.name ?? "OpenAI Codex"}
-                    <span className="model-name">
-                      {data.settings[role].model || "Runtime default"}
-                    </span>
-                    <CaretDown size={12} />
-                  </button>
-                  {modelMenu === role && (
-                    <FloatingPopover
-                      anchor={modelAnchors.current[role] ?? null}
-                      className="model-popover"
-                      onClose={() => setModelMenu(null)}
-                    >
-                      <span className="section-label">
-                        {role === "planner"
-                          ? "PLANNING & SUPERVISION"
-                          : "IMPLEMENTATION RUNTIME"}
-                      </span>
-                      <label>
-                        Provider
-                        <select
-                          value={data.settings[role].provider}
-                          onChange={(e) =>
-                            void updateModel(role, { provider: e.target.value })
-                          }
-                        >
-                          {data.providers.length ? (
-                            data.providers.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                                {!p.installed ? " · unavailable" : ""}
-                              </option>
-                            ))
-                          ) : (
-                            <option value="codex">OpenAI Codex</option>
-                          )}
-                        </select>
-                      </label>
-                      <label>
-                        Model ID
-                        <input
-                          dir="auto"
-                          key={role + data.settings[role].provider}
-                          defaultValue={data.settings[role].model}
-                          placeholder="Empty = authenticated runtime default"
-                          onBlur={(e) =>
-                            void updateModel(role, { model: e.target.value })
-                          }
-                        />
-                      </label>
-                      <p dir="auto">
-                        Independent {role === "planner" ? "planner" : "coding"}{" "}
-                        settings. Model access is verified when the provider
-                        runs.
-                      </p>
-                      <Button
-                        onClick={() => {
-                          setPage("Settings");
-                          setModelMenu(null);
-                        }}
-                      >
-                        Provider settings <ArrowUpRight />
-                      </Button>
-                    </FloatingPopover>
-                  )}
+                  />
                 </div>
               ))}
               <span className="model-bar-end">
@@ -1692,12 +1653,22 @@ export function App() {
             )}
           </>
         ) : page === "IDE" ? (
-          <IDE
+          <IDEWorkspace
             onDirtyChange={onEditorDirty}
             project={project}
             call={call}
             notify={notify}
-            theme={data.settings.theme}
+            settings={data.settings}
+            providers={data.providers}
+            refresh={refresh}
+            onOpenProject={() => void openProject()}
+            onPlan={(value) => {
+              setObjective(value);
+              setPlanning(true);
+              navigate("Workspace");
+              setRunId("");
+              setChatId("");
+            }}
           />
         ) : page === "Graphify" ? (
           <div className="page-scroll">
@@ -2716,7 +2687,16 @@ function SettingsPage({
                     })
                   }
                 >
-                  {["low", "medium", "high"].map((value) => (
+                  {[
+                    "none",
+                    "minimal",
+                    "low",
+                    "medium",
+                    "high",
+                    "xhigh",
+                    "max",
+                    "ultra",
+                  ].map((value) => (
                     <option key={value}>{value}</option>
                   ))}
                 </select>
@@ -2740,11 +2720,47 @@ function SettingsPage({
         </div>
       </section>
       <section className="settings-section">
+        <h2>Performance & context</h2>
+        <label>
+          Context and cost
+          <select
+            aria-label="Context and cost"
+            value={draft.efficiency}
+            onChange={(event) =>
+              setDraft({
+                ...draft,
+                efficiency: event.target.value as Settings["efficiency"],
+              })
+            }
+          >
+            <option value="economy">
+              Economy · smaller context, no helper agents
+            </option>
+            <option value="balanced">Balanced · focused context</option>
+            <option value="thorough">
+              Thorough · more context for complex tasks
+            </option>
+          </select>
+        </label>
+        <p>
+          Applies to new runs and chat requests. Full conversation and
+          verification logs stay saved. Provider billing and cache savings
+          depend on the model and account.
+        </p>
+      </section>
+      <section className="settings-section">
         <h2>Coding teams (Codex)</h2>
+        {draft.efficiency === "economy" && (
+          <p>
+            Economy pauses helper agents. Your team preference is retained for
+            Balanced and Thorough.
+          </p>
+        )}
         <label className="checkbox-label">
           <input
             type="checkbox"
             checked={draft.codingTeam.enabled}
+            disabled={draft.efficiency === "economy"}
             onChange={(e) =>
               setDraft({
                 ...draft,
@@ -2758,7 +2774,9 @@ function SettingsPage({
           <label>
             Concurrent helpers per task lead
             <select
-              disabled={!draft.codingTeam.enabled}
+              disabled={
+                !draft.codingTeam.enabled || draft.efficiency === "economy"
+              }
               value={draft.codingTeam.maxHelpers}
               onChange={(e) =>
                 setDraft({
@@ -2787,7 +2805,9 @@ function SettingsPage({
         <p className="inspector-note">
           With these settings, up to{" "}
           {draft.concurrency *
-            (draft.codingTeam.enabled ? draft.codingTeam.maxHelpers : 1)}{" "}
+            (draft.codingTeam.enabled && draft.efficiency !== "economy"
+              ? draft.codingTeam.maxHelpers
+              : 1)}{" "}
           agents can run per session. Planning and final review stay
           single-agent.
         </p>

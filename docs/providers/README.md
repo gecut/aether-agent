@@ -1,5 +1,13 @@
 # Provider setup and capability status
 
+## Searchable model selection
+
+Planner/coder pickers search models across installed providers and show their source. Codex uses the official app-server `initialize`/`model/list` protocol without starting an inference turn; the local runtime returned seven models and their supported reasoning efforts in 271 ms. Catalog discovery is cached for five minutes with concurrent request coalescing. Normal inference still uses the existing `exec` provider contract and approval boundaries.
+
+Antigravity's `agy models` runs only on demand, with a ten-second deadline, so a stalled Google catalog no longer holds up startup diagnostics. Claude choices are official documented aliases, labeled as published rather than discovered account models; they remain disabled if the local runtime/role is unavailable. Compatible APIs use their configured `/models` endpoint. Refresh and exact-ID entry are available. A listed model does not prove account entitlement or enable unsupported coding capabilities. This machine still lacks Claude Code and has Antigravity eligibility restrictions.
+
+Context modes change request size and helper use, not the user's selected provider/model. See [research and measured context reductions](../development/EFFICIENCY_RESEARCH.md).
+
 | Provider              | Path                                             | Available behavior                                                                       | Verification here                                                                                            |
 | --------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | OpenAI Codex          | Official `codex exec --json` CLI                 | Planning, isolated coding, read-only review, real events, cancellation                   | Authenticated CLI and complete real smoke workflow passed                                                    |

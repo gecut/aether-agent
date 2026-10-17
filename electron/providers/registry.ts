@@ -94,18 +94,6 @@ export class CLIProvider implements Provider {
       } else if (this.id === "antigravity") {
         base.detail =
           "Official agy CLI detected. Use Sign in with Google, then Verify connection. Login credentials stay in the CLI keyring; coding is disabled until its execution sandbox is verified.";
-        try {
-          const catalog = await execute(binary, ["models"], {
-            timeoutMs: 10000,
-          });
-          if (catalog.code === 0)
-            base.models = catalog.stdout
-              .split("\n")
-              .map((line) => line.match(/^([\w.-]+)\t/)?.[1])
-              .filter((id): id is string => !!id);
-        } catch {
-          /* A model catalog is optional and never proves account access. */
-        }
         base.capabilities.planning = false;
       } else
         base.detail =

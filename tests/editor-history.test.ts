@@ -12,7 +12,9 @@ import os from "node:os";
 import { Store } from "../electron/core/store";
 import { EditorHistory } from "../electron/core/editor-history";
 import { Service } from "../electron/core/service";
-import { defaults, type Chat } from "../shared/types";
+import type { Invocation } from "../electron/providers/registry";
+import { defaults, type Chat, type Run } from "../shared/types";
+import { compile } from "../electron/core/prompts";
 import { randomUUID } from "node:crypto";
 
 let directory: string, store: Store, editor: EditorHistory;
@@ -108,6 +110,10 @@ it("keeps chat actions made while a response is running", async () => {
   });
   const pending = service.sendChat("hello");
   const chat = store.all<Chat>("chat")[0];
+  await expect(
+    service.sendChat("duplicate while busy", chat.id),
+  ).rejects.toThrow("current response");
+  expect(store.get<Chat>("chat", chat.id)?.messages).toHaveLength(1);
   await service.command("chat.pin", { id: chat.id, pinned: true });
   finish({ text: "Hello" });
   await pending;
@@ -117,5 +123,81 @@ it("keeps chat actions made while a response is running", async () => {
   finish({ text: "Response after deletion" });
   await expect(second).rejects.toThrow("deleted while");
   expect(store.get("chat", chat.id)).toBeUndefined();
+  await service.shutdown();
+});
+
+it("keeps project chat scoped, bounded, and read-only without losing saved history", async () => {
+  const service = new Service(store);
+  const p = await service.addProject(project.path);
+  await writeFile(
+    path.join(p.path, "README.md"),
+    "# Focus project\nRead this project context.",
+  );
+  store.put("settings", "global", { ...defaults, efficiency: "economy" });
+  const run = vi.fn(async (_input: Invocation) => ({
+    text: "Explanation",
+    usage: { input_tokens: 200 },
+  }));
+  vi.spyOn(service.registry, "get").mockReturnValue({
+    id: "codex",
+    diagnose: async () => ({}) as never,
+    run,
+  });
+  const chat = await service.sendChat("Explain this project", undefined, p.id);
+  expect(chat.projectId).toBe(p.id);
+  expect(run.mock.calls[0][0]).toMatchObject({ mode: "plan", cwd: p.path });
+  expect(run.mock.calls[0][0].prompt).toContain("Read this project context");
+  expect(chat.messages[1].context?.estimatedTokens).toBeGreaterThan(0);
+  expect(chat.messages[1].usage).toEqual({ input_tokens: 200 });
+  expect(await service.command("chat.project", p.id)).toHaveLength(1);
+  store.put("settings", "global", {
+    ...defaults,
+    apiUrl: "http://127.0.0.1:7777/v1",
+  });
+  await service.sendChat("Follow up with current settings", chat.id);
+  expect(run.mock.calls.at(-1)![0].apiUrl).toBe("http://127.0.0.1:7777/v1");
+  await expect(
+    service.sendChat("switch", chat.id, randomUUID()),
+  ).rejects.toThrow("switching projects");
+  await service.shutdown();
+});
+
+it("disables helper inference in Economy while keeping the selected coding model", async () => {
+  const service = new Service(store);
+  const provider = vi.fn(async (_input: Invocation) => ({
+    text: "Fixture result",
+  }));
+  vi.spyOn(service.registry, "get").mockReturnValue({
+    id: "codex",
+    diagnose: async () => ({}) as never,
+    run: provider,
+  });
+  const run: Run = {
+    id: randomUUID(),
+    projectId: project.id,
+    title: "Fixture",
+    objective: "Fixture",
+    tasks: [],
+    status: "running",
+    config: structuredClone(defaults),
+    createdAt: "",
+    updatedAt: "",
+  };
+  for (const mode of ["economy", "balanced", "thorough"] as const) {
+    run.config.efficiency = mode;
+    await service.invokeProvider(
+      run,
+      run.config.coder,
+      "code",
+      project.path,
+      compile([]),
+      new AbortController().signal,
+    );
+    const input = provider.mock.calls.at(-1)![0];
+    expect(input.config).toEqual(defaults.coder);
+    expect(input.team).toEqual(
+      mode === "economy" ? undefined : { maxHelpers: 1 },
+    );
+  }
   await service.shutdown();
 });

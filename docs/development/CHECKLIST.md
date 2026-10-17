@@ -157,6 +157,14 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Navigation, activity, inspector groups, explorer, extensions and file history support collapse/expand with versioned local preferences.
 - [x] Session ellipsis menus support left-click pin/delete for chats and runs; deleting a chat cannot resurrect it when a response finishes.
 - [x] Startup shows only Ava, including an inline initial mascot before the React application loads.
-- [x] Monaco 0.57.0 integrates the VS Code editor source with syntax coloring, search, code folding, completion workers and keyboard saving; the extension host remains in external VS Code.
+- [x] Monaco 0.57.0 provides the lightweight Quick editor; Full IDE adds a pinned Code-OSS workbench with its own real extension host.
 - [x] File saves preserve bounded private version history with optimistic revision checks and restore actions; newly applied session changes can be reversed only while their checkpoint still matches.
 - [x] Graphify detects macOS Python/parser CPU mismatches, retries once with the parser's architecture, remembers successful launches, and shows a concise repair action if recovery fails.
+- [x] Dedicated IDE space has Back to Aether, Explorer/file management, Git, an integrated terminal, Open VSX/VSIX extensions, and collapsible right-side project chat.
+- [x] Full IDE installs on demand with checksum, archive-path and free-space checks; loopback authentication, separate no-preload WebContentsView, workspace trust, cancellation and process cleanup preserve the app boundary.
+- [x] Real macOS Code-OSS acceptance saved a file, ran a terminal command, installed a VSIX through the official runtime CLI, activated its command, verified its output file and displayed the installed extension.
+- [x] Planner/coder menus search runtime catalogs and labeled official aliases, cache/coalesce catalog requests, preserve capability limits, and support exact IDs. Seven real Codex models were discovered without inference.
+- [x] Economy/Balanced/Thorough budgets bound chat and code/evidence context. Economy skips helper calls without changing the selected model or approval gates. Full history/logs remain saved.
+- [x] Repeated supervisor log lines are folded; the reproducible long-chat fixture measured 82% fewer estimated history tokens than the prior twelve-message policy in Economy (95% versus full history). No billing or equivalent-quality guarantee is implied.
+- [x] Project chat persists separately by project, supplies bounded read-only source excerpts, offers reviewed planning for changes, rejects concurrent sends to the same chat, and cancels on shutdown.
+- [x] Off-screen/hidden Ava work pauses; the visible widget receives changed system-cursor coordinates outside its window without storing or forwarding them to providers.

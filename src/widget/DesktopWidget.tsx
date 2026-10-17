@@ -25,6 +25,15 @@ function label(item: WidgetActivity) {
   return item.status.replaceAll("_", " ");
 }
 export function DesktopWidget() {
+  useEffect(
+    () =>
+      bridge?.onPointer((point) =>
+        window.dispatchEvent(
+          new CustomEvent("aether:pointer", { detail: point }),
+        ),
+      ),
+    [],
+  );
   const [snapshot, setSnapshot] = useState<WidgetSnapshot>();
   const [offset, setOffset] = useState(0);
   const [error, setError] = useState("");

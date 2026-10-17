@@ -7,4 +7,14 @@ contextBridge.exposeInMainWorld("aetherWidget", {
     ipcRenderer.on("widget:update", listener);
     return () => ipcRenderer.removeListener("widget:update", listener);
   },
+  onPointer: (
+    callback: (point: { clientX: number; clientY: number }) => void,
+  ) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      point: { clientX: number; clientY: number },
+    ) => callback(point);
+    ipcRenderer.on("widget:pointer", listener);
+    return () => ipcRenderer.removeListener("widget:pointer", listener);
+  },
 });

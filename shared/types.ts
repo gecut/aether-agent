@@ -9,7 +9,9 @@ export type ProviderId = z.infer<typeof providerId>;
 export const modelSchema = z.object({
   provider: providerId,
   model: z.string().max(100),
-  reasoning: z.enum(["low", "medium", "high"]).default("medium"),
+  reasoning: z
+    .enum(["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"])
+    .default("medium"),
   instructions: z.string().max(12000).default(""),
 });
 export type ModelConfig = z.infer<typeof modelSchema>;
@@ -26,6 +28,7 @@ export const settingsSchema = z.object({
   retries: z.number().int().min(0).max(3),
   theme: z.enum(["dark", "light"]),
   themeJson: z.string().max(4000).default(""),
+  efficiency: z.enum(["economy", "balanced", "thorough"]).default("balanced"),
   apiUrl: z.string().url().default("http://127.0.0.1:11434/v1"),
 });
 export type Settings = z.infer<typeof settingsSchema>;
@@ -48,6 +51,7 @@ export const defaults: Settings = {
   retries: 1,
   theme: "dark",
   themeJson: "",
+  efficiency: "balanced",
   apiUrl: "http://127.0.0.1:11434/v1",
 };
 export const verificationSchema = z.enum([
@@ -182,6 +186,8 @@ export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   at: string;
+  context?: { included: number; omitted: number; estimatedTokens: number };
+  usage?: Record<string, number>;
 }
 export interface EditorDocument {
   file: string;
@@ -196,6 +202,7 @@ export interface EditorVersion {
 export interface Chat {
   id: string;
   pinned?: boolean;
+  projectId?: string;
   title: string;
   createdAt: string;
   updatedAt: string;
@@ -239,6 +246,40 @@ export interface ProviderInfo {
     cancellation: boolean;
   };
   verified: boolean;
+}
+export interface ModelOption {
+  provider: ProviderId;
+  id: string;
+  name: string;
+  description: string;
+  source: "runtime" | "published";
+  reasoning: string[];
+  defaultReasoning?: string;
+  isDefault?: boolean;
+}
+export interface ModelCatalog {
+  provider: ProviderId;
+  models: ModelOption[];
+  checkedAt: string;
+  note: string;
+  error?: string;
+}
+export interface IDERuntimeStatus {
+  version: 1;
+  release: string;
+  state:
+    | "missing"
+    | "downloading"
+    | "verifying"
+    | "installing"
+    | "ready"
+    | "starting"
+    | "running"
+    | "error";
+  progress: number;
+  downloadMB?: number;
+  supported?: boolean;
+  error?: string;
 }
 export interface PromptLayer {
   id: string;

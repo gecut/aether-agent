@@ -19,7 +19,8 @@
     "analyze:graph": "graphify extract . --code-only --no-cluster --out artifacts/graphify --timing",
     "benchmark": "node scripts/performance.mjs",
     "test:live-ui": "npm run build && node scripts/live-ui.mjs",
-    "test:widget": "npm run build && node scripts/widget-ui.mjs"
+    "test:widget": "npm run build && node scripts/widget-ui.mjs",
+    "test:ide": "npm run build && node scripts/ide-ui.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

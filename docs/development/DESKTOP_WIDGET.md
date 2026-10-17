@@ -1,5 +1,7 @@
 # Project desktop activity widget
 
+Ava now receives changed system-cursor coordinates while the widget is visible, even when the pointer is outside its window. The main process samples at 20 Hz and projects screen coordinates into the widget's coordinate space through a restricted event subscription. This controls the mascot's gaze, not the widget's desktop position. Coordinates are not persisted or included in provider prompts. Hide/quit stops the timer; hidden and off-screen avatars pause animation, and reduced motion is respected.
+
 The widget is a separate 360px native Electron window, available above other apps and on full-screen workspaces. It is enabled initially and uses a restricted preload with only snapshot, project selection, navigation, pin, collapse and hide operations. Its renderer cannot use the main app command bridge or access Node. Main-process frame and origin checks guard both bridges separately.
 
 Project selection supports one project or all projects. The summary counts completed tasks, active sessions and attention states. Activity includes session state and nonqueued task state, with 20 rows per page. Every stored completed task remains reachable with Older/Newer. A completed task is labelled separately from its parent session, so task completion does not imply that a pending patch was applied. The feed is current persisted state rather than an immutable audit of all past retry attempts; the main execution trace retains that evidence.

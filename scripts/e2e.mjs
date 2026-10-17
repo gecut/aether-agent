@@ -86,6 +86,7 @@ try {
     }).trim(),
   );
   await page.getByRole("button", { name: "IDE", exact: true }).click();
+  await page.getByRole("button", { name: "Quick editor", exact: true }).click();
   await page.getByRole("button", { name: /README\.md/ }).click();
   await page.getByLabel("Editor README.md").waitFor();
   const editor = page.getByLabel("Editor README.md", { exact: true });
@@ -97,7 +98,9 @@ try {
   await page.keyboard.type("Editor acceptance check");
   await page.keyboard.press("Enter");
   page.once("dialog", (dialog) => dialog.dismiss());
-  await page.getByRole("button", { name: "Workspace", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Back to Aether", exact: true })
+    .click();
   assert.equal(await page.locator(".ide-page").count(), 1);
   await page.getByRole("button", { name: "Save", exact: true }).click();
   assert.ok(
@@ -127,6 +130,9 @@ try {
   await page.getByLabel("Editor sample.ts", { exact: true }).waitFor();
   await page.locator(".squiggly-error").first().waitFor();
   await page.screenshot({ path: "artifacts/ide-monaco.png" });
+  await page
+    .getByRole("button", { name: "Back to Aether", exact: true })
+    .click();
   await page.locator(".project-switch").click();
   await page.locator(".floating-popover.project-popover").waitFor();
   assert.equal(

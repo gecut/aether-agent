@@ -5,6 +5,7 @@ import {
   dialog,
   safeStorage,
   shell,
+  session,
 } from "electron";
 import path from "node:path";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -15,12 +16,16 @@ import { Service } from "./core/service";
 import { trustedRendererURL } from "./core/security";
 import { checkForRelease } from "./core/release-check";
 import type { ReleaseInfo } from "../shared/types";
+import { IDERuntime } from "./ide/runtime";
+import { IDEView, ideBounds } from "./ide/view";
 let window: BrowserWindow | undefined,
   service: Service,
   store: Store,
   quitting = false;
 let widget: DesktopWidget | undefined;
 let checkedRelease: ReleaseInfo | undefined;
+let ide: IDERuntime | undefined;
+let ideView: IDEView | undefined;
 const devURL = process.env.AETHER_DEV_URL;
 if (process.env.AETHER_TEST_DATA)
   app.setPath("userData", path.resolve(process.env.AETHER_TEST_DATA));
@@ -83,6 +88,16 @@ async function boot() {
   window.webContents.session.setPermissionRequestHandler(
     (_webContents, _permission, callback) => callback(false),
   );
+  const ideSession = session.fromPartition("persist:aether-ide");
+  ideSession.setPermissionRequestHandler((_contents, _permission, callback) =>
+    callback(false),
+  );
+  ide = new IDERuntime(
+    data,
+    ideSession,
+    process.env.AETHER_TEST_DATA ? process.env.AETHER_IDE_ARCHIVE : undefined,
+  );
+  ideView = new IDEView(window, ide);
   window.on("close", (event) => {
     if (!quitting && widget) {
       event.preventDefault();
@@ -101,6 +116,33 @@ async function boot() {
     z.string().max(80).parse(command);
     if (JSON.stringify(payload ?? "").length > 500000)
       throw new Error("Command payload exceeds limit");
+    if (command === "ide.runtime.status") return ide!.status();
+    if (command === "ide.runtime.install") return ide!.install();
+    if (command === "ide.view.open") {
+      const p = z
+        .object({ projectId: z.string().uuid(), bounds: ideBounds })
+        .strict()
+        .parse(payload);
+      return ideView!.show(
+        service.project(p.projectId),
+        p.bounds,
+        service.settings().theme,
+      );
+    }
+    if (command === "ide.view.bounds") {
+      ideView!.resize(ideBounds.parse(payload));
+      return true;
+    }
+    if (command === "ide.view.hide") {
+      ideView!.hide();
+      return true;
+    }
+    if (command === "project.reveal") {
+      const project = service.project(z.string().uuid().parse(payload));
+      const error = await shell.openPath(project.path);
+      if (error) throw new Error(error);
+      return true;
+    }
     if (command === "widget.show") {
       const id = z.string().max(100).optional().parse(payload);
       await widget?.show(id);
@@ -237,7 +279,8 @@ app.on("before-quit", (event) => {
     event.preventDefault();
     quitting = true;
     widget?.dispose();
-    void service.shutdown().finally(() => {
+    ideView?.dispose();
+    void Promise.allSettled([service.shutdown(), ide?.close()]).finally(() => {
       store.close();
       app.quit();
     });

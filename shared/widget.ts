@@ -94,6 +94,9 @@ export function widgetActivity(
 export interface WidgetBridge {
   invoke<T = unknown>(command: string, payload?: unknown): Promise<T>;
   onUpdate(callback: () => void): () => void;
+  onPointer(
+    callback: (point: { clientX: number; clientY: number }) => void,
+  ): () => void;
 }
 declare global {
   interface Window {

@@ -1,5 +1,7 @@
 # Performance and prompt context
 
+The October 18 update adds Economy/Balanced/Thorough context budgets, bounded chat windows, repeated-log folding, cached model discovery and visibility-aware mascot work. Current measurements, tradeoffs and upstream sources are in [efficiency research](EFFICIENCY_RESEARCH.md). The figures below record the earlier context/persistence optimization rather than a new provider-billing benchmark.
+
 Graphify's local AST extractor mapped the application before optimization (311 extracted symbols, 819 edges). Its bounded queries identified the Service → context/compiler and Service → Store/event/flush paths. Node CPU profiles on the same fixture showed synchronous database file writes dominating the original streaming path. No semantic extraction, hosted graph service, API key or extra model call was used for that analysis.
 
 ## Measured comparison

@@ -20,6 +20,7 @@ export class DesktopWidget {
   private prefs: z.infer<typeof preferences>;
   private timer?: NodeJS.Timeout;
   private moveTimer?: NodeJS.Timeout;
+  private pointerTimer?: NodeJS.Timeout;
   private disposed = false;
   constructor(
     private store: Store,
@@ -147,6 +148,27 @@ export class DesktopWidget {
     this.window.setAlwaysOnTop(this.prefs.pinned, "floating");
     this.keepOnScreen();
     this.window.showInactive();
+    if (!this.pointerTimer) {
+      let previous = "";
+      this.pointerTimer = setInterval(() => {
+        if (
+          !this.window ||
+          this.window.isDestroyed() ||
+          !this.window.isVisible()
+        )
+          return;
+        const point = screen.getCursorScreenPoint();
+        const key = `${point.x}:${point.y}`;
+        if (key === previous) return;
+        previous = key;
+        const bounds = this.window.getBounds();
+        this.window.webContents.send("widget:pointer", {
+          clientX: point.x - bounds.x,
+          clientY: point.y - bounds.y,
+        });
+      }, 50);
+      this.pointerTimer.unref();
+    }
     this.window.webContents.send("widget:update");
   }
   private keepOnScreen() {
@@ -162,6 +184,8 @@ export class DesktopWidget {
     );
   }
   hide() {
+    clearInterval(this.pointerTimer);
+    this.pointerTimer = undefined;
     this.prefs.visible = false;
     this.save();
     this.window?.hide();
@@ -252,6 +276,7 @@ export class DesktopWidget {
     this.disposed = true;
     clearTimeout(this.timer);
     clearTimeout(this.moveTimer);
+    clearInterval(this.pointerTimer);
     ipcMain.removeHandler("widget:command");
     this.window?.destroy();
   }

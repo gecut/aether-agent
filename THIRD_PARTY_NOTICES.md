@@ -2,6 +2,10 @@
 
 Aether Code includes the open-source components attributed below. Other reference projects in `docs/development/RESEARCH.md` informed architecture only.
 
+## Optional Code-OSS workbench
+
+Full IDE downloads the pinned [coder/code-server 4.141.0 release](https://github.com/coder/code-server/releases/tag/v4.141.0) on request. code-server is MIT-licensed and includes Microsoft's MIT-licensed VS Code open-source workbench plus its distribution's dependency notices. The installer preserves the release's LICENSE and ThirdPartyNotices files. No Microsoft proprietary VS Code distribution or Marketplace service is bundled. Extension licenses and runtime compatibility remain specific to each extension; see [editor integration](docs/development/EDITOR.md).
+
 ## Monaco Editor 0.57.0 / VS Code
 
 The integrated editor uses Microsoft's Monaco Editor, generated from the VS Code source at revision `6a598d4a13031703d483d103c1d934a36ad27971`. Source: https://github.com/microsoft/monaco-editor and https://github.com/microsoft/vscode. The VS Code workbench and extension host are not bundled.

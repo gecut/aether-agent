@@ -1,5 +1,6 @@
 import { redact } from "./security";
 import type { Task } from "../../shared/types";
+import { compactLog } from "./efficiency";
 export function reviewEvidence(tasks: Task[], outputBudget = 8000) {
   const evidence = tasks.map((task) => ({
     id: task.id,
@@ -22,12 +23,13 @@ export function reviewEvidence(tasks: Task[], outputBudget = 8000) {
       (a, b) => Number(b.test.exitCode !== 0) - Number(a.test.exitCode !== 0),
     );
   for (const { test, summary } of tests) {
+    const output = compactLog(test.output);
     const limit = Math.min(outputBudget, test.exitCode === 0 ? 250 : 1500);
     summary.output =
-      test.output.length <= limit
-        ? test.output
+      output.length <= limit
+        ? output
         : limit > 40
-          ? `[Output excerpt]\n${test.output.slice(-(limit - 30))}`
+          ? `[Output excerpt]\n${output.slice(-(limit - 30))}`
           : "";
     outputBudget -= summary.output.length;
   }

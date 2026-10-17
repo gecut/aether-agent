@@ -214,8 +214,8 @@ export function IDE({
             className="ide-extensions"
           >
             <p>
-              Use your installed VS Code extensions in the full VS Code
-              application.
+              Switch to Full IDE to search Open VSX or install VSIX extensions.
+              You can also open this project in your installed VS Code app.
             </p>
             <button onClick={() => void call("ide.open-vscode", project.id)}>
               <MonitorArrowUp />

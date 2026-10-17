@@ -1,5 +1,17 @@
 # Verification record
 
+## October 18: Code-OSS, models and context efficiency
+
+Build, formatting and **109 tests across 18 files** passed on macOS arm64. The standard real Electron E2E passed, including quick-editor save/restoration, unsaved-edit navigation guards, persistent independent model settings, project recovery and restart. New regression coverage checks UTF-8 conversation windows, preservation of the latest request, repeated-log evidence, actual Codex model RPC/pagination via a subprocess fixture, catalog request coalescing and malformed entries, project-scoped chat, concurrent-send rejection, current chat settings, Economy helper suppression and IDE archive path boundaries.
+
+The real pinned code-server runtime was checksum-verified and installed into disposable application data. Acceptance saved a file using Code-OSS, ran an integrated terminal command, installed a locally generated VSIX with the official runtime CLI, activated that extension in the real extension host and verified its output file, displayed the installed extension, searched/selected a model, sent project-scoped chat, collapsed/restored the agent pane, checked popup placement at 1000px width, and returned to Aether. The native workbench had no Aether preload/bridge or Node integration. The model/chat HTTP server was a local fixture, not evidence of provider account access. Windows/Linux runtime execution remains unverified here.
+
+The native widget E2E passed with a controlled out-of-window system-cursor sample delivered through its real main-process polling/subscription path, project filtering, pagination, planning/approval updates, restricted IPC, task navigation, pin/collapse/hide and restart. This verifies coordinate delivery without requiring global accessibility or screenshot permissions.
+
+Real installed Codex discovery returned seven models and supported reasoning levels in 271ms without inference. Claude Code remains absent and Antigravity remains subject to its account/location limits. The synthetic chat benchmark measured 4,270 estimated history tokens in Economy versus 23,195 under the previous twelve-message policy (82% less), retaining the latest request and all stored history. See [research, methods and limitations](EFFICIENCY_RESEARCH.md). Ignored screenshots, binaries, private runtime data and profiling artifacts were not published.
+
+The older entries below are historical records for earlier versions.
+
 Verified on 2026-10-17, macOS arm64, Node 24.14.0, Electron 40.10.6, installed Codex CLI 0.163.0-alpha.10.2. This records observed results; it is not a claim that all roadmap requirements are finished.
 
 ## Automated core and adapter checks

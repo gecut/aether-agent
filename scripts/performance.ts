@@ -5,6 +5,12 @@ import { performance } from "node:perf_hooks";
 import { Store } from "../electron/core/store";
 import { Service } from "../electron/core/service";
 import { context, git } from "../electron/core/repository";
+import {
+  conversationContext,
+  compactLog,
+  efficiencyBudgets,
+} from "../electron/core/efficiency";
+import type { ChatMessage } from "../shared/types";
 const directory = await mkdtemp(path.join(os.tmpdir(), "aether-performance-"));
 try {
   const store = new Store(path.join(directory, "data"));
@@ -80,7 +86,57 @@ try {
       "Fix order total calculation",
       { files: ["src/orders.ts"], maxChars: 14000 },
     ]);
+  const messages: ChatMessage[] = Array.from({ length: 40 }, (_, index) => ({
+    id: String(index),
+    role: index % 2 ? "assistant" : "user",
+    at: "2026-10-18",
+    content:
+      `Message ${index}: ` +
+      "Project discussion and relevant evidence. ".repeat(150),
+  }));
+  messages.push({
+    id: "latest",
+    role: "user",
+    content: "Explain the order calculation",
+    at: "2026-10-18",
+  });
+  const unbounded = messages
+    .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
+    .join("\n\n");
+  const previousWindow = messages
+    .slice(-12)
+    .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
+    .join("\n\n");
+  const conversation = conversationContext(
+    messages,
+    efficiencyBudgets("economy").chatBytes,
+  );
+  const repeatedLog =
+    "PASS: fixture check\n".repeat(500) +
+    "FAIL: preserve this failure\ntrace.ts:42";
   const result = {
+    conversation: {
+      fullEstimatedTokens: Math.ceil(Buffer.byteLength(unbounded) / 3),
+      previousEstimatedTokens: Math.ceil(Buffer.byteLength(previousWindow) / 3),
+      economyReductionVsPreviousPercent: Math.round(
+        (1 -
+          conversation.estimatedTokens /
+            Math.ceil(Buffer.byteLength(previousWindow) / 3)) *
+          100,
+      ),
+      economyEstimatedTokens: conversation.estimatedTokens,
+      includedMessages: conversation.included,
+      omittedMessages: conversation.omitted,
+      retainsLatest: conversation.text.includes(messages.at(-1)!.content),
+      storedMessages: messages.length,
+    },
+    logCompaction: {
+      fullBytes: Buffer.byteLength(repeatedLog),
+      compactedBytes: Buffer.byteLength(compactLog(repeatedLog)),
+      retainsFailure: compactLog(repeatedLog).includes(
+        "FAIL: preserve this failure",
+      ),
+    },
     events: 500,
     databaseExports: exportCount,
     enqueueMs: Math.round(enqueueMs * 100) / 100,

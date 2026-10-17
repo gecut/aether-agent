@@ -1,4 +1,4 @@
-import { _electron as electron } from "playwright";
+import { _electron as electron, type ElectronApplication } from "playwright";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import os from "node:os";
@@ -116,10 +116,26 @@ const options = {
 };
 let app = await electron.launch(options);
 let page = await app.firstWindow();
+async function closeDesktop(instance: ElectronApplication) {
+  if (process.platform !== "darwin") {
+    await instance.close();
+    return;
+  }
+  const child = instance.process();
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const exited = new Promise((resolve) => child.once("exit", resolve));
+  const timer = setTimeout(() => child.kill("SIGKILL"), 10000);
+  child.kill("SIGTERM");
+  await exited;
+  clearTimeout(timer);
+}
 const errors: string[] = [];
 page.on("pageerror", (error) => errors.push(String(error)));
 try {
-  await page.getByText("Ambitious work.").waitFor();
+  await page.getByRole("button", { name: "Start building" }).click();
+  await page
+    .getByRole("heading", { name: "What are we building today?" })
+    .waitFor();
   await page
     .getByRole("button", { name: "Show desktop widget", exact: true })
     .click();
@@ -157,6 +173,26 @@ try {
   });
   assert(native.pinned);
   assert.equal(native.node, false);
+  await popup.evaluate(() => {
+    (window as any).__pointerSamples = [];
+    window.aetherWidget!.onPointer((point) =>
+      (window as any).__pointerSamples.push(point),
+    );
+  });
+  await app.evaluate(({ screen }) => {
+    const original = screen.getCursorScreenPoint;
+    (globalThis as any).__originalPointer = original;
+    screen.getCursorScreenPoint = () => ({ x: -9000, y: -8000 });
+  });
+  await popup.waitForFunction(() =>
+    (window as any).__pointerSamples.some(
+      (p: any) => p.clientX < -1000 && p.clientY < -1000,
+    ),
+  );
+  await app.evaluate(({ screen }) => {
+    screen.getCursorScreenPoint = (globalThis as any).__originalPointer;
+    delete (globalThis as any).__originalPointer;
+  });
   await popup.getByRole("button", { name: "Older", exact: true }).click();
   await popup.getByText("Completed Atlas task 0", { exact: true }).waitFor();
   await app.evaluate(({ BrowserWindow }) =>
@@ -235,10 +271,12 @@ try {
   await popup
     .getByRole("button", { name: "Expand widget", exact: true })
     .waitFor();
-  await app.close();
+  await closeDesktop(app);
   app = await electron.launch(options);
   page = await app.firstWindow();
-  await page.getByText("Ambitious work.").waitFor();
+  await page
+    .getByRole("heading", { name: "What are we building today?" })
+    .waitFor();
   popup =
     app.windows().find((candidate) => candidate !== page) ??
     (await app.waitForEvent("window"));
@@ -285,7 +323,7 @@ try {
   assert(recovered, "Widget must be recoverable on screen");
   assert.equal(errors.length, 0, errors.join("\n"));
   console.log(
-    "Widget E2E passed: native popup, project filtering, all completion pages, live planning/approval updates, restricted IPC, task navigation, pin/collapse/hide and restart persistence.",
+    "Widget E2E passed: native popup, out-of-window pointer feed, project filtering, all completion pages, live planning/approval updates, restricted IPC, task navigation, pin/collapse/hide and restart persistence.",
   );
 } catch (error) {
   console.error("Widget test failed:", error);
@@ -294,6 +332,6 @@ try {
   throw error;
 } finally {
   release?.();
-  await app.close();
+  await closeDesktop(app);
   server.close();
 }

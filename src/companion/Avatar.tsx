@@ -29,6 +29,7 @@ export const Avatar = memo(
         EXPRESSION_BY_ID.get(state.expression),
       );
     const clock = useRef(0);
+    const element = useRef<SVGSVGElement>(null);
     const [frame, setFrame] = useState<BotFrame>(() => ({
       ...engine.current!.sample(1),
     }));
@@ -41,7 +42,8 @@ export const Avatar = memo(
         clock.current,
       );
       const motion = matchMedia("(prefers-reduced-motion: reduce)");
-      let raf = 0,
+      let visible = true,
+        raf = 0,
         last = 0;
       const draw = (ms: number) => {
         raf = requestAnimationFrame(draw);
@@ -53,26 +55,31 @@ export const Avatar = memo(
       const resume = () => {
         cancelAnimationFrame(raf);
         last = 0;
-        if (paused || motion.matches || document.hidden) {
+        if (paused || motion.matches || document.hidden || !visible) {
           clock.current += 1;
           setFrame({ ...bot.sample(clock.current) });
         } else raf = requestAnimationFrame(draw);
       };
       resume();
+      const observer = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        resume();
+      });
+      if (element.current) observer.observe(element.current);
       motion.addEventListener("change", resume);
       document.addEventListener("visibilitychange", resume);
       return () => {
         cancelAnimationFrame(raf);
+        observer.disconnect();
         motion.removeEventListener("change", resume);
         document.removeEventListener("visibilitychange", resume);
       };
     }, [state.animation, state.expression, paused]);
     useEffect(() => {
-      const follow = (event: PointerEvent) => {
-        if (paused || matchMedia("(prefers-reduced-motion: reduce)").matches)
-          return;
-        const element = document.querySelector(".companion-avatar");
-        const bounds = element?.getBoundingClientRect();
+      if (paused) return;
+      const follow = (point: { clientX: number; clientY: number }) => {
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const bounds = element.current?.getBoundingClientRect();
         if (!bounds?.width || !bounds.height) return;
         engine.current!.setLook(
           {
@@ -80,14 +87,14 @@ export const Avatar = memo(
               -55,
               Math.min(
                 55,
-                (event.clientX - (bounds.left + bounds.width / 2)) / 8,
+                (point.clientX - (bounds.left + bounds.width / 2)) / 8,
               ),
             ),
             pitch: Math.max(
               -38,
               Math.min(
                 38,
-                (bounds.top + bounds.height / 2 - event.clientY) / 8,
+                (bounds.top + bounds.height / 2 - point.clientY) / 8,
               ),
             ),
             mix: 1,
@@ -97,8 +104,16 @@ export const Avatar = memo(
           clock.current,
         );
       };
+      const global = (event: Event) =>
+        follow(
+          (event as CustomEvent<{ clientX: number; clientY: number }>).detail,
+        );
       window.addEventListener("pointermove", follow, { passive: true });
-      return () => window.removeEventListener("pointermove", follow);
+      window.addEventListener("aether:pointer", global);
+      return () => {
+        window.removeEventListener("pointermove", follow);
+        window.removeEventListener("aether:pointer", global);
+      };
     }, [paused]);
     const dots = frame.dots.map((dot, index) =>
       dot.d ? (
@@ -122,26 +137,11 @@ export const Avatar = memo(
     );
     return (
       <svg
+        ref={element}
         className="companion-avatar"
         viewBox="-165 -165 330 330"
         aria-hidden="true"
         data-animation={state.animation}
-        onPointerMove={(event) => {
-          if (paused || matchMedia("(prefers-reduced-motion: reduce)").matches)
-            return;
-          const bounds = event.currentTarget.getBoundingClientRect();
-          if (!bounds.width || !bounds.height) return;
-          engine.current!.setLook(
-            {
-              yaw: ((event.clientX - bounds.left) / bounds.width - 0.5) * 50,
-              pitch: (0.5 - (event.clientY - bounds.top) / bounds.height) * 35,
-              mix: 1,
-              spin: 0,
-              wander: 0,
-            },
-            clock.current,
-          );
-        }}
       >
         <defs>
           <mask

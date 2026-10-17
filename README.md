@@ -29,6 +29,9 @@ Aether turns an objective into a reviewable implementation plan, then runs appro
 | **Coding teams**           | A lead implements, 1–3 same-model read-only helpers review, and the lead integrates their findings. Bounded concurrency, cancellation, and visible handoffs. |
 | **Scoped execution**       | Task dependencies, file ownership, contention locks, isolated worktrees, retries, and serialized integration.                                                |
 | **Live Graphify**          | Inspect actual source symbols and relationships with local AST extraction, search, and task-scope highlighting.                                              |
+| **Code-OSS IDE**           | A separate VS Code source-based workspace with Explorer, Git, terminal, Open VSX/VSIX extensions, right-side Ava chat, and Back to Aether.                   |
+| **Searchable models**      | Search runtime catalogs and published aliases across Codex, Claude, Antigravity, and compatible APIs; availability remains explicit.                         |
+| **Context efficiency**     | Economy/Balanced/Thorough budgets, bounded conversation windows and compact review logs while retaining full local evidence.                                 |
 | **Nexload prompt core**    | Pinned, compact reasoning profiles with inspectable source provenance, prompt snapshots, and bounded context.                                                |
 | **Project skills**         | Discover skills from OpenAI, Anthropic, and Vercel; inspect a pinned package before installing it into your project.                                         |
 | **Ava & desktop activity** | A reactive companion and floating project widget show work, questions, approvals, and completed tasks.                                                       |
@@ -71,6 +74,8 @@ npm run dev
 ```
 
 Open **Settings**, run provider diagnostics, and choose your planner and coding model. Leave a model identifier empty to use the runtime default, or enter an account-supported identifier. Use the provider's supported sign-in flow if needed.
+
+Open **IDE → Set up full IDE** to download the checksum-verified Code-OSS runtime. Install compatible extensions from Open VSX or VSIX in its Extensions view; Microsoft-only Marketplace extensions are not guaranteed. The lightweight Quick editor remains available without that download. See [IDE details](docs/development/EDITOR.md) and [measured context savings](docs/development/EFFICIENCY_RESEARCH.md).
 
 Every successful push publishes Windows x64, macOS Apple Silicon/Intel, and Linux x64 development builds to [GitHub Releases](https://github.com/gecut/aether-agent/releases), with SHA256 checksums. See [automatic release details](docs/development/RELEASES.md).
 
