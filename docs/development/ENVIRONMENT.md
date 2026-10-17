@@ -25,4 +25,4 @@ Child environments use an explicit small allowlist, not a copy of the host envir
 
 ## Distribution
 
-`npm run package` uses electron-builder to produce a macOS arm64 `.app` and ZIP in `release/`. Signing identity is disabled for the local development package. No signing credentials, auto-updater or publication endpoint is configured. Windows/Linux packaging and OS sandbox behavior have not been verified.
+`npm run package` uses electron-builder to produce a macOS arm64 `.app` and ZIP in `release/`. Signing identity is disabled for development packages. The [automatic release workflow](RELEASES.md) packages Windows, macOS and Linux on native GitHub-hosted runners and publishes development prereleases after all checks pass. No signing credentials or auto-updater is configured; packaging does not establish cross-platform provider/sandbox behavior.

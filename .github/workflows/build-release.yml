@@ -1,0 +1,110 @@
+name: Build and release desktop apps
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Tests and formatting
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm test
+
+  build:
+    name: Build ${{ matrix.platform }} ${{ matrix.arch }}
+    needs: check
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: win
+            arch: x64
+            runner: windows-2022
+            executable: release/win-unpacked/Aether Code.exe
+          - platform: mac
+            arch: arm64
+            runner: macos-15
+            executable: release/mac-arm64/Aether Code.app/Contents/MacOS/Aether Code
+          - platform: mac
+            arch: x64
+            runner: macos-15-intel
+            executable: release/mac/Aether Code.app/Contents/MacOS/Aether Code
+          - platform: linux
+            arch: x64
+            runner: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Package native distributions
+        run: npx electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish never
+      - name: Verify package contents and distribution files
+        run: node scripts/verify-package.mjs "${{ matrix.platform }}" "${{ matrix.arch }}"
+      - name: Smoke test packaged desktop
+        if: matrix.platform != 'linux'
+        env:
+          AETHER_PACKAGE_PATH: ${{ github.workspace }}/${{ matrix.executable }}
+        run: |
+          mkdir -p artifacts
+          node scripts/package-smoke.mjs
+      - name: Upload distribution files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packages-${{ matrix.platform }}-${{ matrix.arch }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+          path: |
+            release/*.exe
+            release/*.zip
+            release/*.dmg
+            release/*.AppImage
+            release/*.deb
+
+  release:
+    name: Publish GitHub prerelease
+    needs: [check, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: packages-*
+          path: release-assets
+          merge-multiple: true
+      - name: Publish complete release with SHA256 checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/publish-release.mjs

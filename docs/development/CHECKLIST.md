@@ -128,3 +128,10 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Native recursive agents remain disabled after real installed-CLI telemetry proved incomplete.
 - [x] 84 tests, desktop E2E, actual Codex team workflow through verification/review/apply, and source/packaged helper-result display verified.
 - [x] Packaged v0.1.9 launch, IPC and persistence checks passed; local Graphify refreshed without model calls.
+
+## Automatic cross-platform releases
+
+- [x] Push/manual workflow with native Windows x64, macOS arm64/x64, and Linux x64 packaging targets.
+- [x] Pinned Actions, locked dependency installs, read-only build jobs and a separate release writer.
+- [x] Package-content/distribution checks, Windows/macOS packaged smoke, complete-set publication and SHA256 checksums.
+- [x] Hosted build checks gate publication; every release links its exact workflow run.

@@ -14,8 +14,8 @@
     "test:e2e": "npm run build && node scripts/e2e.mjs",
     "test:provider": "node scripts/provider-smoke.mjs",
     "package": "npm run build && electron-builder --mac dir zip",
-    "format": "prettier --write src shared electron tests scripts docs *.md *.json *.ts index.html",
-    "format:check": "prettier --check src shared electron tests scripts docs *.md *.json *.ts index.html",
+    "format": "prettier --write .github src shared electron tests scripts docs *.md *.json *.ts index.html",
+    "format:check": "prettier --check .github src shared electron tests scripts docs *.md *.json *.ts index.html",
     "analyze:graph": "graphify extract . --code-only --no-cluster --out artifacts/graphify --timing",
     "benchmark": "node scripts/performance.mjs",
     "test:live-ui": "npm run build && node scripts/live-ui.mjs",
@@ -64,11 +64,33 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "target": [
-        "dir",
+        "dmg",
         "zip"
       ],
       "identity": null,
       "icon": "build/icon.png"
+    },
+    "artifactName": "aether-code-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Development",
+      "maintainer": "Aether Code contributors",
+      "icon": "build/icon.png"
     }
+  },
+  "homepage": "https://github.com/gecut/aether-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gecut/aether-agent.git"
   }
 }

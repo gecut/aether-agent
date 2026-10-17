@@ -9,7 +9,7 @@
     <a href="#quick-start"><img src="https://img.shields.io/badge/tested_on-macOS_arm64-d2d5dd?style=flat-square&amp;labelColor=202329" alt="Tested on macOS arm64" /></a>
     <a href="docs/development/CHECKLIST.md"><img src="https://img.shields.io/badge/status-developer_preview-e9cc8a?style=flat-square&amp;labelColor=202329" alt="Developer preview" /></a>
   </p>
-  <p><a href="#quick-start">Get started</a> · <a href="#a-workspace-you-can-inspect">Explore the workspace</a> · <a href="ARCHITECTURE.md">Architecture</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
+  <p><a href="https://github.com/gecut/aether-agent/releases">Downloads</a> · <a href="#quick-start">Get started</a> · <a href="#a-workspace-you-can-inspect">Explore the workspace</a> · <a href="ARCHITECTURE.md">Architecture</a> · <a href="CONTRIBUTING.md">Contribute</a></p>
 </div>
 
 ---
@@ -72,6 +72,8 @@ npm run dev
 
 Open **Settings**, run provider diagnostics, and choose your planner and coding model. Leave a model identifier empty to use the runtime default, or enter an account-supported identifier. Use the provider's supported sign-in flow if needed.
 
+Every successful push publishes Windows x64, macOS Apple Silicon/Intel, and Linux x64 development builds to [GitHub Releases](https://github.com/gecut/aether-agent/releases), with SHA256 checksums. See [automatic release details](docs/development/RELEASES.md).
+
 For a production build or a local macOS package:
 
 ```sh
@@ -82,7 +84,7 @@ npm start
 npm run package
 ```
 
-The local app is `release/mac-arm64/Aether Code.app`. Signing, notarization, automatic updates, and Windows/Linux distribution are not part of this preview.
+The local app is `release/mac-arm64/Aether Code.app`. CI also packages Windows and Linux downloads. These builds are unsigned; macOS is not notarized, and automatic app updates are not implemented.
 
 ### Your first change
 
@@ -147,13 +149,14 @@ Use trusted projects and inspect approved commands. The metadata database is une
 ## Project guide
 
 - [Architecture and module boundaries](ARCHITECTURE.md)
+- [Automatic builds and releases](docs/development/RELEASES.md)
 - [Contributing](CONTRIBUTING.md) · [Implementation checklist](docs/development/CHECKLIST.md)
 - [Nexload prompt core](docs/development/NEXLOAD_PROMPT_CORE.md)
 - [Coding teams](docs/development/CODING_TEAMS.md) · [Live graph](docs/development/LIVE_GRAPH.md)
 - [Ava companion](docs/development/COMPANION.md) · [Desktop widget](docs/development/DESKTOP_WIDGET.md)
 - [Provider setup](docs/providers/README.md) · [Development environment](docs/development/ENVIRONMENT.md)
 
-This is a developer preview. Remaining work includes hardened verification isolation, additional verified coding providers, dependency provisioning, stronger budget enforcement, worktree retention controls, and signed cross-platform releases.
+This is a developer preview. Remaining work includes hardened verification isolation, additional verified coding providers, dependency provisioning, stronger budget enforcement, worktree retention controls, and signed distribution with broader cross-platform runtime validation.
 
 ## License & acknowledgements
 

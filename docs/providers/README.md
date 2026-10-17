@@ -52,3 +52,7 @@ Ava uses the existing typed run lifecycle and persisted phase events. Planning, 
 ## Project desktop activity widget
 
 The floating desktop widget reads persisted task/session status and receives batched lifecycle updates. It shows completions, active work, pending approvals, reviews and failures per project or across all projects. It uses no extra model requests and does not forward token streams, prompts, model configuration, diffs or worker output into its renderer. Clicking an item restores the main app and selects the session/task; coding approval and application still occur in the main app. Closing the main window leaves the app running for the widget; Quit explicitly stops provider work. Hide the popup with its X and reopen it with **Show desktop widget** in the main header.
+
+## Cross-platform downloads
+
+The [release workflow](../development/RELEASES.md) packages Windows, macOS and Linux applications on each push. Artifacts contain the desktop application; they do not bundle provider CLIs, OAuth sessions or credentials. Successful packaging and desktop launch do not establish provider inference, executable discovery or sandbox behavior on a new OS. The real Codex coding evidence above was obtained on macOS; Windows/Linux provider execution remains to be verified independently.
