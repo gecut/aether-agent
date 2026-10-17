@@ -1,0 +1,74 @@
+{
+  "name": "aether-code",
+  "version": "0.1.9",
+  "private": true,
+  "description": "A local-first supervised coding workspace",
+  "author": "Aether Code contributors",
+  "license": "MIT",
+  "main": "dist-electron/main.cjs",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/build.mjs",
+    "start": "electron .",
+    "test": "vitest run",
+    "test:e2e": "npm run build && node scripts/e2e.mjs",
+    "test:provider": "node scripts/provider-smoke.mjs",
+    "package": "npm run build && electron-builder --mac dir zip",
+    "format": "prettier --write src shared electron tests scripts docs *.md *.json *.ts index.html",
+    "format:check": "prettier --check src shared electron tests scripts docs *.md *.json *.ts index.html",
+    "analyze:graph": "graphify extract . --code-only --no-cluster --out artifacts/graphify --timing",
+    "benchmark": "node scripts/performance.mjs",
+    "test:live-ui": "npm run build && node scripts/live-ui.mjs",
+    "test:widget": "npm run build && node scripts/widget-ui.mjs"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sql.js": "^1.13.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/sql.js": "^1.4.9",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.0",
+    "playwright": "^1.56.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.0"
+  },
+  "build": {
+    "appId": "dev.aether.code",
+    "productName": "Aether Code",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "node_modules/sql.js/dist/sql-wasm.wasm",
+      "package.json",
+      "!dist-electron/provider-smoke.mjs",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md",
+      "!dist-electron/live-ui.mjs",
+      "!dist-electron/widget-ui.mjs"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dir",
+        "zip"
+      ],
+      "identity": null,
+      "icon": "build/icon.png"
+    }
+  }
+}

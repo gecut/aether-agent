@@ -1,0 +1,51 @@
+{
+  "repository": "https://github.com/gecut/nexload-sdk",
+  "revision": "354617af976b359f4459be85330015c3929aa4cb",
+  "adaptation": "aether-nexload-1",
+  "files": [
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning/SKILL.md",
+      "sha256": "3008bc413a581e1e99af4427aaaac83683ca849dd5b0a45580024983c6076839"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning-design/SKILL.md",
+      "sha256": "7d9d1919d9aac02d00ddf284f37d137268f84c95f40e22d74e816849513f8291"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning-discovery/SKILL.md",
+      "sha256": "83a638fae0e8267b5d2c26faf58ff0ebaf1b61b90abd79700f028de8cbc89d50"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning-evaluation/SKILL.md",
+      "sha256": "1b8606267c4b059d421c642428fc81f0a54320997d0687db7463bcf6efcb4eff"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning-execution/SKILL.md",
+      "sha256": "f05c350875458c14e1ac3457e9e9764df45fbad7fbf72d901758cdda413e5b8f"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning-ideation/SKILL.md",
+      "sha256": "a6f98d8ca952f23d6def8c9555cf3b146506c6c597d5b64ac3a5e1006c6d5b9b"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning-investigation/SKILL.md",
+      "sha256": "990803db2d63476343f21cdd81b1c72e9c2fde59215707ac7a4af81ae64df056"
+    },
+    {
+      "path": "skills/nexload/cto-review/SKILL.md",
+      "sha256": "7cf7731197c3738a834ebd4398df5b4a5c3fa29ad3448085f4676e4cb6cf1879"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning/references/anti-patterns.md",
+      "sha256": "41a851a0759a665434c2bbd4954403237383e392cb220ab0e25d5776f5f979c1"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning/references/depth-heuristics.md",
+      "sha256": "f61b4c2a44660848042bbf7f6b4624d3334149e59ec379be87a3b6a64cead643"
+    },
+    {
+      "path": "skills/nexload-reasoning/nexload-reasoning/references/routing-matrix.md",
+      "sha256": "4fa5c10c7e24e74a472a2875dc2e9d81c59aa72986b8839b7439826a658280cc"
+    }
+  ]
+}

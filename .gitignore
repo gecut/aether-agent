@@ -1,0 +1,19 @@
+node_modules/
+dist/
+dist-electron/
+release/
+artifacts/
+*.db
+*.db.tmp
+.DS_Store
+
+# Local credentials, machine state and temporary output
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.log
+.cache/
+tmp/

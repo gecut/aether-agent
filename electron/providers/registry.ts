@@ -1,0 +1,380 @@
+import { runCodingTeam } from "./collaboration";
+import { findBinary } from "./runtime";
+import { execute } from "../core/process";
+import { redact } from "../core/security";
+import type {
+  CollaborationEvent,
+  ModelConfig,
+  ProviderId,
+  ProviderInfo,
+  Settings,
+} from "../../shared/types";
+export interface Invocation {
+  config: ModelConfig;
+  cwd: string;
+  prompt: string;
+  systemPrompt?: string;
+  team?: { maxHelpers: number };
+  onCollaboration?: (event: CollaborationEvent) => void;
+  mode: "plan" | "code" | "review";
+  signal: AbortSignal;
+  timeoutMs: number;
+  onOutput: (text: string) => void;
+  apiUrl: string;
+  apiKey?: string;
+}
+export interface ProviderResult {
+  text: string;
+  sessionId?: string;
+  usage?: Record<string, number>;
+}
+export interface Provider {
+  id: ProviderId;
+  diagnose(): Promise<ProviderInfo>;
+  run(input: Invocation): Promise<ProviderResult>;
+}
+const names = {
+  codex: "OpenAI Codex",
+  claude: "Claude Code",
+  antigravity: "Antigravity",
+  compatible: "Compatible API",
+};
+export class CLIProvider implements Provider {
+  constructor(public id: "codex" | "claude" | "antigravity") {}
+  async diagnose(): Promise<ProviderInfo> {
+    const binary = await findBinary(
+      this.id === "antigravity" ? "agy" : this.id,
+    );
+    const base: ProviderInfo = {
+      id: this.id,
+      name: names[this.id],
+      kind: binary ? "supported-cli" : "unavailable",
+      installed: !!binary,
+      authenticated: null,
+      detail: binary
+        ? "Installed; run a task to verify account and model access."
+        : `Install ${this.id === "antigravity" ? "agy" : this.id} using official setup instructions.`,
+      models: [""],
+      capabilities: {
+        planning: this.id !== "antigravity",
+        coding: this.id === "codex",
+        streaming: true,
+        cancellation: true,
+      },
+      verified: false,
+    };
+    if (!binary) return base;
+    try {
+      const version = await execute(binary, ["--version"], {
+        timeoutMs: 10000,
+      });
+      base.version = version.stdout.trim().slice(0, 120);
+      if (this.id === "codex") {
+        const auth = await execute(binary, ["login", "status"], {
+          timeoutMs: 10000,
+        });
+        base.authenticated = auth.code === 0;
+        base.detail =
+          redact((auth.stdout + auth.stderr).trim()) + " · CLI sandbox enabled";
+      } else if (this.id === "antigravity") {
+        base.detail =
+          "Official agy CLI detected. Use Sign in with Google, then Verify connection. Login credentials stay in the CLI keyring; coding is disabled until its execution sandbox is verified.";
+        try {
+          const catalog = await execute(binary, ["models"], {
+            timeoutMs: 10000,
+          });
+          if (catalog.code === 0)
+            base.models = catalog.stdout
+              .split("\n")
+              .map((line) => line.match(/^([\w.-]+)\t/)?.[1])
+              .filter((id): id is string => !!id);
+        } catch {
+          /* A model catalog is optional and never proves account access. */
+        }
+        base.capabilities.planning = false;
+      } else
+        base.detail =
+          "CLI installed. Read-only planning/review available; coding disabled until filesystem sandbox compatibility is verified.";
+    } catch (error) {
+      base.detail = String(error);
+    }
+    return base;
+  }
+  async run(input: Invocation): Promise<ProviderResult> {
+    if (this.id === "antigravity")
+      throw new Error(
+        "Antigravity execution is unverified on this installation. See provider diagnostics.",
+      );
+    if (this.id === "claude" && input.mode === "code")
+      throw new Error(
+        "Claude coding is disabled until a strong local sandbox is configured. Use Codex for implementation.",
+      );
+    const binary = await findBinary(this.id);
+    if (!binary) throw new Error(`${names[this.id]} is not installed`);
+    if (this.id === "codex" && input.mode === "code" && input.team)
+      return runCodingTeam(input, (single) => this.run(single));
+    let args: string[];
+    if (this.id === "codex") {
+      args = [
+        "exec",
+        "--ignore-user-config",
+        "--disable",
+        "apps",
+        "--disable",
+        "plugins",
+        "--disable",
+        "hooks",
+        "--disable",
+        "browser_use",
+        "--disable",
+        "computer_use",
+        "--disable",
+        "image_generation",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "multi_agent_v2",
+        "--json",
+        "--color",
+        "never",
+        "--sandbox",
+        input.mode === "code" ? "workspace-write" : "read-only",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-c",
+        'approval_policy="never"',
+        "-c",
+        "sandbox_workspace_write.network_access=false",
+        "-c",
+        'shell_environment_policy.inherit="none"',
+        "-c",
+        'shell_environment_policy.set={PATH="/usr/bin:/bin:/usr/sbin:/sbin"}',
+        "-c",
+        "mcp_servers={}",
+        "-c",
+        "features.multi_agent=false",
+        "-c",
+        "agents.enabled=false",
+        "-c",
+        `model_reasoning_effort="${input.config.reasoning}"`,
+      ];
+      if (input.config.model) args.push("--model", input.config.model);
+      args.push("-");
+    } else {
+      args = [
+        "-p",
+        "--output-format",
+        "stream-json",
+        "--verbose",
+        "--include-partial-messages",
+        "--tools",
+        "",
+        "--strict-mcp-config",
+        "--mcp-config",
+        '{"mcpServers":{}}',
+        "--permission-mode",
+        "plan",
+      ];
+      if (input.config.model) args.push("--model", input.config.model);
+    }
+    let text = "",
+      sessionId: string | undefined,
+      usage: Record<string, number> | undefined,
+      errorMessage = "";
+    const result = await execute(binary, args, {
+      cwd: input.cwd,
+      input: input.systemPrompt
+        ? input.systemPrompt + "\n\n" + input.prompt
+        : input.prompt,
+      signal: input.signal,
+      timeoutMs: input.timeoutMs,
+      completeWhen: (line) => {
+        try {
+          const event = JSON.parse(line);
+          return (
+            event.type === "turn.completed" ||
+            (this.id === "claude" && event.type === "result" && !event.is_error)
+          );
+        } catch {
+          return false;
+        }
+      },
+      onLine: (line, stream) => {
+        if (stream === "stderr") {
+          input.onOutput(line);
+          return;
+        }
+        try {
+          const event = JSON.parse(line);
+          if (event.type === "thread.started") sessionId = event.thread_id;
+          if (event.type === "error" || event.type === "turn.failed")
+            errorMessage =
+              event.message ?? event.error?.message ?? JSON.stringify(event);
+          if (
+            event.item?.type === "agent_message" &&
+            event.type === "item.completed"
+          )
+            text = event.item.text;
+          if (event.type === "turn.completed") usage = event.usage;
+          if (this.id === "claude" && event.type === "result") {
+            text = event.result ?? "";
+            if (event.is_error) errorMessage = text;
+          }
+          const message =
+            event.item?.text ??
+            event.item?.aggregated_output ??
+            event.item?.command ??
+            event.event?.delta?.text ??
+            (event.type === "result" ? event.result : undefined);
+          input.onOutput(message ? `${event.type}: ${message}` : line);
+        } catch (error) {
+          if (!(error instanceof SyntaxError))
+            errorMessage =
+              error instanceof Error ? error.message : String(error);
+          input.onOutput(line);
+        }
+      },
+    });
+    if (result.code !== 0 || errorMessage)
+      throw new Error(
+        redact(
+          errorMessage ||
+            result.stderr.slice(-4000) ||
+            `Provider exited ${result.code}`,
+        ),
+      );
+    if (!text.trim())
+      throw new Error("Provider exited without a final response");
+    return { text, sessionId, usage };
+  }
+}
+export class CompatibleProvider implements Provider {
+  id = "compatible" as const;
+  constructor(
+    private settings: () => Settings,
+    private key: () => string | undefined,
+  ) {}
+  async diagnose(): Promise<ProviderInfo> {
+    let models: string[] = [];
+    let detail =
+      "OpenAI-compatible chat API. Planning and review only; no file tools.";
+    let connected = false;
+    try {
+      const response = await fetch(
+        this.settings().apiUrl.replace(/\/$/, "") + "/models",
+        {
+          headers: this.key() ? { Authorization: "Bearer " + this.key() } : {},
+          signal: AbortSignal.timeout(4000),
+        },
+      );
+      if (response.ok) {
+        const body = (await response.json()) as { data?: { id: string }[] };
+        models = (body.data ?? []).map((m) => m.id);
+        connected = true;
+      } else detail += ` HTTP ${response.status}.`;
+    } catch {
+      detail += " Endpoint unreachable.";
+    }
+    return {
+      id: this.id,
+      name: names[this.id],
+      kind: "native-api",
+      installed: connected,
+      authenticated: connected,
+      detail,
+      models,
+      capabilities: {
+        planning: true,
+        coding: false,
+        streaming: true,
+        cancellation: true,
+      },
+      verified: false,
+    };
+  }
+  async run(input: Invocation): Promise<ProviderResult> {
+    if (input.mode === "code")
+      throw new Error(
+        "Compatible API does not have coding tools. Select Codex as coding runtime.",
+      );
+    if (!input.config.model)
+      throw new Error("Set a compatible API model ID in provider settings");
+    const signal = AbortSignal.any([
+      input.signal,
+      AbortSignal.timeout(input.timeoutMs),
+    ]);
+    const response = await fetch(
+      input.apiUrl.replace(/\/$/, "") + "/chat/completions",
+      {
+        method: "POST",
+        signal,
+        headers: {
+          "Content-Type": "application/json",
+          ...(input.apiKey ? { Authorization: "Bearer " + input.apiKey } : {}),
+        },
+        body: JSON.stringify({
+          model: input.config.model,
+          messages: [
+            ...(input.systemPrompt
+              ? [{ role: "system", content: input.systemPrompt }]
+              : []),
+            { role: "user", content: input.prompt },
+          ],
+          stream: true,
+        }),
+      },
+    );
+    if (!response.ok || !response.body)
+      throw new Error(`Compatible API returned HTTP ${response.status}`);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "",
+      text = "";
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        if (buffer.length > 100000)
+          throw new Error("API stream frame exceeds limit");
+        let end;
+        while ((end = buffer.indexOf("\n")) >= 0) {
+          const line = buffer.slice(0, end).trim();
+          buffer = buffer.slice(end + 1);
+          if (!line.startsWith("data:") || line === "data: [DONE]") continue;
+          const body = JSON.parse(line.slice(5));
+          if (body.error)
+            throw new Error(body.error.message ?? "API stream failed");
+          const delta = body.choices?.[0]?.delta?.content;
+          if (delta) {
+            text += delta;
+            input.onOutput(redact(delta));
+            if (text.length > 1000000)
+              throw new Error("API response exceeds limit");
+          }
+        }
+      }
+    } finally {
+      await reader.cancel();
+    }
+    if (!text) throw new Error("Empty compatible API response");
+    return { text: redact(text) };
+  }
+}
+export class Registry {
+  private providers: Map<ProviderId, Provider>;
+  constructor(settings: () => Settings, key: () => string | undefined) {
+    this.providers = new Map<ProviderId, Provider>([
+      ...(["codex", "claude", "antigravity"] as const).map(
+        (id) => [id, new CLIProvider(id)] as [ProviderId, Provider],
+      ),
+      ["compatible", new CompatibleProvider(settings, key)],
+    ]);
+  }
+  get(id: ProviderId) {
+    return this.providers.get(id)!;
+  }
+  async diagnostics() {
+    return Promise.all([...this.providers.values()].map((p) => p.diagnose()));
+  }
+}

@@ -1,0 +1,130 @@
+# Persistent implementation checklist
+
+Last updated: 2026-10-17. Checkboxes record implementation, not blanket production readiness.
+
+## Reconnaissance and decisions
+
+- [x] Inspect empty repository, toolchain, installed runtimes and authentication.
+- [x] Fetch reference READMEs, repository metadata and selected source files; inspect licenses and actual scope.
+- [x] Consult official Codex, Claude Code and Antigravity automation documentation.
+- [x] Record stack, isolation and provider decisions.
+
+## Runnable desktop and execution
+
+- [x] Electron/React/TypeScript app with isolated preload, native folder picker and local SQLite.
+- [x] Main workspace, inspector, settings, provider setup, Git/source/diff views, history and dark/light themes.
+- [x] Independent model selectors and task-specific model ID overrides.
+- [x] Real Codex structured planning, streamed worker execution, review and manual apply gates.
+- [x] Task DAG, priorities, scopes, bounded concurrency/retries/cancellation and dependency blocking.
+- [x] Separate worker/integration worktrees, conflict detection and preserved original user changes.
+- [x] Per-task and combined verification with actual outputs and exit statuses.
+- [x] Ordered persisted events, replay, restart recovery and fresh retry workspaces.
+
+## Prompt, skill and knowledge features
+
+- [x] Layered prompt compiler, invariant preservation, untrusted delimiters, deduplication, redaction, token estimates and hashes.
+- [x] Versioned prompt fragments, activation/rollback, preview, static comparisons and export.
+- [x] Skill import/create/validate/review/enable/export, roles and versions.
+- [x] Project memory classifications/deletion and lexical context selection/provenance.
+- [ ] Full nested directory rule resolution and semantic conflict detection.
+- [ ] Symbol indexing and optional embeddings.
+- [ ] Dynamic prompt variables beyond reserved project_name/role.
+- [ ] Reproducible model-backed A/B benchmark runner and task-completion metrics.
+- [ ] Full Agent Skills metadata, dependency validation, usage evaluations and reviewed skill improvement proposals.
+
+## Providers and hardening
+
+- [x] Codex real end-to-end provider smoke verification.
+- [x] Claude read-only adapter contract; local absence disclosed.
+- [x] Compatible API model discovery and SSE parsing contract test.
+- [x] Antigravity documented pathway researched; installation diagnostics and explicit execution blocker.
+- [x] Install official agy with checksum verification; add native CLI OAuth connection controls and real status verification.
+- [ ] Resolve Antigravity account/location eligibility and demonstrate a successful model request; install and verify Claude Code.
+- [x] Discover the exact Gemini 3.8 Flash model IDs through official agy catalog; account access remains blocked.
+- [ ] Strong sandbox for host verification/dependency provisioning and non-Codex coding providers.
+- [ ] Interactive app-server per-tool approvals, provider rate-limit governors and resource-adaptive concurrency.
+- [ ] Token/cost budgeting, debugger-driven repairs, richer review acceptance and safe rollback/retention controls.
+- [ ] Native SQLite/WAL for large histories, multi-instance locking and disk-failure recovery.
+- [ ] Full independent security audit, signed/notarized release and cross-platform acceptance.
+
+## Release checks
+
+- [x] TypeScript/build and deterministic core integration tests.
+- [x] Real Electron UI and restart checks.
+- [x] Actual real-provider smoke with original-tree preservation and approved apply.
+- [x] Final package build and actual packaged-app launch, IPC and restart persistence.
+- [x] Final regression (56 automated tests), strict build and formatting checks.
+
+## Follow-up fixes
+
+- [x] Accept `files: []` for analysis-only tasks, route them through read-only execution, and reject any attempted write without broadening their scope.
+- [x] Present planner schema failures as actionable errors rather than raw JSON validation dumps.
+- [x] Preserve existing Codex OAuth sessions and expose native provider sign-in and verification controls.
+- [x] Review Hermes model authentication, MCP connectors, community Antigravity plugins and backend-witnessed connection states.
+- [ ] Google Antigravity account/location eligibility remains an external blocker.
+
+## v0.1.2 project setup and catalog
+
+- [x] Automatic local Git initialization and safe initial baseline; existing history, dirty files and staged unborn indexes preserved.
+- [x] GitHub skills search, pinned package preview, reviewed project installation, resource/license preservation and provenance.
+- [x] Project-scoped activation, isolated worktree resources, digest verification and overwrite/symlink rejection.
+- [x] Regression tests for Git setup and package boundaries.
+
+## v0.1.3 performance and token usage
+
+- [x] Local Graphify AST graph and bounded dependency queries, plus before/after Node CPU profiling.
+- [x] Scoped, bounded context with relevant source excerpts and local import neighbors; freshness-checked bounded source cache.
+- [x] Bounded supervisor test-log excerpts with complete statuses and retained full session evidence.
+- [x] Batched stream persistence and rendering; lifecycle records remain immediate.
+- [x] Reproducible synthetic benchmark and 50 automated regression tests.
+
+## v0.1.4 Nexload prompt core
+
+- [x] Pinned Nexload reasoning source manifest and compact mandatory core across provider invocations.
+- [x] Role-specific profiles, bounded worker handoffs and persisted planner/worker/review core provenance.
+- [x] Prompt Laboratory core inspection and validated role previews.
+- [x] Immutable Aether execution boundaries, plan JSON, read-only reviews and untrusted context isolation preserved.
+- [x] Core size/offline/determinism/routing regressions and 56 application tests; reference checkouts excluded from test discovery.
+
+- [x] System/user transport separation for compatible APIs, preserved CLI prefixes, and bounded worker-result evidence for dependencies/reviews.
+
+## v0.1.5 continuation, live graph and bidirectional text
+
+- [x] Completed analysis can continue into an implementation plan with bounded prior deliverables and parent-session provenance.
+- [x] Implementation continuations require concrete write scopes; coding and final application retain their approval gates.
+- [x] Read-only analysis completes without asking users to apply an empty diff; legacy no-op reviews can continue too.
+- [x] Graphify view indexes actual source symbols, live source changes and active-task/integration worktrees, with cached extraction, search, selection and scope status colors.
+- [x] Graph staging excludes ignored/sensitive paths and links; extraction is code-only, local, bounded and cancelled on shutdown.
+- [x] Offline Vazirmatn v33.003, automatic Persian/Arabic prose/input direction, isolated identifiers and LTR code/diffs.
+- [x] Regression coverage for analysis-to-coding lifecycle, no-write enforcement, graph boundaries/cache/freshness and desktop live graph/bidi layout.
+
+## v0.1.6 Ava companion
+
+- [x] Pinned MIT Bloub SVG core adapted to an Aether-specific mint body and a React renderer, with complete attribution.
+- [x] Live planning/work/testing/review/approval/blocked/error/completion/rest states mapped from typed run lifecycle and phase events.
+- [x] English captions and a navigation action open the relevant session; the companion never approves or executes work itself.
+- [x] Persisted minimize/pause controls, keyboard access, reduced-motion support, 24 fps cap, hidden-window suspension and isolated lazy-loaded avatar rendering.
+- [x] Lifecycle/state/engine tests and real desktop checks for pause, collapse persistence and reduced motion.
+
+## v0.1.7 English companion copy
+
+- [x] Ava name, lifecycle captions and actions use English with LTR alignment.
+- [x] Existing user content and bidirectional editing support are preserved.
+
+## v0.1.8 project desktop widget
+
+- [x] Native frameless floating activity window with Ava, project filter, completed-task history and pending work/review states.
+- [x] Every stored task completion reachable through paginated history; live lifecycle updates ignore token streams.
+- [x] Task/session navigation restores the main window without approving or applying changes.
+- [x] Restricted widget preload/IPC, metadata-only projection, origin/frame checks and disabled renderer Node access.
+- [x] Persistent visibility, project, pin, collapse and position preferences with on-screen recovery.
+- [x] Unit coverage for projection, privacy boundaries, counts and pagination; native Electron coverage for real lifecycle updates and desktop controls.
+
+## v0.1.9 coding teams
+
+- [x] Default-on coding teams with one to three same-model read-only review helpers, bounded findings returned to the coding lead for integration.
+- [x] New-plan settings snapshots preserve older approved single-agent sessions; planner/analysis/supervisor retain their existing modes.
+- [x] Managed session lifecycle, shared deadline, sibling cancellation, bounded persisted helper results and live team UI.
+- [x] Native recursive agents remain disabled after real installed-CLI telemetry proved incomplete.
+- [x] 84 tests, desktop E2E, actual Codex team workflow through verification/review/apply, and source/packaged helper-result display verified.
+- [x] Packaged v0.1.9 launch, IPC and persistence checks passed; local Graphify refreshed without model calls.

@@ -1,0 +1,13 @@
+# Project desktop activity widget
+
+The widget is a separate 360px native Electron window, available above other apps and on full-screen workspaces. It is enabled initially and uses a restricted preload with only snapshot, project selection, navigation, pin, collapse and hide operations. Its renderer cannot use the main app command bridge or access Node. Main-process frame and origin checks guard both bridges separately.
+
+Project selection supports one project or all projects. The summary counts completed tasks, active sessions and attention states. Activity includes session state and nonqueued task state, with 20 rows per page. Every stored completed task remains reachable with Older/Newer. A completed task is labelled separately from its parent session, so task completion does not imply that a pending patch was applied. The feed is current persisted state rather than an immutable audit of all past retry attempts; the main execution trace retains that evidence.
+
+Lifecycle updates are batched at 250ms; agent output chunks are ignored. The renderer receives only project names/IDs, session/task IDs, titles, statuses and timestamps. It receives no source, diffs, full objectives, prompts or worker output. Navigation validates session/task identity before restoring the main window and selecting the task. It never starts execution, approves a plan, or applies a patch.
+
+Drag the titlebar to position the popup. Pin toggles always-on-top. Collapse uses a compact summary, and X hides the widget. Show desktop widget in the main header opens it for the current project. Visibility, project, pin, compactness and position are stored in the versioned widget/global preference record; older installations need no SQL schema change. Saved positions are fitted to a display's work area on opening and expansion. Show desktop widget also recovers an off-screen popup.
+
+Closing the main window hides it while the widget service exists, so ongoing work can continue. On macOS, the Dock icon reopens the main app; clicking a widget row does the same. Quit closes both windows and invokes the existing cancellation/shutdown path. Hiding the widget does not quit or cancel tasks. This behavior has been verified on the supported macOS build; other desktop platforms have not been packaged or validated here.
+
+Verification: npm test, npm run test:e2e and npm run test:widget. The native widget fixture seeds two temporary projects and paginated completion history, then uses a local HTTP planner to drive real initializing → approval events without consuming an account or changing a user's project. It checks project filtering, restricted IPC, native pin/size, task navigation after closing the main window, hide/reopen and restart preferences.
