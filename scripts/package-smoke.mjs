@@ -18,7 +18,12 @@ async function closeDesktop(instance) {
     await instance.close();
     return;
   }
-  const child = instance.process();
+  let child;
+  try {
+    child = instance.process();
+  } catch {
+    return;
+  }
   if (child.exitCode !== null || child.signalCode !== null) return;
   const exited = new Promise((resolve) => child.once("exit", resolve));
   const timer = setTimeout(() => child.kill("SIGKILL"), 10000);
@@ -33,7 +38,10 @@ console.log("Launching packaged desktop:", options.executablePath);
 let app = await electron.launch(options);
 try {
   let page = await app.firstWindow();
-  await page.getByText("Ambitious work.").waitFor();
+  await page.getByRole("button", { name: "Start building" }).click();
+  await page
+    .getByRole("heading", { name: "What are we building today?" })
+    .waitFor();
   console.log("Packaged desktop UI ready");
   let snapshot = await page.evaluate(() => window.aether.invoke("snapshot"));
   assert.ok(Array.isArray(snapshot.providers));
@@ -124,7 +132,9 @@ try {
   console.log("Relaunching packaged desktop");
   app = await electron.launch(options);
   page = await app.firstWindow();
-  await page.getByText("Ambitious work.").waitFor();
+  await page
+    .getByRole("heading", { name: "What are we building today?" })
+    .waitFor();
   snapshot = await page.evaluate(() => window.aether.invoke("snapshot"));
   assert.equal(snapshot.settings.planner.model, "packaged-persistence-test");
   assert.equal(snapshot.settings.coder.model, "");
