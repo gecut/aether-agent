@@ -1,13 +1,11 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import {
-  ArrowsClockwise,
-  FileCode,
-  FloppyDisk,
-  FolderOpen,
-  MonitorArrowUp,
-  SidebarSimple,
-  ClockCounterClockwise,
-} from "@phosphor-icons/react";
+import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise";
+import { FileCode } from "@phosphor-icons/react/dist/csr/FileCode";
+import { FloppyDisk } from "@phosphor-icons/react/dist/csr/FloppyDisk";
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { MonitorArrowUp } from "@phosphor-icons/react/dist/csr/MonitorArrowUp";
+import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
+import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
 import type {
   EditorDocument,
   EditorVersion,

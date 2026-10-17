@@ -12,6 +12,8 @@ Real installed Codex discovery returned seven models and supported reasoning lev
 
 The older entries below are historical records for earlier versions.
 
+Follow-up build repair: both earlier macOS CI builds had failed at Node's default roughly 2 GB heap limit during Vite bundling. Direct per-icon imports reduced transformed modules from 5,944 to 1,501. The production build passed locally under an explicit 2 GB heap cap; CI also reserves bounded 4 GB build headroom. These changes preserve the icon components and do not increase application/provider permissions. Core tests and desktop E2E were rerun after changing the imports.
+
 Verified on 2026-10-17, macOS arm64, Node 24.14.0, Electron 40.10.6, installed Codex CLI 0.163.0-alpha.10.2. This records observed results; it is not a claim that all roadmap requirements are finished.
 
 ## Automated core and adapter checks

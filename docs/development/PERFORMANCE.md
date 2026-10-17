@@ -28,6 +28,12 @@ Supervisor test summaries preserve every command, exit status and duration, use 
 
 Stream output remains ordered in SQLite memory and is exported on a 200 ms timer or after 64 chunks. Run/settings mutations and lifecycle checkpoints export immediately, as does orderly shutdown. Forced termination can lose the final unflushed output chunks; it does not defer lifecycle records. The renderer batches visible output for 50 ms and requests full snapshots for lifecycle/state events rather than every streaming chunk.
 
+## Production build memory
+
+The previous macOS CI jobs failed during Vite bundling at the default roughly 2 GB V8 heap limit. Following [Phosphor's documented direct-import approach](https://github.com/phosphor-icons/react#import-performance-optimization), UI modules now import each used icon from its own package entry instead of loading the full icon barrel. Vite transforms **1,501 modules instead of 5,944**, about 75% fewer. This is a build-work reduction, not a claim of a 75% reduction in app memory or bundle size.
+
+The production build passed locally with `NODE_OPTIONS=--max-old-space-size=2048`, the old CI heap ceiling. CI's production-build step additionally has a bounded 4 GB heap ceiling for runner/version differences and future growth. No runtime or sandbox permissions change. The local limited-heap build took 19.68 seconds including type checks/main bundling; elapsed time is not directly comparable with the earlier unrestricted build. Actual Windows/macOS/Linux packaging results remain in GitHub Actions.
+
 ## Reproduce
 
 Run `npm run analyze:graph` with the already-installed Graphify CLI. It uses code-only extraction without LLM calls and writes ignored artifacts under `artifacts/graphify/graphify-out/`. Query it with:

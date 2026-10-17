@@ -20,50 +20,48 @@ import {
   Suspense,
   type ReactNode,
 } from "react";
-import {
-  AsteriskSimple,
-  SquaresFour,
-  ChatCircleDots,
-  TreeStructure,
-  UsersThree,
-  Flask,
-  Books,
-  Brain,
-  GitBranch,
-  ClockCounterClockwise,
-  GearSix,
-  Plus,
-  CaretDown,
-  CaretRight,
-  FolderOpen,
-  ArrowUp,
-  ArrowRight,
-  ArrowLeft,
-  ArrowUpRight,
-  SidebarSimple,
-  TerminalWindow,
-  ShieldCheck,
-  Check,
-  X,
-  Circle,
-  ArrowsClockwise,
-  FileCode,
-  MagnifyingGlass,
-  DownloadSimple,
-  UploadSimple,
-  Cpu,
-  WarningCircle,
-  Play,
-  Trash,
-  Eye,
-  Sun,
-  Moon,
-  Stop,
-  CircleNotch,
-  Paperclip,
-  PushPin,
-  DotsThree,
-} from "@phosphor-icons/react";
+import { AsteriskSimple } from "@phosphor-icons/react/dist/csr/AsteriskSimple";
+import { SquaresFour } from "@phosphor-icons/react/dist/csr/SquaresFour";
+import { ChatCircleDots } from "@phosphor-icons/react/dist/csr/ChatCircleDots";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { UsersThree } from "@phosphor-icons/react/dist/csr/UsersThree";
+import { Flask } from "@phosphor-icons/react/dist/csr/Flask";
+import { Books } from "@phosphor-icons/react/dist/csr/Books";
+import { Brain } from "@phosphor-icons/react/dist/csr/Brain";
+import { GitBranch } from "@phosphor-icons/react/dist/csr/GitBranch";
+import { ClockCounterClockwise } from "@phosphor-icons/react/dist/csr/ClockCounterClockwise";
+import { GearSix } from "@phosphor-icons/react/dist/csr/GearSix";
+import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
+import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
+import { CaretRight } from "@phosphor-icons/react/dist/csr/CaretRight";
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { ArrowUp } from "@phosphor-icons/react/dist/csr/ArrowUp";
+import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
+import { ArrowLeft } from "@phosphor-icons/react/dist/csr/ArrowLeft";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { SidebarSimple } from "@phosphor-icons/react/dist/csr/SidebarSimple";
+import { TerminalWindow } from "@phosphor-icons/react/dist/csr/TerminalWindow";
+import { ShieldCheck } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { Check } from "@phosphor-icons/react/dist/csr/Check";
+import { X } from "@phosphor-icons/react/dist/csr/X";
+import { Circle } from "@phosphor-icons/react/dist/csr/Circle";
+import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise";
+import { FileCode } from "@phosphor-icons/react/dist/csr/FileCode";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
+import { DownloadSimple } from "@phosphor-icons/react/dist/csr/DownloadSimple";
+import { UploadSimple } from "@phosphor-icons/react/dist/csr/UploadSimple";
+import { Cpu } from "@phosphor-icons/react/dist/csr/Cpu";
+import { WarningCircle } from "@phosphor-icons/react/dist/csr/WarningCircle";
+import { Play } from "@phosphor-icons/react/dist/csr/Play";
+import { Trash } from "@phosphor-icons/react/dist/csr/Trash";
+import { Eye } from "@phosphor-icons/react/dist/csr/Eye";
+import { Sun } from "@phosphor-icons/react/dist/csr/Sun";
+import { Moon } from "@phosphor-icons/react/dist/csr/Moon";
+import { Stop } from "@phosphor-icons/react/dist/csr/Stop";
+import { CircleNotch } from "@phosphor-icons/react/dist/csr/CircleNotch";
+import { Paperclip } from "@phosphor-icons/react/dist/csr/Paperclip";
+import { PushPin } from "@phosphor-icons/react/dist/csr/PushPin";
+import { DotsThree } from "@phosphor-icons/react/dist/csr/DotsThree";
 import type {
   Snapshot,
   Run,

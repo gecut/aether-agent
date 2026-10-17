@@ -63,6 +63,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
       - name: Package native distributions
         run: npx electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish never
       - name: Verify package contents and distribution files

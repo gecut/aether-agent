@@ -1,15 +1,13 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import {
-  ArrowUpRight,
-  CaretDown,
-  CaretUp,
-  Check,
-  CircleNotch,
-  Clock,
-  PushPin,
-  X,
-  WarningCircle,
-} from "@phosphor-icons/react";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
+import { CaretUp } from "@phosphor-icons/react/dist/csr/CaretUp";
+import { Check } from "@phosphor-icons/react/dist/csr/Check";
+import { CircleNotch } from "@phosphor-icons/react/dist/csr/CircleNotch";
+import { Clock } from "@phosphor-icons/react/dist/csr/Clock";
+import { PushPin } from "@phosphor-icons/react/dist/csr/PushPin";
+import { X } from "@phosphor-icons/react/dist/csr/X";
+import { WarningCircle } from "@phosphor-icons/react/dist/csr/WarningCircle";
 import type { WidgetActivity, WidgetSnapshot } from "../../shared/widget";
 import { companionPose } from "../companion/state";
 import "./widget.css";

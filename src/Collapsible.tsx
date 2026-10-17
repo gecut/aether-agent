@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { CaretDown } from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
 
 export function Collapsible({
   id,

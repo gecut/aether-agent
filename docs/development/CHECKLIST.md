@@ -168,3 +168,4 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Repeated supervisor log lines are folded; the reproducible long-chat fixture measured 82% fewer estimated history tokens than the prior twelve-message policy in Economy (95% versus full history). No billing or equivalent-quality guarantee is implied.
 - [x] Project chat persists separately by project, supplies bounded read-only source excerpts, offers reviewed planning for changes, rejects concurrent sends to the same chat, and cancels on shutdown.
 - [x] Off-screen/hidden Ava work pauses; the visible widget receives changed system-cursor coordinates outside its window without storing or forwarding them to providers.
+- [x] Direct Phosphor icon imports reduce transformed modules from 5,944 to 1,501; production builds pass under a 2 GB heap cap, and CI has bounded 4 GB build headroom to address the previous macOS heap failures.

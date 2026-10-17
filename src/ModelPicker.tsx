@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  ArrowsClockwise,
-  CaretDown,
-  Check,
-  MagnifyingGlass,
-} from "@phosphor-icons/react";
+import { ArrowsClockwise } from "@phosphor-icons/react/dist/csr/ArrowsClockwise";
+import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
+import { Check } from "@phosphor-icons/react/dist/csr/Check";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 import type {
   ModelCatalog,
   ModelConfig,

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Code, FolderOpen, TerminalWindow } from "@phosphor-icons/react";
+import { Code } from "@phosphor-icons/react/dist/csr/Code";
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { TerminalWindow } from "@phosphor-icons/react/dist/csr/TerminalWindow";
 import { IDE } from "./IDE";
 import { AgentPanel } from "./AgentPanel";
 import type {

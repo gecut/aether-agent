@@ -1,11 +1,9 @@
 import { lazy, Suspense, useState } from "react";
-import {
-  CaretDown,
-  CaretUp,
-  Pause,
-  Play,
-  ArrowUpRight,
-} from "@phosphor-icons/react";
+import { CaretDown } from "@phosphor-icons/react/dist/csr/CaretDown";
+import { CaretUp } from "@phosphor-icons/react/dist/csr/CaretUp";
+import { Pause } from "@phosphor-icons/react/dist/csr/Pause";
+import { Play } from "@phosphor-icons/react/dist/csr/Play";
+import { ArrowUpRight } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
 import type { Run, RunEvent } from "../../shared/types";
 import { companionState } from "./state";
 const Avatar = lazy(() =>

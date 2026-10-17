@@ -1,11 +1,9 @@
-import {
-  ArrowRight,
-  AsteriskSimple,
-  GitBranch,
-  Paperclip,
-  TreeStructure,
-  UsersThree,
-} from "@phosphor-icons/react";
+import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
+import { AsteriskSimple } from "@phosphor-icons/react/dist/csr/AsteriskSimple";
+import { GitBranch } from "@phosphor-icons/react/dist/csr/GitBranch";
+import { Paperclip } from "@phosphor-icons/react/dist/csr/Paperclip";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
+import { UsersThree } from "@phosphor-icons/react/dist/csr/UsersThree";
 
 export function SplashScreen({ onStart }: { onStart: () => void }) {
   return (

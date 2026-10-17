@@ -1,10 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
-import {
-  ArrowUp,
-  FolderOpen,
-  Plus,
-  TreeStructure,
-} from "@phosphor-icons/react";
+import { ArrowUp } from "@phosphor-icons/react/dist/csr/ArrowUp";
+import { FolderOpen } from "@phosphor-icons/react/dist/csr/FolderOpen";
+import { Plus } from "@phosphor-icons/react/dist/csr/Plus";
+import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import type { Chat, Project, Settings, ProviderInfo } from "../shared/types";
 import { companionPose } from "./companion/state";
 import { ModelPicker } from "./ModelPicker";

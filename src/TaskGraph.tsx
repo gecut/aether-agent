@@ -1,5 +1,6 @@
 import type { Task } from "../shared/types";
-import { Check, Cpu } from "@phosphor-icons/react";
+import { Check } from "@phosphor-icons/react/dist/csr/Check";
+import { Cpu } from "@phosphor-icons/react/dist/csr/Cpu";
 export function TaskGraph({
   tasks,
   onSelect,
