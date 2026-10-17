@@ -144,7 +144,17 @@ export interface Run {
   continuationContext?: string;
   plannerSnapshot?: CompiledPrompt;
   reviewSnapshot?: CompiledPrompt;
+  /** User-selected prompt images copied into Aether's private application data. */
+  attachments?: PromptAttachment[];
+  /** Pinned sessions remain at the top of a project's history. */
+  pinned?: boolean;
   config: Settings;
+}
+export interface PromptAttachment {
+  id: string;
+  name: string;
+  mime: "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+  path: string;
 }
 export interface RunEvent {
   seq: number;

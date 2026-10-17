@@ -22,6 +22,8 @@ export interface Invocation {
   onOutput: (text: string) => void;
   apiUrl: string;
   apiKey?: string;
+  /** Private, user-selected image paths for providers that support image input. */
+  images?: string[];
 }
 export interface ProviderResult {
   text: string;
@@ -159,6 +161,7 @@ export class CLIProvider implements Provider {
         `model_reasoning_effort="${input.config.reasoning}"`,
       ];
       if (input.config.model) args.push("--model", input.config.model);
+      for (const image of input.images ?? []) args.push("--image", image);
       args.push("-");
     } else {
       args = [

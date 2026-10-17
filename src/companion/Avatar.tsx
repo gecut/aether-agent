@@ -67,6 +67,39 @@ export const Avatar = memo(
         document.removeEventListener("visibilitychange", resume);
       };
     }, [state.animation, state.expression, paused]);
+    useEffect(() => {
+      const follow = (event: PointerEvent) => {
+        if (paused || matchMedia("(prefers-reduced-motion: reduce)").matches)
+          return;
+        const element = document.querySelector(".companion-avatar");
+        const bounds = element?.getBoundingClientRect();
+        if (!bounds?.width || !bounds.height) return;
+        engine.current!.setLook(
+          {
+            yaw: Math.max(
+              -55,
+              Math.min(
+                55,
+                (event.clientX - (bounds.left + bounds.width / 2)) / 8,
+              ),
+            ),
+            pitch: Math.max(
+              -38,
+              Math.min(
+                38,
+                (bounds.top + bounds.height / 2 - event.clientY) / 8,
+              ),
+            ),
+            mix: 1,
+            spin: 0,
+            wander: 0,
+          },
+          clock.current,
+        );
+      };
+      window.addEventListener("pointermove", follow, { passive: true });
+      return () => window.removeEventListener("pointermove", follow);
+    }, [paused]);
     const dots = frame.dots.map((dot, index) =>
       dot.d ? (
         <path
@@ -109,7 +142,6 @@ export const Avatar = memo(
             clock.current,
           );
         }}
-        onPointerLeave={() => engine.current!.setLook(null, clock.current)}
       >
         <defs>
           <mask

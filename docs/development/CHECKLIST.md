@@ -135,3 +135,11 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Pinned Actions, locked dependency installs, read-only build jobs and a separate release writer.
 - [x] Package-content/distribution checks, Windows/macOS packaged smoke, complete-set publication and SHA256 checksums.
 - [x] Hosted build checks gate publication; every release links its exact workflow run.
+
+## Home, session, and repository experience
+
+- [x] First-open feature walkthrough and ChatGPT-style objective composer with four guided starters.
+- [x] Persisted session pinning and deletion, with active-session deletion blocked.
+- [x] Up to four user-selected prompt images copied into private app data and attached only to Codex planning invocations; deleting a session removes its copied images.
+- [x] Responsive compact sidebar, project menu stacking, non-obscured session history, and local lifecycle notification tone.
+- [x] Original-project Git commit and normal push controls; commits use the user's configured Git identity and pushes are never forced.

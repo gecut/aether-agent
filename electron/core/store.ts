@@ -75,6 +75,10 @@ export class Store {
     this.db.run("DELETE FROM records WHERE kind=? AND id=?", [kind, id]);
     this.flush();
   }
+  removeEvents(runId: string) {
+    this.db.run("DELETE FROM events WHERE run_id=?", [runId]);
+    this.flush();
+  }
   event(event: Omit<RunEvent, "seq">, durable = true) {
     this.db.run(
       "INSERT INTO events(run_id,task_id,type,text,at) VALUES(?,?,?,?,?)",

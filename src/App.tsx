@@ -3,6 +3,8 @@ import { Companion } from "./companion/Companion";
 import { SkillDiscovery } from "./SkillDiscovery";
 import { CodeGraph } from "./CodeGraph";
 import { TaskGraph } from "./TaskGraph";
+import { playNotificationTone } from "./notifications";
+import { SplashScreen } from "./SplashScreen";
 import {
   useState,
   useEffect,
@@ -49,6 +51,8 @@ import {
   Moon,
   Stop,
   CircleNotch,
+  Paperclip,
+  PushPin,
 } from "@phosphor-icons/react";
 import type {
   Snapshot,
@@ -64,6 +68,7 @@ import type {
   ProviderId,
   PromptVersion,
   ConnectionStatus,
+  PromptAttachment,
 } from "../shared/types";
 import { defaults } from "../shared/types";
 type Page =
@@ -157,7 +162,12 @@ export function App() {
     }>(),
     [projectMenu, setProjectMenu] = useState(false),
     [modelMenu, setModelMenu] = useState<"planner" | "coder" | null>(null),
-    [search, setSearch] = useState("");
+    [search, setSearch] = useState(""),
+    [attachments, setAttachments] = useState<PromptAttachment[]>([]),
+    [showSplash, setShowSplash] = useState(
+      () => localStorage.getItem("aether.welcome.v2") !== "seen",
+    ),
+    [commitMessage, setCommitMessage] = useState("");
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const refreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const notify = useCallback((message: string) => {
@@ -236,6 +246,16 @@ export function App() {
           refreshTimer.current = undefined;
           void refresh();
         }, 300);
+      if (
+        [
+          "plan.created",
+          "review.completed",
+          "run.failed",
+          "run.completed",
+          "run.blocked",
+        ].includes(event.type)
+      )
+        playNotificationTone();
     });
     return () => {
       clearTimeout(timer);
@@ -277,7 +297,13 @@ export function App() {
       run?.tasks.find((t) => t.id === selectedTask) ??
       run?.tasks.find((t) => t.status === "running") ??
       run?.tasks[0];
-  const projectRuns = data.runs.filter((r) => r.projectId === projectId),
+  const projectRuns = data.runs
+      .filter((r) => r.projectId === projectId)
+      .sort(
+        (a, b) =>
+          Number(!!b.pinned) - Number(!!a.pinned) ||
+          b.updatedAt.localeCompare(a.updatedAt),
+      ),
     activeRuns = projectRuns.filter((r) =>
       ["running", "initializing"].includes(r.status),
     ),
@@ -339,14 +365,40 @@ export function App() {
     const result = await call<Run>("run.create", {
       projectId,
       objective: objective.trim(),
+      attachments,
     });
     if (result) {
       await refresh();
       setRunId(result.id);
       setObjective("");
+      setAttachments([]);
       setTab("Session");
     }
     setBusy(false);
+  };
+  const attachImage = async () => {
+    if (attachments.length >= 4)
+      return notify("You can attach up to four images.");
+    const image = await call<PromptAttachment | null>("prompt.image.choose");
+    if (image) setAttachments((current) => [...current, image]);
+  };
+  const setPinned = async (target: Run) => {
+    await call("run.pin", { id: target.id, pinned: !target.pinned });
+    await refresh();
+  };
+  const deleteSession = async (target: Run) => {
+    if (
+      !window.confirm(
+        `Delete the saved session “${target.title}”? Its local chat and history will be removed.`,
+      )
+    )
+      return;
+    const deleted = await call<boolean>("run.delete", target.id);
+    if (deleted) {
+      if (runId === target.id) setRunId("");
+      await refresh();
+      notify("Session deleted.");
+    }
   };
   const runAction = async (action: string) => {
     if (!run) return;
@@ -498,15 +550,24 @@ export function App() {
           </div>
           <div className="session-list">
             {projectRuns.slice(0, 7).map((r) => (
-              <button
+              <div
                 key={r.id}
-                className={r.id === runId ? "selected" : ""}
-                onClick={() => openRun(r)}
+                className={"session-row " + (r.id === runId ? "selected" : "")}
               >
-                <ChatCircleDots size={15} />
-                <bdi>{r.title}</bdi>
-                <StatusDot status={r.status} />
-              </button>
+                <button className="session-open" onClick={() => openRun(r)}>
+                  <ChatCircleDots size={15} />
+                  <bdi>{r.title}</bdi>
+                  <StatusDot status={r.status} />
+                </button>
+                <button
+                  className="session-pin"
+                  aria-label={r.pinned ? "Unpin session" : "Pin session"}
+                  title={r.pinned ? "Unpin session" : "Pin session"}
+                  onClick={() => void setPinned(r)}
+                >
+                  <PushPin weight={r.pinned ? "fill" : "regular"} />
+                </button>
+              </div>
             ))}
             {!projectRuns.length && (
               <p dir="auto" className="sidebar-hint">
@@ -558,11 +619,6 @@ export function App() {
             <GearSix size={17} /> Settings{" "}
             <span className="keyboard-hint">⌘ ,</span>
           </button>
-          <div className="workspace-footnote">
-            <span className="avatar">Y</span>
-            <span>Your local workspace</span>
-            <ShieldCheck size={14} />
-          </div>
         </div>
       </aside>
       <main className="main">
@@ -1063,14 +1119,15 @@ export function App() {
                     </span>{" "}
                     YOUR LOCAL COMMAND CENTER
                   </div>
-                  <h1 dir="auto">
-                    Ambitious work.
-                    <br />
-                    <span>Orchestrated with care.</span>
-                  </h1>
+                  <div className="welcome-question">
+                    <span className="welcome-ava" aria-label="Ava is ready">
+                      <AsteriskSimple weight="bold" />
+                    </span>
+                    <h1>What are we building today?</h1>
+                  </div>
                   <p dir="auto">
-                    One objective. The right agents. Every change in your
-                    control.
+                    Start a conversation with your local coding team. Aether
+                    plans first, then asks before any code is executed.
                   </p>
                   <div className="workspace-context">
                     <FolderOpen size={16} />
@@ -1186,6 +1243,12 @@ export function App() {
                         <FolderOpen size={15} />
                         <bdi>{project?.name ?? "Add project"}</bdi>
                       </button>
+                      <button
+                        onClick={() => void attachImage()}
+                        title="Attach an image"
+                      >
+                        <Paperclip size={15} /> Add image
+                      </button>
                       <span className="composer-divider" />
                       <span>
                         <ShieldCheck size={14} />
@@ -1207,6 +1270,28 @@ export function App() {
                       )}
                     </button>
                   </div>
+                  {attachments.length > 0 && (
+                    <div
+                      className="prompt-attachments"
+                      aria-label="Attached images"
+                    >
+                      {attachments.map((image) => (
+                        <span key={image.id}>
+                          <Paperclip /> {image.name}
+                          <button
+                            aria-label={`Remove ${image.name}`}
+                            onClick={() =>
+                              setAttachments((current) =>
+                                current.filter((item) => item.id !== image.id),
+                              )
+                            }
+                          >
+                            <X />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="composer-hint">
                   <span>
@@ -1292,6 +1377,48 @@ export function App() {
                 <pre className="git-status">
                   {gitInfo?.status || "No changes in the working tree."}
                 </pre>
+                <div className="git-actions">
+                  <input
+                    value={commitMessage}
+                    onChange={(event) => setCommitMessage(event.target.value)}
+                    placeholder="Commit message"
+                    aria-label="Commit message"
+                  />
+                  <Button
+                    disabled={
+                      !gitInfo?.status.trim() || !commitMessage.trim() || busy
+                    }
+                    onClick={async () => {
+                      setBusy(true);
+                      const result = await call<GitInfo>("git.commit", {
+                        projectId,
+                        message: commitMessage.trim(),
+                      });
+                      if (result) {
+                        setGitInfo(result);
+                        setCommitMessage("");
+                        notify("Commit created in this project.");
+                      }
+                      setBusy(false);
+                    }}
+                  >
+                    <GitBranch /> Commit
+                  </Button>
+                  <Button
+                    disabled={busy || !gitInfo?.head}
+                    onClick={async () => {
+                      setBusy(true);
+                      const result = await call<GitInfo>("git.push", projectId);
+                      if (result) {
+                        setGitInfo(result);
+                        notify("Pushed the current branch.");
+                      }
+                      setBusy(false);
+                    }}
+                  >
+                    <UploadSimple /> Push
+                  </Button>
+                </div>
                 <Diff text={gitInfo?.diff ?? ""} />
                 <h3 dir="auto" className="subheading">
                   Recent commits
@@ -1350,25 +1477,49 @@ export function App() {
                     r.title.toLowerCase().includes(search.toLowerCase()),
                   )
                   .map((r) => (
-                    <button onClick={() => openRun(r)} key={r.id}>
-                      <ChatCircleDots />
-                      <span>
-                        <strong dir="auto">{r.title}</strong>
-                        <small>
-                          {
-                            data.projects.find((p) => p.id === r.projectId)
-                              ?.name
-                          }{" "}
-                          · {new Date(r.createdAt).toLocaleDateString()} ·{" "}
-                          {r.tasks.length} tasks
-                        </small>
-                      </span>
-                      <Tag kind={r.status}>
-                        <StatusDot status={r.status} />
-                        {formatStatus(r.status)}
-                      </Tag>
-                      <CaretRight />
-                    </button>
+                    <div className="history-row" key={r.id}>
+                      <button
+                        className="history-open"
+                        onClick={() => openRun(r)}
+                      >
+                        <ChatCircleDots />
+                        <span>
+                          <strong dir="auto">{r.title}</strong>
+                          <small>
+                            {
+                              data.projects.find((p) => p.id === r.projectId)
+                                ?.name
+                            }{" "}
+                            · {new Date(r.createdAt).toLocaleDateString()} ·{" "}
+                            {r.tasks.length} tasks
+                          </small>
+                        </span>
+                        <Tag kind={r.status}>
+                          <StatusDot status={r.status} />
+                          {formatStatus(r.status)}
+                        </Tag>
+                        <CaretRight />
+                      </button>
+                      <div className="history-actions">
+                        <button
+                          onClick={() => void setPinned(r)}
+                          aria-label={
+                            r.pinned ? "Unpin session" : "Pin session"
+                          }
+                        >
+                          <PushPin weight={r.pinned ? "fill" : "regular"} />
+                        </button>
+                        <button
+                          onClick={() => void deleteSession(r)}
+                          disabled={["running", "initializing"].includes(
+                            r.status,
+                          )}
+                          aria-label="Delete session"
+                        >
+                          <Trash />
+                        </button>
+                      </div>
+                    </div>
                   ))}
               </div>
             ) : (
@@ -1674,10 +1825,6 @@ export function App() {
               </>
             )}
           </div>
-          <div className="inspector-footer">
-            <span className="connection-dot online" />
-            SQLite persistence <span>Local</span>
-          </div>
         </aside>
       )}
       <footer className="statusbar">
@@ -1698,6 +1845,14 @@ export function App() {
           <AsteriskSimple size={12} />
         </span>
       </footer>
+      {showSplash && (
+        <SplashScreen
+          onStart={() => {
+            localStorage.setItem("aether.welcome.v2", "seen");
+            setShowSplash(false);
+          }}
+        />
+      )}
       {toast && (
         <div className="toast" role="status">
           <WarningCircle size={19} />

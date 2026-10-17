@@ -22,7 +22,10 @@ let page = await app.firstWindow();
 const errors = [];
 page.on("pageerror", (error) => errors.push(String(error)));
 try {
-  await page.getByText("Ambitious work.").waitFor();
+  await page.getByRole("button", { name: "Start building" }).click();
+  await page
+    .getByRole("heading", { name: "What are we building today?" })
+    .waitFor();
   assert.equal(await page.evaluate(() => window.aether?.desktop), true);
   await page.screenshot({ path: "artifacts/workspace-empty.png" });
   await page.evaluate(async (project) => {
@@ -124,7 +127,9 @@ try {
   await app.close();
   app = await electron.launch(options);
   page = await app.firstWindow();
-  await page.getByText("Ambitious work.").waitFor();
+  await page
+    .getByRole("heading", { name: "What are we building today?" })
+    .waitFor();
   const restored = await page.evaluate(() => window.aether.invoke("snapshot"));
   assert.equal(restored.settings.planner.model, "planner-test-id");
   assert.equal(restored.settings.coder.model, "coder-test-id");

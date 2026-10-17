@@ -119,6 +119,17 @@ export async function commitWorktree(cwd: string, message: string) {
   ]);
   return (await git(cwd, ["rev-parse", "HEAD"])).trim();
 }
+export async function commitProject(cwd: string, message: string) {
+  await git(cwd, ["add", "--all"]);
+  if (!(await git(cwd, ["diff", "--cached", "--name-only"])).trim())
+    throw new Error("There are no changes staged for a commit");
+  await git(cwd, ["commit", "-m", message]);
+  return inspect(cwd);
+}
+export async function pushProject(cwd: string) {
+  await git(cwd, ["push"]);
+  return inspect(cwd);
+}
 export async function verify(
   cwd: string,
   command: TaskSpec["verification"],

@@ -119,6 +119,18 @@ async function boot() {
       });
       return result.canceled ? null : service.addProject(result.filePaths[0]);
     }
+    if (command === "prompt.image.choose") {
+      const result = await dialog.showOpenDialog(window!, {
+        properties: ["openFile"],
+        title: "Attach an image to your prompt",
+        filters: [
+          { name: "Images", extensions: ["png", "jpg", "jpeg", "webp", "gif"] },
+        ],
+      });
+      return result.canceled
+        ? null
+        : service.importPromptImage(result.filePaths[0]);
+    }
     if (command === "secret.save") {
       const value = z.string().max(2000).parse(payload);
       if (!safeStorage.isEncryptionAvailable())

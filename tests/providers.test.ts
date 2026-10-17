@@ -115,6 +115,23 @@ describe("CLI provider contract", () => {
       expect(onCollaboration).not.toHaveBeenCalled();
     },
   );
+  it("passes user-selected images only as Codex image attachments", async () => {
+    await fakeCodex(
+      `process.stdin.resume();process.stdin.on('end',()=>{console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:JSON.stringify(process.argv.slice(2))}}));});`,
+    );
+    const result = await new CLIProvider("codex").run({
+      ...invocation(),
+      mode: "plan",
+      images: ["/private/aether/prompt-images/reference.png"],
+    });
+    const args = JSON.parse(result.text);
+    expect(args).toEqual(
+      expect.arrayContaining([
+        "--image",
+        "/private/aether/prompt-images/reference.png",
+      ]),
+    );
+  });
   it("cleans up a CLI that stays alive after its successful terminal event", async () => {
     await fakeCodex(
       `process.stdin.resume();process.stdin.on('end',()=>{console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Finished'}}));console.log(JSON.stringify({type:'turn.completed'}));setInterval(()=>{},10000);});`,
