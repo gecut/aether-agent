@@ -2646,12 +2646,17 @@ function SettingsPage({
           </p>
         </div>
         <Button
-          onClick={() =>
-            setDraft({
+          onClick={async () => {
+            const next: Settings = {
               ...draft,
               theme: draft.theme === "dark" ? "light" : "dark",
-            })
-          }
+            };
+            setDraft(next);
+            await save(next);
+            notify(
+              `${next.theme === "light" ? "Light" : "Dark"} mode enabled.`,
+            );
+          }}
         >
           {draft.theme === "dark" ? <Moon /> : <Sun />}
           {draft.theme === "dark" ? "Dark" : "Light"}

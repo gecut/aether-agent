@@ -2782,6 +2782,62 @@ nav > button.active:before {
   background: #fff;
   color: #273348;
 }
+[data-theme="light"] body,
+[data-theme="light"] .app,
+[data-theme="light"] .main,
+[data-theme="light"] .workspace-header,
+[data-theme="light"] .composer-wrap,
+[data-theme="light"] .session-scroll {
+  background: var(--bg);
+  color: var(--text);
+}
+[data-theme="light"] .titlebar,
+[data-theme="light"] .sidebar,
+[data-theme="light"] .sidebar-bottom,
+[data-theme="light"] .model-bar {
+  background: var(--sidebar);
+  border-color: var(--border);
+}
+[data-theme="light"] .project-switch,
+[data-theme="light"] .new-session,
+[data-theme="light"] .session-row.selected,
+[data-theme="light"] .model-trigger,
+[data-theme="light"] .composer,
+[data-theme="light"] .assistant-message > .message-content,
+[data-theme="light"] .prompt-attachments > span {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+[data-theme="light"] nav > button,
+[data-theme="light"] .session-open,
+[data-theme="light"] .composer-bottom > div > button,
+[data-theme="light"] .message-meta,
+[data-theme="light"] .user-message p,
+[data-theme="light"] .assistant-message > .message-content > p {
+  color: var(--muted);
+}
+[data-theme="light"] nav > button.active,
+[data-theme="light"] .composer-mode.active {
+  color: #264f91;
+  background: #e6efff;
+  border-color: #adc3ec;
+}
+[data-theme="light"] .project-avatar,
+[data-theme="light"] .message-avatar:not(.aether-avatar) {
+  background: #e5eaf3;
+  border-color: #cbd4e2;
+  color: #45536d;
+}
+[data-theme="light"] .chat-messages .assistant-message > .message-content {
+  border-left-color: #b9c9e6;
+}
+[data-theme="light"] .boot-screen {
+  background: radial-gradient(circle at 48% 40%, #e5efff, var(--bg) 48%);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #c7cfdd;
+}
 @media (min-width: 1600px) {
   .app {
     grid-template-columns: 245px minmax(0, 1fr) 310px;
