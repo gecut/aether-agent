@@ -11,9 +11,13 @@ const options = {
   ),
   env: { ...process.env, AETHER_TEST_DATA: directory },
 };
-// Terminate only the disposable fixture process; restart checks use persisted state.
+// On macOS, terminate only the disposable fixture; restart checks use persisted state.
 // This avoids Electron/inspector app.quit races on hosted macOS runners.
 async function closeDesktop(instance) {
+  if (process.platform !== "darwin") {
+    await instance.close();
+    return;
+  }
   const child = instance.process();
   if (child.exitCode !== null || child.signalCode !== null) return;
   const exited = new Promise((resolve) => child.once("exit", resolve));
