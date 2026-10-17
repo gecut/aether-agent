@@ -114,6 +114,12 @@ async function boot() {
       await shell.openExternal(checkedRelease.url);
       return true;
     }
+    if (command === "ide.open-vscode") {
+      const project = service.project(z.string().parse(payload));
+      const url = "vscode://file/" + encodeURI(project.path);
+      await shell.openExternal(url);
+      return true;
+    }
     if (command === "skill.source") {
       const url = z
         .string()

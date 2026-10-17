@@ -1030,6 +1030,152 @@ nav > button.active:before {
   padding: 1px 3px;
   border-radius: 3px;
 }
+.ide-page {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(210px, 280px) minmax(0, 1fr);
+  background: var(--bg);
+}
+.ide-explorer {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--sidebar);
+}
+.ide-explorer header,
+.ide-editor > header {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+}
+.ide-explorer header span,
+.ide-editor > header span,
+.ide-explorer header button,
+.ide-editor > header button,
+.ide-extensions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.ide-explorer header svg,
+.ide-editor > header svg {
+  width: 16px;
+  height: 16px;
+}
+.ide-explorer > strong {
+  padding: 14px 14px 8px;
+  font-size: 11px;
+}
+.ide-files {
+  overflow: auto;
+  padding: 0 7px 12px;
+}
+.ide-files button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px;
+  border-radius: 5px;
+  text-align: left;
+  color: var(--muted);
+  font-size: 11px;
+}
+.ide-files button svg {
+  width: 15px;
+  height: 15px;
+  color: var(--accent);
+}
+.ide-files button.active {
+  background: var(--accent-bg);
+  color: var(--text);
+}
+.ide-files bdi {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ide-extensions {
+  margin-top: auto;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+}
+.ide-extensions h3 {
+  font-size: 11px;
+  margin: 0;
+}
+.ide-extensions p {
+  margin: 6px 0 10px;
+  color: var(--dim);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.ide-extensions button,
+.ide-editor > header button {
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 10px;
+}
+.ide-editor {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.ide-editor > header {
+  background: var(--raised);
+}
+.ide-editor > header button:not(:disabled) {
+  background: var(--accent-bg);
+  border-color: #6e8fce;
+}
+.ide-editor textarea {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 18px 22px;
+  resize: none;
+  background: var(--surface);
+  color: var(--text);
+  font: 13px/1.7 var(--mono);
+  tab-size: 2;
+}
+.ide-empty {
+  flex: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 30px;
+  text-align: center;
+  color: var(--muted);
+}
+.ide-empty > svg {
+  width: 34px;
+  height: 34px;
+  color: var(--accent);
+}
+.ide-empty h1 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--text);
+}
+.ide-empty p {
+  margin: 0;
+  max-width: 360px;
+}
 .inspector {
   grid-column: 3;
   grid-row: 2;

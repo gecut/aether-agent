@@ -25,6 +25,7 @@ export const settingsSchema = z.object({
   timeoutSeconds: z.number().int().min(15).max(3600),
   retries: z.number().int().min(0).max(3),
   theme: z.enum(["dark", "light"]),
+  themeJson: z.string().max(4000).default(""),
   apiUrl: z.string().url().default("http://127.0.0.1:11434/v1"),
 });
 export type Settings = z.infer<typeof settingsSchema>;
@@ -46,6 +47,7 @@ export const defaults: Settings = {
   timeoutSeconds: 600,
   retries: 1,
   theme: "dark",
+  themeJson: "",
   apiUrl: "http://127.0.0.1:11434/v1",
 };
 export const verificationSchema = z.enum([

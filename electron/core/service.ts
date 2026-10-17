@@ -1225,6 +1225,20 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
           .parse(payload);
         return repo.readProjectFile(this.project(p.projectId).path, p.file);
       }
+      case "editor.write": {
+        const p = z
+          .object({
+            projectId: z.string(),
+            file: z.string().min(1).max(500),
+            content: z.string().max(1_000_000),
+          })
+          .parse(payload);
+        return repo.editProjectFile(
+          this.project(p.projectId).path,
+          p.file,
+          p.content,
+        );
+      }
       case "prompt.save": {
         const p = z
           .object({

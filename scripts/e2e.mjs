@@ -75,6 +75,10 @@ try {
       encoding: "utf8",
     }).trim(),
   );
+  await page.getByRole("button", { name: "IDE", exact: true }).click();
+  await page.getByRole("button", { name: /README\.md/ }).click();
+  await page.getByLabel("Editor README.md").waitFor();
+  await page.getByRole("button", { name: "Workspace", exact: true }).click();
   console.log("Restarting after project setup");
   await closeDesktop(app);
   app = await electron.launch(options);

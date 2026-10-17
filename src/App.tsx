@@ -3,6 +3,7 @@ import { Companion } from "./companion/Companion";
 import { companionPose } from "./companion/state";
 import { SkillDiscovery } from "./SkillDiscovery";
 import { CodeGraph } from "./CodeGraph";
+import { IDE } from "./IDE";
 import { TaskGraph } from "./TaskGraph";
 import { playNotificationTone } from "./notifications";
 import { SplashScreen } from "./SplashScreen";
@@ -80,6 +81,7 @@ import { defaults } from "../shared/types";
 type Page =
   | "Graphify"
   | "Workspace"
+  | "IDE"
   | "Agents & teams"
   | "Prompt laboratory"
   | "Skills library"
@@ -252,7 +254,37 @@ export function App() {
   }, [projectId, call, refresh]);
   useEffect(() => {
     document.documentElement.dataset.theme = data.settings.theme;
-  }, [data.settings.theme]);
+    const root = document.documentElement.style;
+    const allowed = new Set([
+      "--bg",
+      "--sidebar",
+      "--surface",
+      "--raised",
+      "--hover",
+      "--border",
+      "--text",
+      "--muted",
+      "--dim",
+      "--accent",
+      "--accent-bg",
+    ]);
+    for (const key of allowed) root.removeProperty(key);
+    try {
+      const values = JSON.parse(data.settings.themeJson || "{}") as Record<
+        string,
+        unknown
+      >;
+      for (const [key, value] of Object.entries(values))
+        if (
+          allowed.has(key) &&
+          typeof value === "string" &&
+          /^#[0-9a-f]{3,8}$/i.test(value)
+        )
+          root.setProperty(key, value);
+    } catch {
+      /* Invalid optional theme JSON is retained for correction without breaking the UI. */
+    }
+  }, [data.settings.theme, data.settings.themeJson]);
   useEffect(() => {
     if (!bridge) return;
     let pending: RunEvent[] = [];
@@ -511,6 +543,7 @@ export function App() {
   });
   const navigation: [Page, ReactNode][] = [
     ["Workspace", <SquaresFour />],
+    ["IDE", <FileCode />],
     ["Graphify", <TreeStructure />],
     ["Agents & teams", <UsersThree />],
     ["Prompt laboratory", <Flask />],
@@ -1512,6 +1545,8 @@ export function App() {
               </div>
             )}
           </>
+        ) : page === "IDE" ? (
+          <IDE project={project} call={call} notify={notify} />
         ) : page === "Graphify" ? (
           <div className="page-scroll">
             {project ? (
@@ -2669,6 +2704,18 @@ function SettingsPage({
           {draft.theme === "dark" ? <Moon /> : <Sun />}
           {draft.theme === "dark" ? "Dark" : "Light"}
         </Button>
+        <label className="theme-json">
+          Theme JSON overrides
+          <textarea
+            dir="ltr"
+            value={draft.themeJson}
+            onChange={(event) =>
+              setDraft({ ...draft, themeJson: event.target.value })
+            }
+            placeholder={'{ "--accent": "#5f7cff", "--bg": "#10131a" }'}
+          />
+          <small>Optional hex color overrides. Save settings to apply.</small>
+        </label>
       </section>
     </div>
   );
