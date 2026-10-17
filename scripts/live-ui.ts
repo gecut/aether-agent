@@ -107,8 +107,13 @@ const page = await app.firstWindow();
 const errors: string[] = [];
 page.on("pageerror", (error) => errors.push(String(error)));
 try {
-  await page.getByText("Ambitious work.").waitFor();
-  await page.getByRole("button", { name: /طراحی برنامه Weather/ }).click();
+  await page
+    .getByRole("button", { name: "Start building", exact: true })
+    .click();
+  await page
+    .getByRole("heading", { name: "What are we building today?" })
+    .waitFor();
+  await page.getByRole("button", { name: fixture.title, exact: true }).click();
   const heading = page.getByRole("heading", { name: fixture.title });
   await heading.waitFor();
   const companion = page.getByRole("region", {
@@ -270,6 +275,15 @@ try {
   console.error("Renderer errors:", errors);
   throw error;
 } finally {
-  await app.close();
   server.close();
+  if (process.platform === "darwin") {
+    const child = app.process();
+    if (child.exitCode === null && child.signalCode === null) {
+      const exited = new Promise((resolve) => child.once("exit", resolve));
+      const timer = setTimeout(() => child.kill("SIGKILL"), 10000);
+      child.kill("SIGTERM");
+      await exited;
+      clearTimeout(timer);
+    }
+  } else await app.close();
 }

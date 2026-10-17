@@ -159,3 +159,4 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Startup shows only Ava, including an inline initial mascot before the React application loads.
 - [x] Monaco 0.57.0 integrates the VS Code editor source with syntax coloring, search, code folding, completion workers and keyboard saving; the extension host remains in external VS Code.
 - [x] File saves preserve bounded private version history with optimistic revision checks and restore actions; newly applied session changes can be reversed only while their checkpoint still matches.
+- [x] Graphify detects macOS Python/parser CPU mismatches, retries once with the parser's architecture, remembers successful launches, and shows a concise repair action if recovery fails.

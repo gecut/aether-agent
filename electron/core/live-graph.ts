@@ -4,7 +4,7 @@ import path from "node:path";
 import { z } from "zod";
 import type { CodeGraph } from "../../shared/types";
 import { git } from "./repository";
-import { execute } from "./process";
+import { GraphifyRuntime, graphifyFailure } from "./graphify-runtime";
 import { inside, sensitive, redact } from "./security";
 import { findBinary } from "../providers/runtime";
 
@@ -66,6 +66,7 @@ export class LiveGraph {
   private cache = new Map<string, { signature: string; graph: CodeGraph }>();
   private pending?: Promise<CodeGraph>;
   private controller = new AbortController();
+  private runtime = new GraphifyRuntime();
   constructor(private directory: string) {}
   async close() {
     this.controller.abort();
@@ -181,7 +182,7 @@ export class LiveGraph {
             await mkdir(path.dirname(target), { recursive: true, mode: 0o700 });
             await writeFile(target, contents, { mode: 0o600 });
           }
-          const result = await execute(
+          const result = await this.runtime.run(
             binary,
             [
               "extract",
@@ -194,9 +195,7 @@ export class LiveGraph {
             { signal: this.controller.signal, timeoutMs: 60000 },
           );
           if (result.code !== 0)
-            throw new Error(
-              "Graphify extraction failed: " + result.stderr.slice(-1000),
-            );
+            throw new Error(graphifyFailure(result.stderr));
           const output = path.join(job, "index", "graphify-out", "graph.json");
           if ((await lstat(output)).size > 20000000)
             throw new Error("Graphify output exceeds the 20 MB limit");
