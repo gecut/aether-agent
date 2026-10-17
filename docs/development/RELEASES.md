@@ -18,7 +18,7 @@ Builds are unsigned; macOS is not notarized. Publishing installers does not impl
 ## Checks and publication
 
 1. An Ubuntu check job installs locked dependencies, checks formatting, and runs deterministic tests without model calls.
-2. Four native runner jobs each build the renderer/main process and package their platform. macOS uses separate Apple Silicon and Intel hosts. Windows/macOS run the packaged launch/IPC/restart smoke in temporary userData. Linux checks its archive contents and distribution files; this workflow does not claim Linux desktop runtime acceptance.
+2. Four native runner jobs each build the renderer/main process and package their platform. macOS uses separate Apple Silicon and Intel hosts. Windows/macOS run the packaged launch/IPC/restart smoke in temporary userData. The harness terminates only its disposable app process between launches, so persistence checks do not depend on Electron debugger quit handling; it does not test graceful user-initiated shutdown. Linux checks its archive contents and distribution files; this workflow does not claim Linux desktop runtime acceptance.
 3. Each job verifies the app version, renderer, preloads, WASM and licenses, excludes development harnesses, and requires both expected distribution formats.
 4. A publication job downloads artifacts only after every job succeeds. It requires exactly eight distributions, generates checksums, creates a draft prerelease, uploads all nine assets, and publishes only after upload succeeds. A failed upload leaves a recoverable draft. Rerunning the same workflow run first returns its release to draft, replaces the assets, then republishes the complete set.
 
