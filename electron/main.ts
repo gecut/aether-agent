@@ -13,11 +13,14 @@ import { DesktopWidget } from "./desktop-widget";
 import { Store } from "./core/store";
 import { Service } from "./core/service";
 import { trustedRendererURL } from "./core/security";
+import { checkForRelease } from "./core/release-check";
+import type { ReleaseInfo } from "../shared/types";
 let window: BrowserWindow | undefined,
   service: Service,
   store: Store,
   quitting = false;
 let widget: DesktopWidget | undefined;
+let checkedRelease: ReleaseInfo | undefined;
 const devURL = process.env.AETHER_DEV_URL;
 if (process.env.AETHER_TEST_DATA)
   app.setPath("userData", path.resolve(process.env.AETHER_TEST_DATA));
@@ -100,6 +103,16 @@ async function boot() {
       const id = z.string().max(100).optional().parse(payload);
       await widget?.show(id);
       return;
+    }
+    if (command === "update.check") {
+      checkedRelease = await checkForRelease(app.getVersion());
+      return checkedRelease;
+    }
+    if (command === "update.open") {
+      if (!checkedRelease)
+        throw new Error("Check for updates before opening a release");
+      await shell.openExternal(checkedRelease.url);
+      return true;
     }
     if (command === "skill.source") {
       const url = z

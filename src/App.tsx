@@ -5,6 +5,7 @@ import { CodeGraph } from "./CodeGraph";
 import { TaskGraph } from "./TaskGraph";
 import { playNotificationTone } from "./notifications";
 import { SplashScreen } from "./SplashScreen";
+import { BootScreen } from "./BootScreen";
 import {
   useState,
   useEffect,
@@ -69,6 +70,7 @@ import type {
   PromptVersion,
   ConnectionStatus,
   PromptAttachment,
+  ReleaseInfo,
 } from "../shared/types";
 import { defaults } from "../shared/types";
 type Page =
@@ -167,7 +169,10 @@ export function App() {
     [showSplash, setShowSplash] = useState(
       () => localStorage.getItem("aether.welcome.v2") !== "seen",
     ),
-    [commitMessage, setCommitMessage] = useState("");
+    [commitMessage, setCommitMessage] = useState(""),
+    [loading, setLoading] = useState(true),
+    [release, setRelease] = useState<ReleaseInfo>(),
+    [checkingUpdate, setCheckingUpdate] = useState(false);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const refreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const notify = useCallback((message: string) => {
@@ -198,9 +203,13 @@ export function App() {
     [notify],
   );
   const refresh = useCallback(async () => {
-    if (!bridge) return;
+    if (!bridge) {
+      setLoading(false);
+      return;
+    }
     const result = await call<Snapshot>("snapshot");
     if (result) setData(result);
+    setLoading(false);
   }, [call]);
   useEffect(() => {
     void refresh();
@@ -355,6 +364,12 @@ export function App() {
     const settings = await call<Settings>("settings.model", { role, patch });
     if (settings) setData((d) => ({ ...d, settings }));
   };
+  const checkForUpdate = async () => {
+    setCheckingUpdate(true);
+    const latest = await call<ReleaseInfo>("update.check");
+    if (latest) setRelease(latest);
+    setCheckingUpdate(false);
+  };
   const submit = async () => {
     if (!project) {
       await openProject();
@@ -450,6 +465,7 @@ export function App() {
     ["Git changes", <GitBranch />],
     ["Run history", <ClockCounterClockwise />],
   ];
+  if (loading) return <BootScreen />;
   return (
     <div className={"app " + (!inspector ? "inspector-hidden" : "")}>
       <div className="titlebar">
@@ -633,6 +649,29 @@ export function App() {
             )}
           </div>
           <div className="header-actions">
+            {release ? (
+              <button
+                className="update-available"
+                title={`Open ${release.name}`}
+                onClick={() => void call("update.open")}
+              >
+                <DownloadSimple /> Update available
+              </button>
+            ) : (
+              <button
+                className="icon-button"
+                aria-label="Check for updates"
+                title="Check for updates"
+                onClick={() => void checkForUpdate()}
+                disabled={checkingUpdate}
+              >
+                {checkingUpdate ? (
+                  <CircleNotch className="spin" />
+                ) : (
+                  <DownloadSimple size={18} />
+                )}
+              </button>
+            )}
             <button
               className="icon-button"
               aria-label="Show desktop widget"

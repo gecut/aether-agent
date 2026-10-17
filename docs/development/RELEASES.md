@@ -15,6 +15,10 @@ Find downloads in [GitHub Releases](https://github.com/gecut/aether-agent/releas
 
 Builds are unsigned; macOS is not notarized. Publishing installers does not imply every provider/runtime is verified on every operating system. CLI providers must be installed and authenticated separately, and platform-specific provider and sandbox support retains the limitations documented in [provider setup](../providers/README.md).
 
+## In-app update checks
+
+The app's download icon checks Aether's public GitHub release feed from the main process. It validates that the result is an Aether release URL, then offers a button that opens that exact release page. The app does not download or install a build automatically: releases are currently unsigned and macOS builds are not notarized.
+
 ## Checks and publication
 
 1. An Ubuntu check job installs locked dependencies, checks formatting, and runs deterministic tests without model calls.

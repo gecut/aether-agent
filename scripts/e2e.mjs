@@ -17,12 +17,50 @@ const options = {
   args: ["."],
   env: { ...process.env, AETHER_TEST_DATA: path.join(directory, "data") },
 };
+// The macOS inspector can keep a disposable Electron process alive after
+// Playwright's normal close request. Terminate only the test fixture so the
+// restart assertions remain deterministic without affecting a user's app.
+async function closeDesktop(instance) {
+  if (process.platform !== "darwin") {
+    await instance.close();
+    return;
+  }
+  let child;
+  try {
+    child = instance.process();
+  } catch {
+    return;
+  }
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const exited = new Promise((resolve) => child.once("exit", resolve));
+  let timer;
+  const forced = new Promise((resolve) => {
+    timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      resolve();
+    }, 10000);
+  });
+  try {
+    child.kill("SIGTERM");
+    await Promise.race([exited, forced]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function dismissSplash(page, required = false) {
+  const start = page.getByRole("button", { name: "Start building" });
+  if (required) {
+    await start.click();
+    return;
+  }
+  await start.click({ timeout: 3000 }).catch(() => {});
+}
 let app = await electron.launch(options);
 let page = await app.firstWindow();
 const errors = [];
 page.on("pageerror", (error) => errors.push(String(error)));
 try {
-  await page.getByRole("button", { name: "Start building" }).click();
+  await dismissSplash(page, true);
   await page
     .getByRole("heading", { name: "What are we building today?" })
     .waitFor();
@@ -37,7 +75,8 @@ try {
       encoding: "utf8",
     }).trim(),
   );
-  await app.close();
+  console.log("Restarting after project setup");
+  await closeDesktop(app);
   app = await electron.launch(options);
   page = await app.firstWindow();
   page.on("pageerror", (error) => errors.push(String(error)));
@@ -124,9 +163,12 @@ try {
       exact: true,
     })
     .waitFor();
-  await app.close();
+  console.log("Restarting after persisted settings");
+  await closeDesktop(app);
   app = await electron.launch(options);
   page = await app.firstWindow();
+  console.log("Checking persisted home state");
+  await dismissSplash(page);
   await page
     .getByRole("heading", { name: "What are we building today?" })
     .waitFor();
@@ -142,5 +184,5 @@ try {
   );
   console.log("Screenshots: artifacts/");
 } finally {
-  await app.close();
+  await closeDesktop(app);
 }

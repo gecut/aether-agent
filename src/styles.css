@@ -34,6 +34,41 @@
 body {
   margin: 0;
 }
+.boot-screen {
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: radial-gradient(circle at 48% 40%, #1b2830, var(--bg) 48%);
+  color: var(--text);
+}
+.boot-mark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  color: #9be2d1;
+  background: #173033;
+  border: 1px solid #2c6460;
+  border-radius: 14px;
+}
+.boot-screen strong {
+  display: block;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.boot-screen p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.boot-screen > svg {
+  color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
 button,
 input,
 select,
@@ -556,6 +591,25 @@ nav > button.active:before {
   border-radius: 4px;
   color: var(--muted);
   flex-shrink: 0;
+}
+.update-available {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b9d5ff;
+  background: #1b2c47;
+  border: 1px solid #39557e;
+  border-radius: 5px;
+  padding: 6px 9px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.update-available svg {
+  width: 14px;
+  height: 14px;
+}
+.update-available:hover {
+  background: #263b5b;
 }
 .model-bar {
   display: flex;

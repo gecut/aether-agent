@@ -307,6 +307,13 @@ export interface Bridge {
   ): () => void;
   desktop: boolean;
 }
+export interface ReleaseInfo {
+  currentVersion: string;
+  tag: string;
+  name: string;
+  url: string;
+  publishedAt?: string;
+}
 declare global {
   interface Window {
     aether?: Bridge;
