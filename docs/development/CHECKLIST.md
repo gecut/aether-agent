@@ -152,3 +152,4 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Integrated IDE provides safe text editing for project files and a direct VS Code handoff for extension-backed workflows; theme colors accept bounded JSON overrides.
 - [x] Prompt references accept bounded images, PDF, Word, and common text files; text references are included in planning while binary documents remain private files.
 - [x] Codex CLI stream-reset failures retry twice with bounded backoff before the session fails.
+- [x] Run history uses readable session cards with separated metadata, status, and accessible pin/delete controls.

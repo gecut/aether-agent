@@ -1719,28 +1719,40 @@ export function App() {
                     r.title.toLowerCase().includes(search.toLowerCase()),
                   )
                   .map((r) => (
-                    <div className="history-row" key={r.id}>
+                    <article
+                      className={`history-row${r.pinned ? " is-pinned" : ""}`}
+                      key={r.id}
+                    >
                       <button
                         className="history-open"
                         onClick={() => openRun(r)}
                       >
-                        <ChatCircleDots />
-                        <span>
+                        <span className="history-icon" aria-hidden="true">
+                          <ChatCircleDots />
+                        </span>
+                        <span className="history-copy">
                           <strong dir="auto">{r.title}</strong>
-                          <small>
-                            {
-                              data.projects.find((p) => p.id === r.projectId)
-                                ?.name
-                            }{" "}
-                            · {new Date(r.createdAt).toLocaleDateString()} ·{" "}
-                            {r.tasks.length} tasks
-                          </small>
+                          <span className="history-meta">
+                            <span>
+                              {
+                                data.projects.find((p) => p.id === r.projectId)
+                                  ?.name
+                              }
+                            </span>
+                            <span>
+                              {new Date(r.createdAt).toLocaleDateString()}
+                            </span>
+                            <span>
+                              {r.tasks.length}{" "}
+                              {r.tasks.length === 1 ? "task" : "tasks"}
+                            </span>
+                          </span>
                         </span>
                         <Tag kind={r.status}>
                           <StatusDot status={r.status} />
                           {formatStatus(r.status)}
                         </Tag>
-                        <CaretRight />
+                        <CaretRight className="history-chevron" />
                       </button>
                       <div className="history-actions">
                         <button
@@ -1748,6 +1760,7 @@ export function App() {
                           aria-label={
                             r.pinned ? "Unpin session" : "Pin session"
                           }
+                          title={r.pinned ? "Unpin session" : "Pin session"}
                         >
                           <PushPin weight={r.pinned ? "fill" : "regular"} />
                         </button>
@@ -1757,11 +1770,12 @@ export function App() {
                             r.status,
                           )}
                           aria-label="Delete session"
+                          title="Delete session"
                         >
                           <Trash />
                         </button>
                       </div>
-                    </div>
+                    </article>
                   ))}
               </div>
             ) : (
