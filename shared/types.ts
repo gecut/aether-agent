@@ -153,8 +153,32 @@ export interface Run {
 export interface PromptAttachment {
   id: string;
   name: string;
-  mime: "image/png" | "image/jpeg" | "image/webp" | "image/gif";
+  kind: "image" | "document";
+  mime:
+    | "image/png"
+    | "image/jpeg"
+    | "image/webp"
+    | "image/gif"
+    | "application/pdf"
+    | "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    | "application/msword"
+    | "text/plain";
   path: string;
+  text?: string;
+}
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  at: string;
+}
+export interface Chat {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: ChatMessage[];
+  config: Settings;
 }
 export interface RunEvent {
   seq: number;
@@ -285,6 +309,7 @@ export interface Memory {
 export interface Snapshot {
   projects: Project[];
   runs: Run[];
+  chats: Chat[];
   settings: Settings;
   providers: ProviderInfo[];
   prompts: PromptVersion[];

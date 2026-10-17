@@ -71,6 +71,7 @@ import type {
   ConnectionStatus,
   PromptAttachment,
   ReleaseInfo,
+  Chat,
 } from "../shared/types";
 import { defaults } from "../shared/types";
 type Page =
@@ -87,6 +88,7 @@ type Tab = "Session" | "Plan" | "Graphify" | "Changes" | "Trace";
 const empty: Snapshot = {
   projects: [],
   runs: [],
+  chats: [],
   settings: defaults,
   providers: [],
   prompts: [],
@@ -150,6 +152,7 @@ export function App() {
     [page, setPage] = useState<Page>("Workspace"),
     [projectId, setProjectId] = useState(""),
     [runId, setRunId] = useState(""),
+    [chatId, setChatId] = useState(""),
     [tab, setTab] = useState<Tab>("Session"),
     [inspector, setInspector] = useState(true),
     [objective, setObjective] = useState(""),
@@ -302,6 +305,7 @@ export function App() {
   }, [runId, call]);
   const project = data.projects.find((p) => p.id === projectId),
     run = data.runs.find((r) => r.id === runId),
+    chat = data.chats.find((candidate) => candidate.id === chatId),
     task =
       run?.tasks.find((t) => t.id === selectedTask) ??
       run?.tasks.find((t) => t.status === "running") ??
@@ -335,6 +339,13 @@ export function App() {
     setPage("Workspace");
     setTab("Session");
     setSelectedTask("");
+    setObjective("");
+    setChatId("");
+  };
+  const openChat = (target: Chat) => {
+    setChatId(target.id);
+    setRunId("");
+    setPage("Workspace");
     setObjective("");
   };
   useEffect(
@@ -371,8 +382,20 @@ export function App() {
     setCheckingUpdate(false);
   };
   const submit = async () => {
-    if (!project) {
-      await openProject();
+    if (!project || chatId) {
+      if (objective.trim().length < 1) return;
+      setBusy(true);
+      const conversation = await call<Chat>("chat.send", {
+        content: objective.trim(),
+        ...(chatId ? { chatId } : {}),
+      });
+      if (conversation) {
+        await refresh();
+        setChatId(conversation.id);
+        setObjective("");
+        setAttachments([]);
+      }
+      setBusy(false);
       return;
     }
     if (objective.trim().length < 3) return;
@@ -385,17 +408,20 @@ export function App() {
     if (result) {
       await refresh();
       setRunId(result.id);
+      setChatId("");
       setObjective("");
       setAttachments([]);
       setTab("Session");
     }
     setBusy(false);
   };
-  const attachImage = async () => {
-    if (attachments.length >= 4)
-      return notify("You can attach up to four images.");
-    const image = await call<PromptAttachment | null>("prompt.image.choose");
-    if (image) setAttachments((current) => [...current, image]);
+  const attachReference = async () => {
+    if (attachments.length >= 8)
+      return notify("You can attach up to eight reference files.");
+    const attachment = await call<PromptAttachment | null>(
+      "prompt.attachment.choose",
+    );
+    if (attachment) setAttachments((current) => [...current, attachment]);
   };
   const setPinned = async (target: Run) => {
     await call("run.pin", { id: target.id, pinned: !target.pinned });
@@ -562,9 +588,36 @@ export function App() {
         </nav>
         <div className="sidebar-section">
           <div className="section-label">
-            RECENT SESSIONS <span>{projectRuns.length}</span>
+            LATEST ACTIVITY{" "}
+            <span>{projectRuns.length + data.chats.length}</span>
+            <button
+              aria-label="New chat"
+              title="New chat"
+              onClick={() => {
+                setRunId("");
+                setChatId("");
+                setObjective("");
+                setPage("Workspace");
+              }}
+            >
+              <Plus size={13} />
+            </button>
           </div>
           <div className="session-list">
+            {data.chats.slice(0, 4).map((item) => (
+              <div
+                key={item.id}
+                className={
+                  "session-row " + (item.id === chatId ? "selected" : "")
+                }
+              >
+                <button className="session-open" onClick={() => openChat(item)}>
+                  <span className="message-avatar aether-avatar">A</span>
+                  <bdi>{item.title}</bdi>
+                  <StatusDot status="completed" />
+                </button>
+              </div>
+            ))}
             {projectRuns.slice(0, 7).map((r) => (
               <div
                 key={r.id}
@@ -585,7 +638,7 @@ export function App() {
                 </button>
               </div>
             ))}
-            {!projectRuns.length && (
+            {!projectRuns.length && !data.chats.length && (
               <p dir="auto" className="sidebar-hint">
                 Your sessions will live here.
               </p>
@@ -644,7 +697,9 @@ export function App() {
             {page === "Workspace" && (
               <>
                 <CaretRight size={12} />
-                <strong dir="auto">{run?.title ?? "New session"}</strong>
+                <strong dir="auto">
+                  {run?.title ?? chat?.title ?? "New chat"}
+                </strong>
               </>
             )}
           </div>
@@ -657,6 +712,78 @@ export function App() {
               >
                 <DownloadSimple /> Update available
               </button>
+            ) : chat ? (
+              <div className="session-scroll chat-scroll">
+                <div className="session-heading">
+                  <div>
+                    <span className="eyebrow">AVA / LOCAL CONVERSATION</span>
+                    <h1 dir="auto">{chat.title}</h1>
+                    <p>
+                      Ask anything. Ava will flag requests that need a project
+                      plan.
+                    </p>
+                  </div>
+                </div>
+                <div className="chat-messages">
+                  {chat.messages.map((message) => (
+                    <div
+                      className={
+                        message.role === "user"
+                          ? "user-message"
+                          : "assistant-message"
+                      }
+                      key={message.id}
+                    >
+                      <div
+                        className={
+                          message.role === "user"
+                            ? "message-avatar"
+                            : "message-avatar aether-avatar"
+                        }
+                      >
+                        {message.role === "user" ? (
+                          "Y"
+                        ) : (
+                          <AsteriskSimple weight="bold" />
+                        )}
+                      </div>
+                      <div className="message-content">
+                        <div className="message-meta">
+                          {message.role === "user" ? "You" : "Ava"}{" "}
+                          <time>{relativeTime(message.at)}</time>
+                        </div>
+                        <p dir="auto">
+                          {message.content.replace(/^PROJECT_WORK:\s*/i, "")}
+                        </p>
+                        {message.role === "assistant" &&
+                          /^PROJECT_WORK:/i.test(message.content) && (
+                            <Button
+                              onClick={() => {
+                                setObjective(
+                                  [...chat.messages]
+                                    .reverse()
+                                    .find((item) => item.role === "user")
+                                    ?.content ?? "",
+                                );
+                                setChatId("");
+                                notify(
+                                  project
+                                    ? "Project request ready to plan."
+                                    : "Choose a project, then send this request to create a plan.",
+                                );
+                              }}
+                            >
+                              {project
+                                ? "Create project plan"
+                                : "Choose a project"}{" "}
+                              <ArrowRight />
+                            </Button>
+                          )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <button
                 className="icon-button"
@@ -1267,7 +1394,7 @@ export function App() {
                     placeholder={
                       project
                         ? "Describe what you want to build, fix, or explore…"
-                        : "Open a project, then give your agents an objective…"
+                        : "Message Ava, or add a project to plan and build…"
                     }
                     onKeyDown={(e) => {
                       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -1283,10 +1410,10 @@ export function App() {
                         <bdi>{project?.name ?? "Add project"}</bdi>
                       </button>
                       <button
-                        onClick={() => void attachImage()}
-                        title="Attach an image"
+                        onClick={() => void attachReference()}
+                        title="Attach reference files"
                       >
-                        <Paperclip size={15} /> Add image
+                        <Paperclip size={15} /> Add files
                       </button>
                       <span className="composer-divider" />
                       <span>
@@ -1312,7 +1439,7 @@ export function App() {
                   {attachments.length > 0 && (
                     <div
                       className="prompt-attachments"
-                      aria-label="Attached images"
+                      aria-label="Attached reference files"
                     >
                       {attachments.map((image) => (
                         <span key={image.id}>

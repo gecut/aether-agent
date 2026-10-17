@@ -132,6 +132,19 @@ describe("CLI provider contract", () => {
       ]),
     );
   });
+  it("reconnects after a transient provider stream reset", async () => {
+    await fakeCodex(
+      `const fs=require('node:fs');const count=Number(fs.existsSync('attempt')?fs.readFileSync('attempt','utf8'):0)+1;fs.writeFileSync('attempt',String(count));process.stdin.resume();process.stdin.on('end',()=>{if(count===1){console.error('stream disconnected before completion: Connection reset by peer');process.exitCode=1;return;}console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Recovered'}}));console.log(JSON.stringify({type:'turn.completed'}));});`,
+    );
+    const onOutput = vi.fn();
+    await expect(
+      new CLIProvider("codex").run({ ...invocation(), onOutput }),
+    ).resolves.toMatchObject({ text: "Recovered" });
+    expect(await readFile(path.join(directory, "attempt"), "utf8")).toBe("2");
+    expect(onOutput).toHaveBeenCalledWith(
+      expect.stringContaining("Reconnecting… 1/2"),
+    );
+  });
   it("cleans up a CLI that stays alive after its successful terminal event", async () => {
     await fakeCodex(
       `process.stdin.resume();process.stdin.on('end',()=>{console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:'Finished'}}));console.log(JSON.stringify({type:'turn.completed'}));setInterval(()=>{},10000);});`,

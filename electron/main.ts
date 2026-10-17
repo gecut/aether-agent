@@ -132,17 +132,30 @@ async function boot() {
       });
       return result.canceled ? null : service.addProject(result.filePaths[0]);
     }
-    if (command === "prompt.image.choose") {
+    if (command === "prompt.attachment.choose") {
       const result = await dialog.showOpenDialog(window!, {
         properties: ["openFile"],
-        title: "Attach an image to your prompt",
+        title: "Attach reference material to your prompt",
         filters: [
           { name: "Images", extensions: ["png", "jpg", "jpeg", "webp", "gif"] },
+          {
+            name: "Documents",
+            extensions: [
+              "pdf",
+              "docx",
+              "doc",
+              "txt",
+              "md",
+              "csv",
+              "json",
+              "log",
+            ],
+          },
         ],
       });
       return result.canceled
         ? null
-        : service.importPromptImage(result.filePaths[0]);
+        : service.importPromptAttachment(result.filePaths[0]);
     }
     if (command === "secret.save") {
       const value = z.string().max(2000).parse(payload);

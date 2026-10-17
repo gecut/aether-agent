@@ -41,6 +41,19 @@ const names = {
   antigravity: "Antigravity",
   compatible: "Compatible API",
 };
+const transientStreamFailure = (message: string) =>
+  /stream disconnected|connection reset|econnreset|socket hang up|network error/i.test(
+    message,
+  );
+const waitForReconnect = (signal: AbortSignal, milliseconds: number) =>
+  new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(resolve, milliseconds);
+    const cancelled = () => {
+      clearTimeout(timer);
+      reject(new Error("Execution cancelled"));
+    };
+    signal.addEventListener("abort", cancelled, { once: true });
+  });
 export class CLIProvider implements Provider {
   constructor(public id: "codex" | "claude" | "antigravity") {}
   async diagnose(): Promise<ProviderInfo> {
@@ -184,60 +197,82 @@ export class CLIProvider implements Provider {
       sessionId: string | undefined,
       usage: Record<string, number> | undefined,
       errorMessage = "";
-    const result = await execute(binary, args, {
-      cwd: input.cwd,
-      input: input.systemPrompt
-        ? input.systemPrompt + "\n\n" + input.prompt
-        : input.prompt,
-      signal: input.signal,
-      timeoutMs: input.timeoutMs,
-      completeWhen: (line) => {
-        try {
-          const event = JSON.parse(line);
-          return (
-            event.type === "turn.completed" ||
-            (this.id === "claude" && event.type === "result" && !event.is_error)
-          );
-        } catch {
-          return false;
-        }
-      },
-      onLine: (line, stream) => {
-        if (stream === "stderr") {
-          input.onOutput(line);
-          return;
-        }
-        try {
-          const event = JSON.parse(line);
-          if (event.type === "thread.started") sessionId = event.thread_id;
-          if (event.type === "error" || event.type === "turn.failed")
-            errorMessage =
-              event.message ?? event.error?.message ?? JSON.stringify(event);
-          if (
-            event.item?.type === "agent_message" &&
-            event.type === "item.completed"
-          )
-            text = event.item.text;
-          if (event.type === "turn.completed") usage = event.usage;
-          if (this.id === "claude" && event.type === "result") {
-            text = event.result ?? "";
-            if (event.is_error) errorMessage = text;
+    let result;
+    for (let attempt = 1; ; attempt++) {
+      result = await execute(binary, args, {
+        cwd: input.cwd,
+        input: input.systemPrompt
+          ? input.systemPrompt + "\n\n" + input.prompt
+          : input.prompt,
+        signal: input.signal,
+        timeoutMs: input.timeoutMs,
+        completeWhen: (line) => {
+          try {
+            const event = JSON.parse(line);
+            return (
+              event.type === "turn.completed" ||
+              (this.id === "claude" &&
+                event.type === "result" &&
+                !event.is_error)
+            );
+          } catch {
+            return false;
           }
-          const message =
-            event.item?.text ??
-            event.item?.aggregated_output ??
-            event.item?.command ??
-            event.event?.delta?.text ??
-            (event.type === "result" ? event.result : undefined);
-          input.onOutput(message ? `${event.type}: ${message}` : line);
-        } catch (error) {
-          if (!(error instanceof SyntaxError))
-            errorMessage =
-              error instanceof Error ? error.message : String(error);
-          input.onOutput(line);
-        }
-      },
-    });
+        },
+        onLine: (line, stream) => {
+          if (stream === "stderr") {
+            input.onOutput(line);
+            return;
+          }
+          try {
+            const event = JSON.parse(line);
+            if (event.type === "thread.started") sessionId = event.thread_id;
+            if (event.type === "error" || event.type === "turn.failed")
+              errorMessage =
+                event.message ?? event.error?.message ?? JSON.stringify(event);
+            if (
+              event.item?.type === "agent_message" &&
+              event.type === "item.completed"
+            )
+              text = event.item.text;
+            if (event.type === "turn.completed") usage = event.usage;
+            if (this.id === "claude" && event.type === "result") {
+              text = event.result ?? "";
+              if (event.is_error) errorMessage = text;
+            }
+            const message =
+              event.item?.text ??
+              event.item?.aggregated_output ??
+              event.item?.command ??
+              event.event?.delta?.text ??
+              (event.type === "result" ? event.result : undefined);
+            input.onOutput(message ? `${event.type}: ${message}` : line);
+          } catch (error) {
+            if (!(error instanceof SyntaxError))
+              errorMessage =
+                error instanceof Error ? error.message : String(error);
+            input.onOutput(line);
+          }
+        },
+      });
+      const failure = errorMessage || result.stderr;
+      if (
+        (result.code !== 0 || errorMessage) &&
+        attempt < 3 &&
+        transientStreamFailure(failure)
+      ) {
+        input.onOutput(
+          `Reconnecting… ${attempt}/2 after a temporary provider stream interruption.`,
+        );
+        text = "";
+        sessionId = undefined;
+        usage = undefined;
+        errorMessage = "";
+        await waitForReconnect(input.signal, attempt * 500);
+        continue;
+      }
+      break;
+    }
     if (result.code !== 0 || errorMessage)
       throw new Error(
         redact(
