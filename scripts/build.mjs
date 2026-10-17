@@ -30,3 +30,8 @@ await copyFile(
   "node_modules/sql.js/dist/sql-wasm.wasm",
   "dist-electron/sql-wasm.wasm",
 );
+await copyFile("node_modules/monaco-editor/LICENSE", "dist/monaco-LICENSE.txt");
+await copyFile(
+  "node_modules/monaco-editor/ThirdPartyNotices.txt",
+  "dist/monaco-ThirdPartyNotices.txt",
+);

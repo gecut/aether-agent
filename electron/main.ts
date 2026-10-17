@@ -94,8 +94,10 @@ async function boot() {
     if (window && !window.isDestroyed())
       window.webContents.send("aether:event", event);
   });
+  const initialization = service.initialize();
   ipcMain.handle("aether:command", async (event, command, payload) => {
     trusted(event);
+    await initialization;
     z.string().max(80).parse(command);
     if (JSON.stringify(payload ?? "").length > 500000)
       throw new Error("Command payload exceeds limit");
@@ -196,9 +198,12 @@ async function boot() {
     }
     return service.command(command, payload);
   });
-  await service.initialize();
-  if (devURL) await window.loadURL(devURL);
-  else await window.loadFile(path.join(__dirname, "../dist/index.html"));
+  await Promise.all([
+    initialization,
+    devURL
+      ? window.loadURL(devURL)
+      : window.loadFile(path.join(__dirname, "../dist/index.html")),
+  ]);
   widget = new DesktopWidget(
     store,
     service,

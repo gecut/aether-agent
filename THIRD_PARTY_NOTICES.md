@@ -1,6 +1,18 @@
 # Third-party notices
 
-Aether Code source is original. The reference projects in `docs/development/RESEARCH.md` informed architecture only; their source, logos and assets are not incorporated.
+Aether Code includes the open-source components attributed below. Other reference projects in `docs/development/RESEARCH.md` informed architecture only.
+
+## Monaco Editor 0.57.0 / VS Code
+
+The integrated editor uses Microsoft's Monaco Editor, generated from the VS Code source at revision `6a598d4a13031703d483d103c1d934a36ad27971`. Source: https://github.com/microsoft/monaco-editor and https://github.com/microsoft/vscode. The VS Code workbench and extension host are not bundled.
+
+Copyright (c) 2016 - present Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Runtime dependencies include React/React DOM (MIT), Phosphor Icons (MIT), sql.js (MIT, based on public-domain SQLite), Zod (MIT), YAML (ISC), and Electron (MIT with Chromium/Node and other third-party notices). Development tooling includes Vite, esbuild, TypeScript, Vitest, Playwright, Prettier and electron-builder; see each installed package's license for its exact version. Electron's bundled LICENSE and LICENSES.chromium.html must remain with packaged distributions.
 

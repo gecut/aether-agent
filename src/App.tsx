@@ -4,6 +4,8 @@ import { companionPose } from "./companion/state";
 import { SkillDiscovery } from "./SkillDiscovery";
 import { CodeGraph } from "./CodeGraph";
 import { IDE } from "./IDE";
+import { FloatingPopover } from "./FloatingPopover";
+import { Collapsible } from "./Collapsible";
 import { TaskGraph } from "./TaskGraph";
 import { playNotificationTone } from "./notifications";
 import { SplashScreen } from "./SplashScreen";
@@ -58,6 +60,7 @@ import {
   CircleNotch,
   Paperclip,
   PushPin,
+  DotsThree,
 } from "@phosphor-icons/react";
 import type {
   Snapshot,
@@ -194,9 +197,35 @@ export function App() {
     [loading, setLoading] = useState(true),
     [release, setRelease] = useState<ReleaseInfo>(),
     [checkingUpdate, setCheckingUpdate] = useState(false);
+  const projectAnchor = useRef<HTMLButtonElement>(null);
+  const modelAnchors = useRef<
+    Partial<Record<"planner" | "coder", HTMLButtonElement | null>>
+  >({});
+  const [sessionMenu, setSessionMenu] = useState<{
+    kind: "run" | "chat";
+    id: string;
+    anchor: HTMLElement;
+  }>();
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const refreshTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const bootStartedAt = useRef(performance.now());
+  const editorDirty = useRef(false);
+  const onEditorDirty = useCallback((dirty: boolean) => {
+    editorDirty.current = dirty;
+  }, []);
+  const canLeaveEditor = () => {
+    if (!editorDirty.current) return true;
+    if (!window.confirm("Discard unsaved editor changes and leave this file?"))
+      return false;
+    return true;
+  };
+  useEffect(() => {
+    const prevent = (event: BeforeUnloadEvent) => {
+      if (editorDirty.current) event.preventDefault();
+    };
+    window.addEventListener("beforeunload", prevent);
+    return () => window.removeEventListener("beforeunload", prevent);
+  }, []);
   const notify = useCallback((message: string) => {
     setToast(message);
     clearTimeout(toastTimer.current);
@@ -379,6 +408,7 @@ export function App() {
       ["awaiting_approval", "awaiting_review"].includes(r.status),
     ).length;
   const openProject = async () => {
+    if (!canLeaveEditor()) return;
     const p = await call<Project>("project.choose");
     if (p) {
       await refresh();
@@ -389,6 +419,7 @@ export function App() {
     setProjectMenu(false);
   };
   const openRun = (r: Run) => {
+    if (!canLeaveEditor()) return;
     setProjectId(r.projectId);
     setRunId(r.id);
     setPage("Workspace");
@@ -398,6 +429,7 @@ export function App() {
     setChatId("");
   };
   const openChat = (target: Chat) => {
+    if (!canLeaveEditor()) return;
     setChatId(target.id);
     setRunId("");
     setPage("Workspace");
@@ -501,6 +533,33 @@ export function App() {
       notify("Session deleted.");
     }
   };
+  const menuTarget =
+    sessionMenu?.kind === "chat"
+      ? data.chats.find((item) => item.id === sessionMenu.id)
+      : data.runs.find((item) => item.id === sessionMenu?.id);
+  const changeSession = async (action: "pin" | "delete") => {
+    if (!sessionMenu || !menuTarget) return;
+    const { kind, id } = sessionMenu;
+    setSessionMenu(undefined);
+    if (
+      action === "delete" &&
+      !window.confirm(
+        `Delete the saved session “${menuTarget.title}”? This removes its local history.`,
+      )
+    )
+      return;
+    const result = await call(
+      `${kind}.${action}`,
+      action === "pin" ? { id, pinned: !menuTarget.pinned } : id,
+    );
+    if (result) {
+      if (action === "delete") {
+        if (id === chatId) setChatId("");
+        if (id === runId) setRunId("");
+      }
+      await refresh();
+    }
+  };
   const runAction = async (action: string) => {
     if (!run) return;
     setBusy(true);
@@ -511,6 +570,8 @@ export function App() {
       notify(
         "Changes applied to your working tree. Review and commit when ready.",
       );
+    if (result && action === "run.restore")
+      notify("Previous version restored. Your session history is retained.");
   };
   const loadGit = useCallback(async () => {
     if (projectId) {
@@ -525,7 +586,10 @@ export function App() {
     const listener = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key === "n") {
         event.preventDefault();
+        if (!canLeaveEditor()) return;
         setRunId("");
+        setChatId("");
+        setObjective("");
         setPage("Workspace");
       }
       if ((event.metaKey || event.ctrlKey) && event.key === "o") {
@@ -577,7 +641,9 @@ export function App() {
         </div>
         <div className="project-control">
           <button
+            ref={projectAnchor}
             className="project-switch"
+            aria-expanded={projectMenu}
             onClick={() => setProjectMenu((v) => !v)}
           >
             <span className="project-avatar">
@@ -592,11 +658,16 @@ export function App() {
             <CaretDown size={13} />
           </button>
           {projectMenu && (
-            <div className="popover project-popover">
+            <FloatingPopover
+              anchor={projectAnchor.current}
+              className="project-popover"
+              onClose={() => setProjectMenu(false)}
+            >
               {data.projects.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => {
+                    if (!canLeaveEditor()) return;
                     setProjectId(p.id);
                     setRunId("");
                     setProjectMenu(false);
@@ -611,100 +682,149 @@ export function App() {
                 <Plus />
                 Open local folder <kbd>⌘ O</kbd>
               </button>
-            </div>
+            </FloatingPopover>
           )}
         </div>
         <button
           className="new-session"
           onClick={() => {
+            if (!canLeaveEditor()) return;
             setPage("Workspace");
             setRunId("");
+            setChatId("");
             setObjective("");
           }}
         >
           <Plus size={16} /> New session <kbd>⌘ N</kbd>
         </button>
-        <nav>
-          {navigation.map(([label, icon]) => (
-            <button
-              key={label}
-              className={page === label ? "active" : ""}
-              onClick={() => {
-                setPage(label);
-                setSearch("");
-              }}
-            >
-              {icon}
-              <span>{label}</span>
-              {label === "Workspace" && approvalCount > 0 && (
-                <span className="nav-count">{approvalCount}</span>
-              )}
-              {label === "Skills library" && data.skills.length > 0 && (
-                <span className="nav-number">
-                  {data.skills.filter((s) => s.enabled).length}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
+        <Collapsible id="navigation" title="Workspace tools">
+          <nav>
+            {navigation.map(([label, icon]) => (
+              <button
+                key={label}
+                className={page === label ? "active" : ""}
+                onClick={() => {
+                  if (label !== page && !canLeaveEditor()) return;
+                  setPage(label);
+                  setSearch("");
+                }}
+              >
+                {icon}
+                <span>{label}</span>
+                {label === "Workspace" && approvalCount > 0 && (
+                  <span className="nav-count">{approvalCount}</span>
+                )}
+                {label === "Skills library" && data.skills.length > 0 && (
+                  <span className="nav-number">
+                    {data.skills.filter((s) => s.enabled).length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+        </Collapsible>
         <div className="sidebar-section">
-          <div className="section-label">
-            LATEST ACTIVITY{" "}
-            <span>{projectRuns.length + data.chats.length}</span>
-            <button
-              aria-label="New chat"
-              title="New chat"
-              onClick={() => {
-                setRunId("");
-                setChatId("");
-                setObjective("");
-                setPage("Workspace");
-              }}
-            >
-              <Plus size={13} />
-            </button>
-          </div>
-          <div className="session-list">
-            {data.chats.slice(0, 4).map((item) => (
-              <div
-                key={item.id}
-                className={
-                  "session-row " + (item.id === chatId ? "selected" : "")
-                }
+          <Collapsible id="activity" title="Latest activity">
+            <div className="section-label">
+              SESSIONS <span>{projectRuns.length + data.chats.length}</span>
+              <button
+                aria-label="New chat"
+                title="New chat"
+                onClick={() => {
+                  if (!canLeaveEditor()) return;
+                  setRunId("");
+                  setChatId("");
+                  setObjective("");
+                  setPage("Workspace");
+                }}
               >
-                <button className="session-open" onClick={() => openChat(item)}>
-                  <AvaChatAvatar />
-                  <bdi>{item.title}</bdi>
-                  <StatusDot status="completed" />
-                </button>
-              </div>
-            ))}
-            {projectRuns.slice(0, 7).map((r) => (
-              <div
-                key={r.id}
-                className={"session-row " + (r.id === runId ? "selected" : "")}
-              >
-                <button className="session-open" onClick={() => openRun(r)}>
-                  <ChatCircleDots size={15} />
-                  <bdi>{r.title}</bdi>
-                  <StatusDot status={r.status} />
-                </button>
-                <button
-                  className="session-pin"
-                  aria-label={r.pinned ? "Unpin session" : "Pin session"}
-                  title={r.pinned ? "Unpin session" : "Pin session"}
-                  onClick={() => void setPinned(r)}
+                <Plus size={13} />
+              </button>
+            </div>
+            <div className="session-list">
+              {[...data.chats]
+                .sort(
+                  (a, b) =>
+                    Number(!!b.pinned) - Number(!!a.pinned) ||
+                    b.updatedAt.localeCompare(a.updatedAt),
+                )
+                .slice(0, 4)
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    className={
+                      "session-row " + (item.id === chatId ? "selected" : "")
+                    }
+                  >
+                    <button
+                      className="session-open"
+                      onClick={() => openChat(item)}
+                    >
+                      <AvaChatAvatar />
+                      <bdi>{item.title}</bdi>
+                      {item.pinned ? (
+                        <PushPin size={12} weight="fill" />
+                      ) : (
+                        <StatusDot status="completed" />
+                      )}
+                    </button>
+                    <button
+                      className="session-pin"
+                      aria-label={`Session menu: ${item.title}`}
+                      title="Session menu"
+                      aria-expanded={sessionMenu?.id === item.id}
+                      onClick={(event) =>
+                        setSessionMenu({
+                          kind: "chat",
+                          id: item.id,
+                          anchor: event.currentTarget,
+                        })
+                      }
+                    >
+                      <DotsThree weight="bold" />
+                    </button>
+                  </div>
+                ))}
+              {projectRuns.slice(0, 7).map((r) => (
+                <div
+                  key={r.id}
+                  className={
+                    "session-row " + (r.id === runId ? "selected" : "")
+                  }
                 >
-                  <PushPin weight={r.pinned ? "fill" : "regular"} />
-                </button>
-              </div>
-            ))}
-            {!projectRuns.length && !data.chats.length && (
-              <p dir="auto" className="sidebar-hint">
-                Your sessions will live here.
-              </p>
-            )}
-          </div>
+                  <button className="session-open" onClick={() => openRun(r)}>
+                    <ChatCircleDots size={15} />
+                    <bdi>{r.title}</bdi>
+                    {r.pinned ? (
+                      <PushPin size={12} weight="fill" />
+                    ) : (
+                      <StatusDot status={r.status} />
+                    )}
+                  </button>
+                  <button
+                    className="session-pin"
+                    aria-label={`Session menu: ${r.title}`}
+                    title="Session menu"
+                    aria-expanded={sessionMenu?.id === r.id}
+                    onClick={(event) =>
+                      setSessionMenu({
+                        kind: "run",
+                        id: r.id,
+                        anchor: event.currentTarget,
+                      })
+                    }
+                  >
+                    <DotsThree weight="bold" />
+                  </button>
+                </div>
+              ))}
+              {!projectRuns.length && !data.chats.length && (
+                <p dir="auto" className="sidebar-hint">
+                  Your sessions will live here.
+                </p>
+              )}
+            </div>
+          </Collapsible>
         </div>
         <div className="sidebar-bottom">
           <Companion
@@ -744,7 +864,9 @@ export function App() {
           </div>
           <button
             className={"settings-nav " + (page === "Settings" ? "active" : "")}
-            onClick={() => setPage("Settings")}
+            onClick={() => {
+              if (canLeaveEditor()) setPage("Settings");
+            }}
           >
             <GearSix size={17} /> Settings{" "}
             <span className="keyboard-hint">⌘ ,</span>
@@ -826,7 +948,11 @@ export function App() {
                     {role === "planner" ? "PLANNER" : "CODING MODEL"}
                   </span>
                   <button
+                    ref={(element) => {
+                      modelAnchors.current[role] = element;
+                    }}
                     className="model-trigger"
+                    aria-expanded={modelMenu === role}
                     onClick={() =>
                       setModelMenu(modelMenu === role ? null : role)
                     }
@@ -851,7 +977,11 @@ export function App() {
                     <CaretDown size={12} />
                   </button>
                   {modelMenu === role && (
-                    <div className="popover model-popover">
+                    <FloatingPopover
+                      anchor={modelAnchors.current[role] ?? null}
+                      className="model-popover"
+                      onClose={() => setModelMenu(null)}
+                    >
                       <span className="section-label">
                         {role === "planner"
                           ? "PLANNING & SUPERVISION"
@@ -902,7 +1032,7 @@ export function App() {
                       >
                         Provider settings <ArrowUpRight />
                       </Button>
-                    </div>
+                    </FloatingPopover>
                   )}
                 </div>
               ))}
@@ -1185,6 +1315,22 @@ export function App() {
                       </span>
                     </div>
                     <div className="approval-actions">
+                      {run.application?.state === "applied" && (
+                        <Button
+                          disabled={busy}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                "Restore the project to before this session’s changes? Aether will stop if those files have changed since applying.",
+                              )
+                            )
+                              void runAction("run.restore");
+                          }}
+                        >
+                          <ClockCounterClockwise />
+                          Restore previous version
+                        </Button>
+                      )}
                       {["awaiting_approval", "awaiting_review"].includes(
                         run.status,
                       ) && (
@@ -1546,7 +1692,13 @@ export function App() {
             )}
           </>
         ) : page === "IDE" ? (
-          <IDE project={project} call={call} notify={notify} />
+          <IDE
+            onDirtyChange={onEditorDirty}
+            project={project}
+            call={call}
+            notify={notify}
+            theme={data.settings.theme}
+          />
         ) : page === "Graphify" ? (
           <div className="page-scroll">
             {project ? (
@@ -2074,7 +2226,9 @@ export function App() {
                 </div>
                 <button
                   className="inspector-link"
-                  onClick={() => setPage("Settings")}
+                  onClick={() => {
+                    if (canLeaveEditor()) setPage("Settings");
+                  }}
                 >
                   Manage providers & permissions <ArrowUpRight />
                 </button>
@@ -2101,6 +2255,29 @@ export function App() {
           <AsteriskSimple size={12} />
         </span>
       </footer>
+      {sessionMenu && menuTarget && (
+        <FloatingPopover
+          anchor={sessionMenu.anchor}
+          className="session-menu"
+          onClose={() => setSessionMenu(undefined)}
+        >
+          <button onClick={() => void changeSession("pin")}>
+            <PushPin weight={menuTarget.pinned ? "fill" : "regular"} />
+            {menuTarget.pinned ? "Unpin session" : "Pin session"}
+          </button>
+          <button
+            className="destructive"
+            disabled={
+              sessionMenu.kind === "run" &&
+              ["running", "initializing"].includes((menuTarget as Run).status)
+            }
+            onClick={() => void changeSession("delete")}
+          >
+            <Trash />
+            Delete session
+          </button>
+        </FloatingPopover>
+      )}
       {showSplash && (
         <SplashScreen
           onStart={() => {
@@ -2184,10 +2361,13 @@ function InspectorGroup({
   children: ReactNode;
 }) {
   return (
-    <section className="inspector-group">
-      <h4>{title}</h4>
+    <Collapsible
+      id={`inspector-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+      title={title}
+      className="inspector-group"
+    >
       {children}
-    </section>
+    </Collapsible>
   );
 }
 function Info({ label, value }: { label: string; value: string }) {
@@ -2340,7 +2520,16 @@ function SettingsPage({
     [key, setKey] = useState(""),
     [checking, setChecking] = useState(false),
     [connectionBusy, setConnectionBusy] = useState<ProviderId>();
-  useEffect(() => setDraft(data.settings), [data.settings]);
+  const savedSettings = useRef(data.settings);
+  useEffect(() => {
+    const previous = savedSettings.current;
+    savedSettings.current = data.settings;
+    setDraft((current) =>
+      JSON.stringify(current) === JSON.stringify(previous)
+        ? data.settings
+        : current,
+    );
+  }, [data.settings]);
   return (
     <div className="page-scroll">
       <PageHeading

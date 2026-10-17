@@ -35,6 +35,8 @@ import { reviewEvidence, taskEvidence } from "./review-evidence";
 import { prepareProject } from "./project-setup";
 import { LiveGraph } from "./live-graph";
 import { SkillCatalog, copyProjectSkills } from "./skill-catalog";
+import { EditorHistory } from "./editor-history";
+import { checkpointFingerprint } from "./change-checkpoint";
 const now = () => new Date().toISOString();
 function structured(text: string) {
   const clean = text.replace(/^```(?:json)?\s*|\s*```$/g, "").trim();
@@ -285,6 +287,10 @@ export class Service {
       apiUrl: current.config.apiUrl,
       apiKey: this.key(),
     });
+    const latestChat = this.store.get<Chat>("chat", current.id);
+    if (!latestChat)
+      throw new Error("This chat was deleted while the response was running");
+    current.pinned = latestChat.pinned;
     current.messages.push({
       id: randomUUID(),
       role: "assistant",
@@ -933,18 +939,84 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
         "Original project changed. Changes were preserved; apply is blocked.",
       );
     if (run.patch) {
+      if (!run.workspace) throw new Error("Session worktree is unavailable");
+      const files = (
+        await repo.git(run.workspace, [
+          "diff",
+          "--no-renames",
+          "--name-only",
+          "-z",
+          run.head!,
+          "HEAD",
+        ])
+      )
+        .split("\0")
+        .filter(Boolean);
+      await checkpointFingerprint(project.path, files);
       await repo.git(
         project.path,
         ["apply", "--check", "--binary", "-"],
         run.patch,
       );
       await repo.git(project.path, ["apply", "--binary", "-"], run.patch);
+      run.application = {
+        version: 1,
+        state: "applied",
+        head: info.head,
+        files,
+        fingerprint: await checkpointFingerprint(project.path, files),
+        appliedAt: now(),
+      };
     }
     run.status = "completed";
     run.reason =
       "Reviewed changes applied to the original working tree. No commit or publication was made.";
     this.save(run);
     this.emit(id, "approval.accepted", run.reason);
+    return run;
+  }
+  async restoreChanges(id: string) {
+    const run = this.run(id);
+    const evidence = run.application;
+    if (
+      !evidence ||
+      evidence.version !== 1 ||
+      evidence.state !== "applied" ||
+      !run.patch
+    )
+      throw new Error("This session has no applied change checkpoint");
+    if (this.controllers.has(id) || this.activeProjects.has(run.projectId))
+      throw new Error("Wait for project execution to finish before restoring");
+    const project = this.project(run.projectId);
+    const head = (await repo.git(project.path, ["rev-parse", "HEAD"])).trim();
+    const staged = (
+      await repo.git(project.path, ["diff", "--cached", "--name-only", "-z"])
+    ).split("\0");
+    if (
+      head !== evidence.head ||
+      staged.some((file) => evidence.files.includes(file)) ||
+      (await checkpointFingerprint(project.path, evidence.files)) !==
+        evidence.fingerprint
+    )
+      throw new Error(
+        "Project files changed since this session was applied. Restore is blocked to preserve newer work.",
+      );
+    await repo.git(
+      project.path,
+      ["apply", "--reverse", "--check", "--binary", "-"],
+      run.patch,
+    );
+    await repo.git(
+      project.path,
+      ["apply", "--reverse", "--binary", "-"],
+      run.patch,
+    );
+    evidence.state = "restored";
+    evidence.restoredAt = now();
+    run.reason =
+      "The user restored the project to before this session’s applied changes. Execution history is retained.";
+    this.save(run);
+    this.emit(id, "changes.restored", run.reason);
     return run;
   }
   async reject(id: string) {
@@ -1149,6 +1221,23 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
         this.save(run);
         return run;
       }
+      case "chat.pin": {
+        const p = z
+          .object({ id: z.string().uuid(), pinned: z.boolean() })
+          .parse(payload);
+        const chat = this.store.get<Chat>("chat", p.id);
+        if (!chat) throw new Error("Chat not found");
+        chat.pinned = p.pinned;
+        this.store.put("chat", chat.id, chat);
+        return chat;
+      }
+      case "chat.delete": {
+        const id = z.string().uuid().parse(payload);
+        if (!this.store.get<Chat>("chat", id))
+          throw new Error("Chat not found");
+        this.store.remove("chat", id);
+        return true;
+      }
       case "run.delete": {
         const id = z.string().parse(payload);
         if (this.controllers.has(id))
@@ -1188,6 +1277,8 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
         return this.executeRun(z.string().parse(payload));
       case "run.apply":
         return this.apply(z.string().parse(payload));
+      case "run.restore":
+        return this.restoreChanges(z.string().parse(payload));
       case "run.reject":
         return this.reject(z.string().parse(payload));
       case "run.cancel":
@@ -1231,12 +1322,41 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
             projectId: z.string(),
             file: z.string().min(1).max(500),
             content: z.string().max(1_000_000),
+            revision: z.string().regex(/^[a-f0-9]{64}$/),
           })
           .parse(payload);
-        return repo.editProjectFile(
-          this.project(p.projectId).path,
+        return new EditorHistory(this.store).write(
+          this.project(p.projectId),
           p.file,
           p.content,
+          p.revision,
+        );
+      }
+      case "editor.read":
+      case "editor.history": {
+        const p = z
+          .object({ projectId: z.string(), file: z.string().min(1).max(500) })
+          .parse(payload);
+        const editor = new EditorHistory(this.store);
+        const project = this.project(p.projectId);
+        return command === "editor.read"
+          ? editor.read(project, p.file)
+          : editor.list(project, p.file);
+      }
+      case "editor.restore": {
+        const p = z
+          .object({
+            projectId: z.string(),
+            file: z.string().min(1).max(500),
+            id: z.string().uuid(),
+            revision: z.string().regex(/^[a-f0-9]{64}$/),
+          })
+          .parse(payload);
+        return new EditorHistory(this.store).restore(
+          this.project(p.projectId),
+          p.file,
+          p.id,
+          p.revision,
         );
       }
       case "prompt.save": {

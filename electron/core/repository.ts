@@ -1,4 +1,4 @@
-import { readFile, mkdir, writeFile } from "node:fs/promises";
+import { readFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { buildContext, type ContextOptions } from "./context";
 import { execute } from "./process";
@@ -74,21 +74,6 @@ export async function readProjectFile(cwd: string, file: string) {
   if (content.length > 200000 || content.includes("\0"))
     throw new Error("File is binary or exceeds preview limit");
   return redact(content);
-}
-export async function editProjectFile(
-  cwd: string,
-  file: string,
-  content: string,
-) {
-  if (sensitive(file))
-    throw new Error("Sensitive or generated files are excluded");
-  if (content.length > 1_000_000)
-    throw new Error("Editor content exceeds 1 MB");
-  const target = await inside(cwd, file);
-  const existing = await readFile(target, "utf8");
-  if (existing.includes("\0")) throw new Error("Binary files cannot be edited");
-  await writeFile(target, content, "utf8");
-  return { file, content };
 }
 export async function worktree(cwd: string, base: string, location: string) {
   await mkdir(path.dirname(location), { recursive: true });

@@ -463,6 +463,34 @@ describe("end to end orchestration with deterministic test provider", () => {
     const reopened = new Store(path.join(directory, "data"));
     await reopened.open();
     expect(reopened.get<Run>("run", run.id)?.status).toBe("completed");
+    const restoredService = new Service(reopened);
+    await git(projectDir, ["add", "hello.js"]);
+    await expect(restoredService.restoreChanges(run.id)).rejects.toThrow(
+      "changed since",
+    );
+    await git(projectDir, ["reset", "HEAD", "--", "hello.js"]);
+    const added = await readText(projectDir, "hello.test.js");
+    await writeFile(
+      path.join(projectDir, "hello.test.js"),
+      added + "// newer user edit\n",
+    );
+    await expect(restoredService.restoreChanges(run.id)).rejects.toThrow(
+      "changed since",
+    );
+    expect(await readText(projectDir, "hello.js")).toContain("= 2");
+    await writeFile(path.join(projectDir, "hello.test.js"), added);
+    await restoredService.restoreChanges(run.id);
+    expect(await readText(projectDir, "hello.js")).toContain("= 1");
+    expect((await git(projectDir, ["status", "--short"])).trim()).toBe("");
+    expect(reopened.get<Run>("run", run.id)?.application?.state).toBe(
+      "restored",
+    );
+    expect(
+      reopened
+        .events(run.id)
+        .some((event) => event.type === "changes.restored"),
+    ).toBe(true);
+    await restoredService.shutdown();
     reopened.close();
   });
   it("preserves pre-existing changes by rejecting execution", async () => {

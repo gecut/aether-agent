@@ -153,3 +153,9 @@ Last updated: 2026-10-17. Checkboxes record implementation, not blanket producti
 - [x] Prompt references accept bounded images, PDF, Word, and common text files; text references are included in planning while binary documents remain private files.
 - [x] Codex CLI stream-reset failures retry twice with bounded backoff before the session fails.
 - [x] Run history uses readable session cards with separated metadata, status, and accessible pin/delete controls.
+- [x] Empty-state titles and descriptions remain centered despite automatic prose direction; menus use a viewport-bounded overlay layer above scrolling panels.
+- [x] Navigation, activity, inspector groups, explorer, extensions and file history support collapse/expand with versioned local preferences.
+- [x] Session ellipsis menus support left-click pin/delete for chats and runs; deleting a chat cannot resurrect it when a response finishes.
+- [x] Startup shows only Ava, including an inline initial mascot before the React application loads.
+- [x] Monaco 0.57.0 integrates the VS Code editor source with syntax coloring, search, code folding, completion workers and keyboard saving; the extension host remains in external VS Code.
+- [x] File saves preserve bounded private version history with optimistic revision checks and restore actions; newly applied session changes can be reversed only while their checkpoint still matches.

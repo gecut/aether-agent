@@ -6,11 +6,36 @@
     <title>Aether Code</title>
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws://localhost:5173; font-src 'self'"
+      content="default-src 'self'; script-src 'self'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws://localhost:5173; font-src 'self'"
     />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div
+        role="status"
+        aria-label="Loading Aether"
+        style="
+          position: fixed;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          background: #101113;
+        "
+      >
+        <svg width="96" height="96" viewBox="0 0 100 100" aria-hidden="true">
+          <path
+            fill="#a8e3d5"
+            d="M51 12C65 9 76 19 79 31S93 53 85 65 70 75 59 84 39 86 30 79 10 72 13 57 21 40 24 27 38 14 51 12Z"
+          />
+          <path
+            d="m62 24 7 7"
+            stroke="#214c46"
+            stroke-width="6"
+            stroke-linecap="round"
+          />
+        </svg>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

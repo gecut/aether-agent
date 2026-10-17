@@ -150,6 +150,15 @@ export interface Run {
   attachments?: PromptAttachment[];
   /** Pinned sessions remain at the top of a project's history. */
   pinned?: boolean;
+  application?: {
+    version: 1;
+    state: "applied" | "restored";
+    head: string;
+    files: string[];
+    fingerprint: string;
+    appliedAt: string;
+    restoredAt?: string;
+  };
   config: Settings;
 }
 export interface PromptAttachment {
@@ -174,8 +183,19 @@ export interface ChatMessage {
   content: string;
   at: string;
 }
+export interface EditorDocument {
+  file: string;
+  content: string;
+  revision: string;
+}
+export interface EditorVersion {
+  id: string;
+  file: string;
+  at: string;
+}
 export interface Chat {
   id: string;
+  pinned?: boolean;
   title: string;
   createdAt: string;
   updatedAt: string;

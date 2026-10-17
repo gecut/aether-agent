@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
+    "monaco-editor": "0.57.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "sql.js": "^1.13.0",
@@ -57,6 +58,7 @@
       "!dist-electron/provider-smoke.mjs",
       "LICENSE",
       "THIRD_PARTY_NOTICES.md",
+      "!node_modules/monaco-editor/**",
       "!dist-electron/live-ui.mjs",
       "!dist-electron/widget-ui.mjs"
     ],

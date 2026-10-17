@@ -1,16 +1,12 @@
-import { AsteriskSimple, CircleNotch } from "@phosphor-icons/react";
+import { Avatar } from "./companion/Avatar";
+import { companionPose } from "./companion/state";
 
 export function BootScreen() {
   return (
-    <main className="boot-screen" aria-live="polite">
-      <span className="boot-mark">
-        <AsteriskSimple weight="bold" />
+    <main className="boot-screen" role="status" aria-label="Loading Aether">
+      <span className="boot-mascot companion-avatar">
+        <Avatar state={companionPose("idle")} paused={false} />
       </span>
-      <div>
-        <strong>Aether Code</strong>
-        <p>Loading your local workspace…</p>
-      </div>
-      <CircleNotch className="spin" aria-label="Loading" />
     </main>
   );
 }

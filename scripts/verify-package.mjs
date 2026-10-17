@@ -25,6 +25,8 @@ const archive = path.join(root, "app.asar");
 const files = listPackage(archive).map((file) => file.replaceAll("\\", "/"));
 for (const file of [
   "/dist/index.html",
+  "/dist/monaco-LICENSE.txt",
+  "/dist/monaco-ThirdPartyNotices.txt",
   "/dist-electron/main.cjs",
   "/dist-electron/preload.cjs",
   "/dist-electron/widget-preload.cjs",
