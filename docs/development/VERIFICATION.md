@@ -1,5 +1,9 @@
 # Verification record
 
+## October 18: Ava-led Aether landing page
+
+Replaced all sample branding, fabricated statistics/credits and placeholder footer links with Aether content and real destinations. Ava uses SVG poses sampled from the desktop mascot's body profile and Bloub engine, with upstream attribution retained. Browser checks at eight widths from 320–1440 pixels cover overflow, all anchors, decoded meadow video, loaded imagery, expression selection, gaze and reduced-motion reset. Desktop/tablet/mobile screenshots were inspected. Async font loading and on-screen-only video playback produced a local throttled Lighthouse result of 100 performance / 100 accessibility, 0.9-second FCP/LCP and zero layout shift. The production build, all 112 application tests and real Electron desktop regression also passed; app execution and provider code were unchanged.
+
 ## October 18: runtime extraction and public website
 
 The extraction update passed a real fresh macOS arm64 Code-OSS installation, file save, interactive terminal command, VSIX installation/activation, scoped chat, pane collapse and Back to Aether acceptance. Desktop launch/IPC/restart E2E, production build and formatting also passed. Regression tests cover extraction with an unusable inherited PATH, bounded actionable failure diagnostics and rejection of a manifest whose runtime files are missing. The user's exact extraction failure did not reproduce locally; the update addresses inherited archive-tool selection, metadata restoration, timeouts, stale installation files and partial-runtime detection. Windows/Linux runtime extraction remains unverified locally.
