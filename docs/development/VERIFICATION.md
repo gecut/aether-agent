@@ -1,5 +1,11 @@
 # Verification record
 
+## October 18: v0.1.10 macOS bundle-signature repair
+
+The user's mounted 0.1.9 arm64 download failed strict recursive signature verification with `code has no resources but signature indicates they must be present`. Its linker signature identified Electron, had no sealed resources and did not bind Info.plist. The repaired 0.1.10 package passes `codesign --verify --deep --strict` on both the unpacked app and the application inside the final read-only mounted DMG. Its signature binds `dev.aether.code`, seals bundle resources and retains the Hardened Runtime flag. The new verifier rejects the original damaged bundle. The DMG checksum, ASAR contents, version and required distributions passed verification.
+
+The newly signed real app passed packaged launch, IPC and restart persistence in a fresh profile, reporting version 0.1.10. The production build, all 112 tests and formatting passed. No user profile was opened or replaced. These checks cover macOS arm64 locally; the CI Intel job must independently verify its own artifacts. Ad-hoc integrity is not Apple notarization: the user's account has no Developer ID distribution capability, and A direct Gatekeeper assessment still rejected the ad-hoc build, so quarantined-download acceptance is not fixed or claimed; the user must review any system approval themselves. No quarantine removal, Gatekeeper disabling or security-prompt automation was performed.
+
 ## October 18: Ava-led Aether landing page
 
 Replaced all sample branding, fabricated statistics/credits and placeholder footer links with Aether content and real destinations. Ava uses SVG poses sampled from the desktop mascot's body profile and Bloub engine, with upstream attribution retained. Browser checks at eight widths from 320–1440 pixels cover overflow, all anchors, decoded meadow video, loaded imagery, expression selection, gaze and reduced-motion reset. Desktop/tablet/mobile screenshots were inspected. Async font loading and on-screen-only video playback produced a local throttled Lighthouse result of 100 performance / 100 accessibility, 0.9-second FCP/LCP and zero layout shift. The production build, all 112 application tests and real Electron desktop regression also passed; app execution and provider code were unchanged.

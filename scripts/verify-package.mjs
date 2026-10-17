@@ -64,6 +64,13 @@ for (const extension of extensions) {
     ),
   );
 }
+if (platform === "mac") {
+  const { verifyMacPackage } = await import("./verify-mac-package.mjs");
+  await verifyMacPackage(
+    path.resolve(root, "../.."),
+    path.resolve("release", `aether-code-${version}-mac-${arch}.dmg`),
+  );
+}
 console.log(
   `Verified ${platform}/${arch}: package contents, version, and ${extensions.join(" + ")}`,
 );

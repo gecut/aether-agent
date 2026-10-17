@@ -4,7 +4,7 @@
   <p><strong>A local-first workspace for coding agents, with you in control.</strong></p>
   <p>Plan the change. Coordinate the team. Inspect the evidence. Approve what ships.</p>
   <p>
-    <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.9-a8c0ff?style=flat-square&amp;labelColor=202329" alt="Version 0.1.9" /></a>
+    <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.10-a8c0ff?style=flat-square&amp;labelColor=202329" alt="Version 0.1.10" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-a8dfcf?style=flat-square&amp;labelColor=202329" alt="MIT license" /></a>
     <a href="#quick-start"><img src="https://img.shields.io/badge/tested_on-macOS_arm64-d2d5dd?style=flat-square&amp;labelColor=202329" alt="Tested on macOS arm64" /></a>
     <a href="docs/development/CHECKLIST.md"><img src="https://img.shields.io/badge/status-developer_preview-e9cc8a?style=flat-square&amp;labelColor=202329" alt="Developer preview" /></a>
@@ -85,11 +85,11 @@ For a production build or a local macOS package:
 npm run build
 npm start
 
-# Create an unsigned .app and ZIP in release/
+# Create an ad-hoc signed .app and ZIP in release/
 npm run package
 ```
 
-The local app is `release/mac-arm64/Aether Code.app`. CI also packages Windows and Linux downloads. These builds are unsigned; macOS is not notarized, and automatic app updates are not implemented.
+The local app is `release/mac-arm64/Aether Code.app`. CI also packages Windows and Linux downloads. macOS previews are ad-hoc signed but not Apple-notarized; Windows builds are unsigned. See [Mac download and approval notes](docs/development/MACOS_RELEASES.md). Automatic app installation is not implemented.
 
 ### Your first change
 

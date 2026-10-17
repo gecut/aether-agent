@@ -172,3 +172,5 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] IDE extraction uses the system archive tool with bounded diagnostics, stale-stage cleanup, actionable disk/permission errors and missing-runtime detection. Regression covers a broken desktop PATH.
 - [x] Single-file static website includes Aether overview, workflow, downloads and FAQ, plus the Aether meadow footer. GitHub Pages publishes the website directory without a build step.
 - [x] Rebranded the landing page entirely to Aether with real product links and an Ava-led interactive hero, using the app's mascot geometry and attribution. Removed sample credits/statistics, improved footer contrast and paused off-screen/reduced-motion animation.
+
+- [x] v0.1.10 replaces disabled macOS signing with sealed ad-hoc signatures and validates the unpacked and DMG-contained app before publication. Public notarization remains unavailable without an Apple Developer account; it is not claimed by these checks.

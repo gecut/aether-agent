@@ -2220,7 +2220,7 @@ export function App() {
               ["running", "initializing"].includes(r.status),
             ).length
           }{" "}
-          active runs <span>·</span> Aether Code v0.1.9{" "}
+          active runs <span>·</span> Aether Code v0.1.10{" "}
           <AsteriskSimple size={12} />
         </span>
       </footer>

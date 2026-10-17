@@ -1,6 +1,6 @@
 {
   "name": "aether-code",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "description": "A local-first supervised coding workspace",
   "author": "Aether Code contributors",
@@ -70,7 +70,11 @@
         "dmg",
         "zip"
       ],
-      "identity": null,
+      "identity": "-",
+      "hardenedRuntime": true,
+      "notarize": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "icon": "build/icon.png"
     },
     "artifactName": "aether-code-${version}-${os}-${arch}.${ext}",
