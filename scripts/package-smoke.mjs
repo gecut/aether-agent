@@ -11,6 +11,32 @@ const options = {
   ),
   env: { ...process.env, AETHER_TEST_DATA: directory },
 };
+// Keep the inspector connected until asynchronous before-quit cleanup completes.
+async function closeDesktop(instance) {
+  const child = instance.process();
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const exited = new Promise((resolve) => instance.once("close", resolve));
+  let forced = false;
+  const timer = setTimeout(() => {
+    forced = true;
+    child.kill("SIGKILL");
+  }, 15000);
+  try {
+    await instance
+      .evaluate(({ app }) => {
+        setImmediate(() => app.quit());
+      })
+      .catch(() => {});
+    await exited;
+    assert.equal(
+      forced,
+      false,
+      "Packaged desktop did not quit within 15 seconds",
+    );
+  } finally {
+    clearTimeout(timer);
+  }
+}
 console.log("Launching packaged desktop:", options.executablePath);
 let app = await electron.launch(options);
 try {
@@ -102,7 +128,7 @@ try {
     await page.screenshot({ path: "artifacts/provider-connections.png" });
   }
   console.log("Closing packaged desktop for restart check");
-  await app.close();
+  await closeDesktop(app);
   console.log("Relaunching packaged desktop");
   app = await electron.launch(options);
   page = await app.firstWindow();
@@ -115,5 +141,5 @@ try {
     JSON.stringify(native),
   );
 } finally {
-  await app.close();
+  await closeDesktop(app);
 }

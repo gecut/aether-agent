@@ -27,7 +27,7 @@ beforeEach(async () => {
   );
   await writeFile(
     path.join(directory, "bin", "gh"),
-    `#!${process.execPath}\nconst fs=require('node:fs');const args=process.argv.slice(2);fs.appendFileSync('calls.jsonl',JSON.stringify(args)+'\\n');if(args[1]==='view')process.exit(1);if(args[1]==='upload'&&process.env.FAIL_UPLOAD)process.exit(1);\n`,
+    `#!${process.execPath}\nconst fs=require('node:fs');const args=process.argv.slice(2);fs.appendFileSync('calls.jsonl',JSON.stringify(args)+'\\n');if(args[1]==='view')process.exit(process.env.RELEASE_EXISTS ? 0 : 1);if(args[1]==='upload'&&process.env.FAIL_UPLOAD)process.exit(1);\n`,
     { mode: 0o700 },
   );
   for (const file of assets)
@@ -92,4 +92,17 @@ it("leaves a draft unpublished if uploading fails", async () => {
     "create",
     "upload",
   ]);
+});
+
+it("returns an existing release to draft before replacing its assets", async () => {
+  await run({ RELEASE_EXISTS: "1" });
+  const commands = await calls();
+  expect(commands.map((args) => args[1])).toEqual([
+    "view",
+    "edit",
+    "upload",
+    "edit",
+  ]);
+  expect(commands[1]).toContain("--draft");
+  expect(commands[3]).toContain("--draft=false");
 });

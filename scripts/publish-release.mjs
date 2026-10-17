@@ -70,6 +70,7 @@ if (
     "--prerelease",
     "--latest=false",
   ]);
+else gh(["release", "edit", tag, "--draft"]);
 gh([
   "release",
   "upload",
