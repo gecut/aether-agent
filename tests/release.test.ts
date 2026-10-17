@@ -12,7 +12,10 @@ const assets = [
     ["dmg", "zip"].map((ext) => `aether-code-0.1.9-mac-${arch}.${ext}`),
   ),
   ...["exe", "zip"].map((ext) => `aether-code-0.1.9-win-x64.${ext}`),
-  ...["AppImage", "deb"].map((ext) => `aether-code-0.1.9-linux-x64.${ext}`),
+  ...[
+    ["AppImage", "x86_64"],
+    ["deb", "amd64"],
+  ].map(([ext, arch]) => `aether-code-0.1.9-linux-${arch}.${ext}`),
 ];
 beforeEach(async () => {
   directory = await mkdtemp(path.join(os.tmpdir(), "aether-release-"));

@@ -11,10 +11,12 @@ const options = {
   ),
   env: { ...process.env, AETHER_TEST_DATA: directory },
 };
+console.log("Launching packaged desktop:", options.executablePath);
 let app = await electron.launch(options);
 try {
   let page = await app.firstWindow();
   await page.getByText("Ambitious work.").waitFor();
+  console.log("Packaged desktop UI ready");
   let snapshot = await page.evaluate(() => window.aether.invoke("snapshot"));
   assert.ok(Array.isArray(snapshot.providers));
   assert.equal(snapshot.settings.planner.provider, "codex");
@@ -99,7 +101,9 @@ try {
     );
     await page.screenshot({ path: "artifacts/provider-connections.png" });
   }
+  console.log("Closing packaged desktop for restart check");
   await app.close();
+  console.log("Relaunching packaged desktop");
   app = await electron.launch(options);
   page = await app.firstWindow();
   await page.getByText("Ambitious work.").waitFor();

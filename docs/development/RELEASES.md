@@ -11,7 +11,7 @@
 | macOS    | x64 (Intel)           | DMG, ZIP                |
 | Linux    | x64                   | AppImage, DEB           |
 
-Find downloads in [GitHub Releases](https://github.com/gecut/aether-agent/releases). Files are named `aether-code-<version>-<platform>-<architecture>.<extension>`. Each release also has `SHA256SUMS.txt` with hashes for its eight distribution files.
+Find downloads in [GitHub Releases](https://github.com/gecut/aether-agent/releases). Files are named `aether-code-<version>-<platform>-<architecture>.<extension>`. Linux uses its native architecture labels: `x86_64` for AppImage and `amd64` for DEB. Each release also has `SHA256SUMS.txt` with hashes for its eight distribution files.
 
 Builds are unsigned; macOS is not notarized. Publishing installers does not imply every provider/runtime is verified on every operating system. CLI providers must be installed and authenticated separately, and platform-specific provider and sandbox support retains the limitations documented in [provider setup](../providers/README.md).
 

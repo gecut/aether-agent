@@ -24,9 +24,10 @@ const expected = [
     ["dmg", "zip"].map((ext) => `aether-code-${version}-mac-${arch}.${ext}`),
   ),
   ...["exe", "zip"].map((ext) => `aether-code-${version}-win-x64.${ext}`),
-  ...["AppImage", "deb"].map(
-    (ext) => `aether-code-${version}-linux-x64.${ext}`,
-  ),
+  ...[
+    ["AppImage", "x86_64"],
+    ["deb", "amd64"],
+  ].map(([ext, arch]) => `aether-code-${version}-linux-${arch}.${ext}`),
 ].sort();
 const directory = "release-assets";
 assert.deepEqual(

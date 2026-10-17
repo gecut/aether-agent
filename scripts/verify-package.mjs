@@ -48,13 +48,20 @@ const extensions = {
   win: ["exe", "zip"],
   linux: ["AppImage", "deb"],
 }[platform];
-for (const extension of extensions)
+for (const extension of extensions) {
+  const artifactArch =
+    platform === "linux" && arch === "x64"
+      ? extension === "deb"
+        ? "amd64"
+        : "x86_64"
+      : arch;
   await access(
     path.join(
       "release",
-      `aether-code-${version}-${platform}-${arch}.${extension}`,
+      `aether-code-${version}-${platform}-${artifactArch}.${extension}`,
     ),
   );
+}
 console.log(
   `Verified ${platform}/${arch}: package contents, version, and ${extensions.join(" + ")}`,
 );

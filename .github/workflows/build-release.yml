@@ -68,9 +68,11 @@ jobs:
       - name: Verify package contents and distribution files
         run: node scripts/verify-package.mjs "${{ matrix.platform }}" "${{ matrix.arch }}"
       - name: Smoke test packaged desktop
+        timeout-minutes: 5
         if: matrix.platform != 'linux'
         env:
           AETHER_PACKAGE_PATH: ${{ github.workspace }}/${{ matrix.executable }}
+          DEBUG: pw:browser
         run: |
           mkdir -p artifacts
           node scripts/package-smoke.mjs
