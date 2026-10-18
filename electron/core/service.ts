@@ -23,6 +23,9 @@ import {
   type ChatMessage,
   type ChatCheckpoint,
 } from "../../shared/types";
+import { GitHubIntegration } from "../integrations/github";
+import { TelegramIntegration } from "../integrations/telegram";
+import type { IntegrationSecrets } from "../integrations/secrets";
 import { ProjectImports } from "./project-import";
 import { starterSkills, installStarterSkills } from "./starter-skills";
 import { Store } from "./store";
@@ -62,6 +65,8 @@ function structured(text: string) {
   }
 }
 export class Service {
+  readonly github: GitHubIntegration;
+  readonly telegram: TelegramIntegration;
   readonly graph: LiveGraph;
   readonly catalog: SkillCatalog;
   readonly imports: ProjectImports;
@@ -70,6 +75,7 @@ export class Service {
   readonly models: ModelDiscovery;
   private controllers = new Map<string, AbortController>();
   private activeProjects = new Set<string>();
+  private decisions = new Set<string>();
   private listeners = new Set<(event: RunEvent) => void>();
   private cache: Snapshot["providers"] = [];
   private closing = false;
@@ -79,7 +85,25 @@ export class Service {
     launchLogin: (file: string) => Promise<void> = async () => {
       throw new Error("Native login is available in the desktop application.");
     },
+    integrationSecrets: IntegrationSecrets = {
+      get: () => undefined,
+      set: () => {
+        throw new Error(
+          "Secure credential storage is available in the desktop app.",
+        );
+      },
+      remove: () => {},
+    },
   ) {
+    this.github = new GitHubIntegration(store, launchLogin);
+    this.telegram = new TelegramIntegration(store, integrationSecrets, {
+      runs: () => store.uiRecords<Run>("run"),
+      run: (id) => this.run(id),
+      projectName: (id) => this.project(id).name,
+      decide: (action, id) => this.decideRun(action, id),
+      audit: (id, message) =>
+        this.emit(id, "integration.telegram.decision", message),
+    });
     this.imports = new ProjectImports(store, (folder) =>
       this.addProject(folder),
     );
@@ -121,6 +145,7 @@ export class Service {
       },
       type !== "agent.output",
     );
+    this.telegram.changed(event);
     for (const listener of this.listeners) listener(event);
     return event;
   }
@@ -155,6 +180,7 @@ export class Service {
         this.emit(run.id, "run.interrupted", run.reason);
       }
     }
+    this.telegram.start();
     if (background) this.cache = await this.registry.detect();
     const check = this.refreshProviders();
     if (background) void check.catch(() => {});
@@ -1263,6 +1289,8 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
   }
   async shutdown() {
     this.closing = true;
+    await this.telegram.shutdown();
+    this.github.shutdown();
     this.registry.shutdown();
     await this.imports.shutdown();
     await this.graph.close();
@@ -1272,8 +1300,59 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
     while (this.controllers.size && Date.now() < until)
       await new Promise((r) => setTimeout(r, 50));
   }
+  private async decideRun(
+    action: "approve" | "apply" | "reject" | "stop" | "restore",
+    id: string,
+  ) {
+    if (this.closing) throw new Error("Aether is closing.");
+    if (this.decisions.has(id))
+      throw new Error(
+        "Another decision for this session is still being processed.",
+      );
+    this.decisions.add(id);
+    try {
+      if (action === "approve") return await this.executeRun(id);
+      if (action === "apply") return await this.apply(id);
+      if (action === "reject") return await this.reject(id);
+      if (action === "restore") return await this.restoreChanges(id);
+      return this.cancel(id);
+    } finally {
+      this.decisions.delete(id);
+    }
+  }
   async command(command: string, payload: unknown): Promise<unknown> {
     switch (command) {
+      case "integration.status":
+        return {
+          github: this.github.status(),
+          telegram: this.telegram.status(),
+        };
+      case "integration.github.verify":
+        return this.github.verify();
+      case "integration.github.connect":
+        return this.github.connect();
+      case "integration.github.repositories":
+        return this.github.repositories();
+      case "integration.telegram.configure":
+        return this.telegram.configure(
+          z
+            .string()
+            .regex(/^\d{5,20}:[A-Za-z0-9_-]{30,100}$/)
+            .parse(payload),
+        );
+      case "integration.telegram.confirm":
+        return this.telegram.confirm();
+      case "integration.telegram.preferences": {
+        const p = z
+          .object({ enabled: z.boolean(), remoteDecisions: z.boolean() })
+          .strict()
+          .parse(payload);
+        return this.telegram.preferences(p.enabled, p.remoteDecisions);
+      }
+      case "integration.telegram.test":
+        return this.telegram.test();
+      case "integration.telegram.disconnect":
+        return this.telegram.disconnect();
       case "models.list": {
         const p = z
           .object({
@@ -1579,6 +1658,10 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
           })
           .parse(payload);
         const run = this.run(p.runId);
+        if (this.decisions.has(run.id))
+          throw new Error(
+            "Wait for the current decision before changing task models.",
+          );
         if (run.status !== "awaiting_approval")
           throw new Error(
             "Task overrides can only change before plan approval",
@@ -1590,15 +1673,15 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
         return task;
       }
       case "run.approve":
-        return this.executeRun(z.string().parse(payload));
+        return this.decideRun("approve", z.string().parse(payload));
       case "run.apply":
-        return this.apply(z.string().parse(payload));
+        return this.decideRun("apply", z.string().parse(payload));
       case "run.restore":
-        return this.restoreChanges(z.string().parse(payload));
+        return this.decideRun("restore", z.string().parse(payload));
       case "run.reject":
-        return this.reject(z.string().parse(payload));
+        return this.decideRun("reject", z.string().parse(payload));
       case "run.cancel":
-        return this.cancel(z.string().parse(payload));
+        return this.decideRun("stop", z.string().parse(payload));
       case "events": {
         const p = z
           .object({

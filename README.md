@@ -5,7 +5,7 @@
   <p><strong>A local-first workspace for coding agents, with you in control.</strong></p>
   <p>Plan the change. Coordinate the team. Inspect the evidence. Approve what ships.</p>
   <p>
-    <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.15-a8c0ff?style=flat-square&amp;labelColor=202329" alt="Version 0.1.15" /></a>
+    <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.16-a8c0ff?style=flat-square&amp;labelColor=202329" alt="Version 0.1.16" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-a8dfcf?style=flat-square&amp;labelColor=202329" alt="MIT license" /></a>
     <a href="#quick-start"><img src="https://img.shields.io/badge/tested_on-macOS_arm64-d2d5dd?style=flat-square&amp;labelColor=202329" alt="Tested on macOS arm64" /></a>
     <a href="docs/development/CHECKLIST.md"><img src="https://img.shields.io/badge/status-developer_preview-e9cc8a?style=flat-square&amp;labelColor=202329" alt="Developer preview" /></a>
@@ -62,6 +62,12 @@ Filter by project, browse completed tasks, pin or collapse the widget, and open 
 </details>
 
 <sub>Banner: AI-assisted artwork using an actual app screenshot. Orbit views use demo data; the coding-team view comes from a real isolated Codex test. [Image provenance and regeneration](docs/assets/README.md).</sub>
+
+## GitHub and Telegram integrations
+
+Open **Settings** for the connection controls. GitHub uses your existing official GitHub CLI sign-in (or opens its browser login), verifies the account and lists up to 50 repositories with a searchable clone action. Git and GitHub CLI must be installed; credentials stay with the CLI.
+
+For Telegram, create a dedicated bot with **@BotFather**, enter its token in Settings, consent to activity sharing and send the generated `/start` command to the bot in your private DM. Confirm the displayed user in Aether. Notifications and `/status` / `/pending` work while the app is running and online. Optionally enable remote decisions: review the complete plan or patch first, then use its buttons to approve, apply, reject or stop. No commit or push is triggered by those buttons. See [setup, safeguards and limits](docs/development/INTEGRATIONS.md).
 
 ## Quick start
 

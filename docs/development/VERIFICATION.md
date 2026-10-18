@@ -1,5 +1,13 @@
 # Verification record
 
+## October 18: GitHub and Telegram integrations (0.1.16)
+
+Production build, formatting and **156 tests across 24 files** passed on macOS arm64. Seventeen integration regression cases cover private pairing/desktop confirmation, sender/chat/message binding, expiry, single-use and stale fingerprints, optional remote control, complete/oversized/failed review delivery, apply-validation failures, stop/reject routing, encrypted storage and insecure-keyring rejection, safe native GitHub login/listing, notification coalescing/outage recovery/pause-resume, Telegram flood control and cross-channel decision serialization. Desktop and Telegram controls share the same guarded execution/apply/reject/cancel paths; original-project checks remain in place.
+
+Electron desktop E2E and source/packaged integration acceptance passed with isolated userData. Settings checks cover token masking and consent, format validation, paused recipient controls, remote opt-in/disconnect, GitHub repository browsing/search and prefilled clone navigation through a controlled native CLI fixture. The settings screenshot was visually inspected and checkbox alignment corrected. A separate read-only check through the pre-existing GitHub CLI returned signed-out; no account connection was falsely claimed. No real bot token was available, so live Telegram DM delivery/account access was not tested or enabled. The controlled API fixture does not establish live connectivity.
+
+The macOS arm64 package passed application/DMG signature-integrity and asset/runtime checks, launch/IPC and restart persistence. The installed update preserves application userData; replacement occurs only after checking for zero active runs. Public notarization and local Windows/Linux runtime execution are not claimed. See [integration setup and limits](INTEGRATIONS.md).
+
 ## October 18: Ava app logo (0.1.15)
 
 Replaced the star brand mark with a lightweight static logo sampled from the existing Ava/Bloub profile, including the native app icon, titlebar/sidebar, onboarding/welcome, supervisor avatar, inspector and footer. The README and website favicon use the same logo. The 1024px PNG and generated macOS ICNS were visually inspected and match; the icon generator no longer depends on an unrelated saved-session screenshot script.

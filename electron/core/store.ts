@@ -90,9 +90,10 @@ export class Store {
     else this.scheduleFlush();
     return value;
   }
-  remove(kind: string, id: string) {
+  remove(kind: string, id: string, durable = true) {
     this.db.run("DELETE FROM records WHERE kind=? AND id=?", [kind, id]);
-    this.flush();
+    if (durable) this.flush();
+    else this.scheduleFlush();
   }
   removeEvents(runId: string) {
     this.db.run("DELETE FROM events WHERE run_id=?", [runId]);

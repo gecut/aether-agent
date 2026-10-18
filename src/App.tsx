@@ -1,3 +1,4 @@
+import { IntegrationSettings } from "./IntegrationSettings";
 import { AvaLogo } from "./AvaLogo";
 import { GithubLogo } from "@phosphor-icons/react/dist/csr/GithubLogo";
 import { CodingTeamActivity } from "./CodingTeamActivity";
@@ -208,7 +209,10 @@ export function App() {
   }, [page]);
   const selection = useRef({ runId, chatId });
   selection.current = { runId, chatId };
-  const [projectImport, setProjectImport] = useState<{ project?: Project }>();
+  const [projectImport, setProjectImport] = useState<{
+    project?: Project;
+    source?: string;
+  }>();
   const projectAnchor = useRef<HTMLButtonElement>(null);
   const [sessionMenu, setSessionMenu] = useState<{
     kind: "run" | "chat";
@@ -669,6 +673,7 @@ export function App() {
       {projectImport && (
         <ProjectImportDialog
           initialProject={projectImport.project}
+          initialSource={projectImport.source}
           call={async <T,>(command: string, payload?: unknown) =>
             bridge
               ? bridge.invoke<T>(command, payload)
@@ -1813,6 +1818,7 @@ export function App() {
           </div>
         ) : page === "Settings" ? (
           <SettingsPage
+            onClone={(source) => setProjectImport({ source })}
             data={data}
             save={saveSettings}
             call={call}
@@ -2352,7 +2358,7 @@ export function App() {
               ["running", "initializing"].includes(r.status),
             ).length
           }{" "}
-          active runs <span>·</span> Aether Code v0.1.15 <AvaLogo size={16} />
+          active runs <span>·</span> Aether Code v0.1.16 <AvaLogo size={16} />
         </span>
       </footer>
       {sessionMenu && menuTarget && (
@@ -2604,12 +2610,14 @@ type Call = <T = unknown>(
   payload?: unknown,
 ) => Promise<T | undefined>;
 function SettingsPage({
+  onClone,
   data,
   save,
   call,
   refresh,
   notify,
 }: {
+  onClone: (source: string) => void;
   data: Snapshot;
   save: (s: Settings) => Promise<void>;
   call: Call;
@@ -2758,6 +2766,7 @@ function SettingsPage({
           request; a model catalog alone does not prove account access.
         </p>
       </section>
+      <IntegrationSettings call={call} onClone={onClone} />
       <section className="settings-section">
         <h2 dir="auto">Independent model selection</h2>
         <p dir="auto" className="muted">

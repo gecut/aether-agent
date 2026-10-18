@@ -15,11 +15,13 @@ type Call = <T = unknown>(
 ) => Promise<T | undefined>;
 export function ProjectImportDialog({
   initialProject,
+  initialSource = "",
   call,
   onClose,
   onContinue,
 }: {
   initialProject?: Project;
+  initialSource?: string;
   call: Call;
   onClose: () => void;
   onContinue: (
@@ -29,7 +31,7 @@ export function ProjectImportDialog({
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [project, setProject] = useState(initialProject);
-  const [source, setSource] = useState("");
+  const [source, setSource] = useState(initialSource);
   const [parent, setParent] = useState("");
   const [job, setJob] = useState<ImportStatus>();
   const [busy, setBusy] = useState(false);

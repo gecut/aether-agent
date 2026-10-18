@@ -4434,3 +4434,106 @@ bdi {
   border-radius: 0;
   animation: none;
 }
+
+.integrations-section {
+  display: grid;
+  gap: 16px;
+}
+.integrations-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.integrations-section p,
+.integrations-section small,
+.integration-steps {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.integrations-section > label,
+.integration-repositories > label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.integrations-section input:not([type="checkbox"]) {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.integration-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.integration-state {
+  font-size: 11px;
+  color: var(--muted);
+}
+.integrations-section .integration-check {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 75ch;
+  line-height: 1.6;
+}
+.integration-check input {
+  width: 14px;
+  height: 14px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+.integration-steps {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 12px;
+}
+.integration-pairing {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.integration-pairing code {
+  user-select: all;
+  font-size: 13px;
+}
+.integrations-section .integration-error {
+  color: var(--red);
+}
+.integration-repositories {
+  display: grid;
+  gap: 12px;
+}
+.integration-repositories ul {
+  max-height: 320px;
+  overflow: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.integration-repositories li {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.integration-repositories li > span {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.integrations-section > button {
+  justify-self: start;
+}

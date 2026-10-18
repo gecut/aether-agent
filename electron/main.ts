@@ -1,3 +1,4 @@
+import { encryptedIntegrationSecret } from "./integrations/secrets";
 import {
   app,
   BrowserWindow,
@@ -69,8 +70,11 @@ async function boot() {
       throw new Error("OS secret storage unavailable");
     return safeStorage.decryptString(readFileSync(keyFile));
   };
-  service = new Service(store, key, (file) =>
-    launchProviderTerminal(file, (target) => shell.openPath(target)),
+  service = new Service(
+    store,
+    key,
+    (file) => launchProviderTerminal(file, (target) => shell.openPath(target)),
+    encryptedIntegrationSecret(data, safeStorage),
   );
   window = new BrowserWindow({
     width: 1500,
@@ -176,6 +180,15 @@ async function boot() {
       const project = service.project(z.string().parse(payload));
       const url = "vscode://file/" + encodeURI(project.path);
       await shell.openExternal(url);
+      return true;
+    }
+    if (command === "integration.open.docs") {
+      const destination = z.enum(["github", "telegram"]).parse(payload);
+      await shell.openExternal(
+        destination === "github"
+          ? "https://cli.github.com/"
+          : "https://core.telegram.org/bots/features#botfather",
+      );
       return true;
     }
     if (command === "skill.source") {

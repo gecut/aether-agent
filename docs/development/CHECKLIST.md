@@ -214,3 +214,11 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] Use Ava's existing Bloub-derived silhouette and expression for the app icon, sidebar/titlebar, welcome/onboarding, supervisor avatar and footer branding.
 - [x] Generate a reproducible 1024px native icon and lightweight SVG logos; keep the existing animated companion and vendor attribution.
 - [x] Share the Ava favicon with the static website; remove icon generation from the older desktop screenshot helper so it cannot restore the obsolete mark.
+
+## GitHub and Telegram (0.1.16)
+
+- [x] Settings offers official GitHub CLI browser sign-in, account verification, repository search/list and clone-dialog continuation without extracting account tokens.
+- [x] Store bot credentials through OS encryption, block insecure Linux plaintext fallback, pair a private DM with a short-lived code and explicit desktop recipient confirmation.
+- [x] Deliver coalesced run/task/check activity with retry/backoff; support `/status` and `/pending`, pause, resume, test and disconnect.
+- [x] Require separate remote-control opt-in and complete review delivery before issuing exact-version, expiring, single-use approval/apply/reject controls; stop actions use the existing cancellation path.
+- [x] Restrict callbacks to the confirmed user, private chat, delivered message and persisted token; record decisions and retain existing repository checks. No freeform DM execution, automatic commit or push.
