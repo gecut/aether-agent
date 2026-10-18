@@ -176,3 +176,5 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] v0.1.10 replaces disabled macOS signing with sealed ad-hoc signatures and validates the unpacked and DMG-contained app before publication. Public notarization remains unavailable without an Apple Developer account; it is not claimed by these checks.
 
 - [x] Published v0.1.10 across all four native targets. The landing page offers direct architecture-specific downloads, browsable real screenshots and an optional six-second original Ava film with no initial MP4 load, native modal controls and accessible fallbacks.
+
+- [x] Adapt the public Hero 22 composition for Aether with a centered dark mesh hero, responsive pill actions and visibility/reduced-motion aware CSS animation; preserve Ava, optional film and workspace gallery.
