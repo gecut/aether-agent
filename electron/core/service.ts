@@ -225,7 +225,13 @@ export class Service {
       ? this.store.uiRecords<Run>("run", selection.runId)
       : this.store.all<Run>("run");
     return {
-      projects: this.store.all("project"),
+      projects: this.store
+        .all<Project>("project")
+        .sort((a, b) =>
+          (b.lastOpenedAt ?? b.createdAt).localeCompare(
+            a.lastOpenedAt ?? a.createdAt,
+          ),
+        ),
       runs,
       chats: (selection?.compact
         ? this.store.uiRecords<Chat>("chat", selection.chatId)
@@ -272,13 +278,27 @@ export class Service {
     const existing = this.store
       .all<Project>("project")
       .find((p) => p.path === location);
-    if (existing) return existing;
+    if (existing) return this.openProject(existing.id);
     const project: Project = {
       id: randomUUID(),
       name: path.basename(location),
       path: location,
       createdAt: now(),
+      lastOpenedAt: now(),
     };
+    this.store.put("project", project.id, project);
+    return project;
+  }
+  async openProject(id: string) {
+    const project = this.project(id);
+    try {
+      await projectPath(project.path);
+    } catch {
+      throw new Error(
+        `Project folder is unavailable: ${project.path}. Choose Open local folder to locate it.`,
+      );
+    }
+    project.lastOpenedAt = now();
     this.store.put("project", project.id, project);
     return project;
   }
@@ -1290,6 +1310,8 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
       }
       case "diagnostics":
         return this.refreshProviders();
+      case "project.open":
+        return this.openProject(z.string().min(1).max(100).parse(payload));
       case "project.add":
         return this.addProject(z.string().min(1).parse(payload));
       case "settings.model": {
@@ -1702,8 +1724,9 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
         if (location !== project.path) {
           project.path = location;
           project.name = path.basename(location);
-          this.store.put("project", project.id, project);
         }
+        project.lastOpenedAt = now();
+        this.store.put("project", project.id, project);
         return project;
       }
       case "skill.search": {

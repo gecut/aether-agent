@@ -194,3 +194,10 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] Nonblocking startup detection, coalesced/abortable diagnostics, inactive-history summaries, buffered running-state persistence and adaptive IDE polling.
 - [x] Batch message-checkpoint blobs/index updates and local scoped blob comparisons while preserving the original branch/index.
 - [x] Regression fixtures cover thirty-file checkpoint process count, more than 100× smaller inactive payloads, slow diagnostics and Windows login paths.
+
+## Recent projects (0.1.13)
+
+- [x] Home lists the three most recently opened projects with folder paths and a direct IDE action.
+- [x] Project picker uses the same saved recency order and shows paths to distinguish equal names.
+- [x] Startup restores the latest project; successful opens persist a compatible optional timestamp, with creation dates as the legacy fallback.
+- [x] Missing folders produce a locate-folder message without advancing recency; project switching clears the previous project's chat context and preserves editor save guards.

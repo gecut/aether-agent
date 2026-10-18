@@ -4152,3 +4152,73 @@ bdi {
     min-width: 100%;
   }
 }
+
+.recent-projects {
+  margin: 0 0 24px;
+  text-align: left;
+}
+.recent-projects h2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.recent-projects h2 span {
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 400;
+}
+.recent-projects > button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.recent-projects > button:hover {
+  color: var(--accent);
+}
+.recent-projects > button > svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+.recent-project-info,
+.project-menu-name {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.recent-project-info strong,
+.project-menu-name strong {
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recent-project-info small,
+.project-menu-name small {
+  color: var(--muted);
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recent-project-action {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .recent-projects h2 span,
+  .recent-project-action {
+    display: none;
+  }
+}

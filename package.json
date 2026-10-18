@@ -1,6 +1,6 @@
 {
   "name": "aether-code",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "private": true,
   "description": "A local-first supervised coding workspace",
   "author": "Aether Code contributors",

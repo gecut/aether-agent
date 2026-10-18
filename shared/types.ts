@@ -140,6 +140,7 @@ export interface Project {
   name: string;
   path: string;
   createdAt: string;
+  lastOpenedAt?: string;
 }
 export interface Run {
   id: string;

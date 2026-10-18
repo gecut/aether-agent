@@ -78,6 +78,8 @@ npm run dev
 
 Open **Settings**, run provider diagnostics, and choose your planner and coding model. Leave a model identifier empty to use the runtime default, or enter an account-supported identifier. Use the provider's supported sign-in flow if needed.
 
+The home screen lists your recent projects. Use **Continue in IDE** to reopen the latest one, or choose another project from the sidebar picker. Aether remembers the last project opened across restarts; folder paths distinguish projects with the same name.
+
 Open **IDE → Set up full IDE** to download the checksum-verified Code-OSS runtime. Install compatible extensions from Open VSX or VSIX in its Extensions view; Microsoft-only Marketplace extensions are not guaranteed. The lightweight Quick editor remains available without that download. See [IDE details](docs/development/EDITOR.md) and [measured context savings](docs/development/EFFICIENCY_RESEARCH.md).
 
 Every successful push publishes Windows x64, macOS Apple Silicon/Intel, and Linux x64 development builds to [GitHub Releases](https://github.com/gecut/aether-agent/releases), with SHA256 checksums. See [automatic release details](docs/development/RELEASES.md).

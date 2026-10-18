@@ -383,6 +383,69 @@ try {
   assert.equal(restored.skills[0].enabled, true);
   assert.equal(restored.memories[0].kind, "verified");
   assert.equal(restored.prompts[0].version, 1);
+  const secondProject = path.join(directory, "latest-project");
+  await mkdir(secondProject);
+  await page.evaluate(
+    async (folder) => window.aether.invoke("project.add", folder),
+    secondProject,
+  );
+  await page.reload();
+  await page
+    .locator(".project-switch")
+    .filter({ hasText: "latest-project" })
+    .waitFor();
+  await page
+    .getByRole("button", {
+      name: "Open latest project: latest-project",
+      exact: true,
+    })
+    .waitFor();
+  await page
+    .getByRole("button", {
+      name: "Open recent project: orbit-project",
+      exact: true,
+    })
+    .click();
+  await page.locator(".ide-workspace").waitFor();
+  assert.equal(
+    await page.locator(".titlebar-center bdi").innerText(),
+    "orbit-project",
+  );
+  await page
+    .getByRole("button", { name: "Back to Aether", exact: true })
+    .click();
+  await page
+    .getByRole("button", {
+      name: "Open latest project: orbit-project",
+      exact: true,
+    })
+    .waitFor();
+  await page.screenshot({ path: "artifacts/recent-projects-light.png" });
+  await closeDesktop(app);
+  app = await electron.launch(options);
+  page = await app.firstWindow();
+  await page
+    .locator(".project-switch")
+    .filter({ hasText: "orbit-project" })
+    .waitFor();
+  await page
+    .getByRole("button", {
+      name: "Open latest project: orbit-project",
+      exact: true,
+    })
+    .waitFor();
+  await page.locator(".project-switch").click();
+  await page
+    .locator(".project-popover button")
+    .filter({ hasText: "latest-project" })
+    .click();
+  await page
+    .locator(".workspace-context strong")
+    .filter({ hasText: "latest-project" })
+    .waitFor();
+  console.log(
+    "Recent projects passed: open older project in IDE, reorder recency, restore latest selection after restart, and switch projects from the picker.",
+  );
   assert.equal(errors.length, 0, errors.join("\n"));
   console.log(
     "Desktop E2E passed: real Electron launch, IPC, project recovery, independent models, prompt compilation, skills, memory, restart.",

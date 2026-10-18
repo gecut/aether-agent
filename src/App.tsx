@@ -64,6 +64,7 @@ import { CircleNotch } from "@phosphor-icons/react/dist/csr/CircleNotch";
 import { Paperclip } from "@phosphor-icons/react/dist/csr/Paperclip";
 import { PushPin } from "@phosphor-icons/react/dist/csr/PushPin";
 import { DotsThree } from "@phosphor-icons/react/dist/csr/DotsThree";
+import { RecentProjects } from "./RecentProjects";
 import type {
   Snapshot,
   Run,
@@ -433,9 +434,21 @@ export function App() {
       await refresh();
       setProjectId(p.id);
       setRunId("");
+      setChatId("");
       setPage(page === "IDE" ? "IDE" : "Workspace");
     }
     setProjectMenu(false);
+  };
+  const reopenProject = async (id: string, ide = false) => {
+    if (!canLeaveEditor()) return;
+    const selected = await call<Project>("project.open", id);
+    if (!selected) return;
+    setProjectId(selected.id);
+    setRunId("");
+    setChatId("");
+    setProjectMenu(false);
+    setPage(ide || page === "IDE" ? "IDE" : "Workspace");
+    await refresh();
   };
   const openRun = (r: Run, conversations = data.chats) => {
     if (!canLeaveEditor()) return;
@@ -693,17 +706,12 @@ export function App() {
               onClose={() => setProjectMenu(false)}
             >
               {data.projects.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => {
-                    if (!canLeaveEditor()) return;
-                    setProjectId(p.id);
-                    setRunId("");
-                    setProjectMenu(false);
-                  }}
-                >
+                <button key={p.id} onClick={() => void reopenProject(p.id)}>
                   <FolderOpen />
-                  {p.name}
+                  <span className="project-menu-name">
+                    <strong>{p.name}</strong>
+                    <small dir="ltr">{shortPath(p.path)}</small>
+                  </span>
                   {p.id === projectId && <Check />}
                 </button>
               ))}
@@ -1528,6 +1536,10 @@ export function App() {
                       </>
                     )}
                   </div>
+                  <RecentProjects
+                    projects={data.projects}
+                    openProject={(id) => void reopenProject(id, true)}
+                  />
                   <div className="starter-title">
                     What are we building today?
                     <span>Start with an objective</span>
@@ -2277,7 +2289,7 @@ export function App() {
               ["running", "initializing"].includes(r.status),
             ).length
           }{" "}
-          active runs <span>·</span> Aether Code v0.1.12{" "}
+          active runs <span>·</span> Aether Code v0.1.13{" "}
           <AsteriskSimple size={12} />
         </span>
       </footer>
