@@ -174,3 +174,5 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] Rebranded the landing page entirely to Aether with real product links and an Ava-led interactive hero, using the app's mascot geometry and attribution. Removed sample credits/statistics, improved footer contrast and paused off-screen/reduced-motion animation.
 
 - [x] v0.1.10 replaces disabled macOS signing with sealed ad-hoc signatures and validates the unpacked and DMG-contained app before publication. Public notarization remains unavailable without an Apple Developer account; it is not claimed by these checks.
+
+- [x] Published v0.1.10 across all four native targets. The landing page offers direct architecture-specific downloads, browsable real screenshots and an optional six-second original Ava film with no initial MP4 load, native modal controls and accessible fallbacks.

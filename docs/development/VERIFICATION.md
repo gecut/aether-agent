@@ -1,5 +1,11 @@
 # Verification record
 
+## October 18: published v0.1.10 and optional website film
+
+Release `build-39080580943` completed tests, Windows/Linux packaging, both macOS signature/DMG checks, packaged Windows/macOS smoke and publication of all eight distributions plus checksums. The website's direct download links use that verified release.
+
+The revised landing passed browser checks at 320–1440 pixels, gallery selection and keyboard navigation, direct downloads, all anchors, actual six-second opening playback, no initial MP4 fetch, native-dialog close/Escape/focus/reset, reduced motion and no-JavaScript fallbacks. Injected media failures verified image recovery and the video fallback message. The 130,734-byte silent H.264 opener was rendered locally by a Codex agent using the real Ava engine; the external video service submitted no generation because account access was unavailable. Desktop, mobile and modal screenshots and the film's poster/middle/final frames were inspected. A local Lighthouse run scored 100 performance / 100 accessibility, FCP 1.1s, LCP 1.4s, CLS 0. Desktop startup and provider execution were unchanged.
+
 ## October 18: v0.1.10 macOS bundle-signature repair
 
 The user's mounted 0.1.9 arm64 download failed strict recursive signature verification with `code has no resources but signature indicates they must be present`. Its linker signature identified Electron, had no sealed resources and did not bind Info.plist. The repaired 0.1.10 package passes `codesign --verify --deep --strict` on both the unpacked app and the application inside the final read-only mounted DMG. Its signature binds `dev.aether.code`, seals bundle resources and retains the Hardened Runtime flag. The new verifier rejects the original damaged bundle. The DMG checksum, ASAR contents, version and required distributions passed verification.
