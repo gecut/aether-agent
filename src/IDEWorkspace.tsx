@@ -16,6 +16,7 @@ type Call = <T = unknown>(
 ) => Promise<T | undefined>;
 export function IDEWorkspace({
   project,
+  terminalRequest = 0,
   settings,
   providers,
   call,
@@ -26,6 +27,7 @@ export function IDEWorkspace({
   onOpenProject,
 }: {
   project?: Project;
+  terminalRequest?: number;
   settings: Settings;
   providers: ProviderInfo[];
   call: Call;
@@ -42,6 +44,7 @@ export function IDEWorkspace({
   const [chatOpen, setChatOpen] = useState(true);
   const host = useRef<HTMLDivElement>(null);
   const generation = useRef(0);
+  const handledTerminal = useRef(0);
   const dirty = useRef(false);
   const installed = ["ready", "starting", "running"].includes(
     status?.state ?? "",
@@ -97,6 +100,19 @@ export function IDEWorkspace({
     };
   }, [project?.id, mode, installed]);
   useEffect(() => {
+    if (terminalRequest && terminalRequest !== handledTerminal.current)
+      changeMode("workbench");
+    if (
+      opened &&
+      mode === "workbench" &&
+      terminalRequest &&
+      terminalRequest !== handledTerminal.current
+    ) {
+      handledTerminal.current = terminalRequest;
+      void call("ide.view.terminal");
+    }
+  }, [terminalRequest, opened, mode]);
+  useEffect(() => {
     if (!host.current || mode !== "workbench") return;
     const place = () => {
       if (host.current && opened) void call("ide.view.bounds", bounds());
@@ -143,6 +159,13 @@ export function IDEWorkspace({
             Quick editor
           </button>
           <span>Code · Extensions · Terminal</span>
+          <button
+            disabled={!opened || mode !== "workbench"}
+            onClick={() => void call("ide.view.terminal")}
+          >
+            <TerminalWindow />
+            Open terminal
+          </button>
           <button
             title={chatOpen ? "Hide agent chat" : "Show agent chat"}
             aria-label={chatOpen ? "Hide agent chat" : "Show agent chat"}

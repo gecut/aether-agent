@@ -4,6 +4,8 @@ import { companionPose } from "./companion/state";
 import { SkillDiscovery } from "./SkillDiscovery";
 import { CodeGraph } from "./CodeGraph";
 import { IDEWorkspace } from "./IDEWorkspace";
+import { ProjectActions } from "./ProjectActions";
+import { ConversationRun } from "./ConversationRun";
 import { ModelPicker } from "./ModelPicker";
 import { FloatingPopover } from "./FloatingPopover";
 import { Collapsible } from "./Collapsible";
@@ -177,6 +179,7 @@ export function App() {
     [inspector, setInspector] = useState(true),
     [objective, setObjective] = useState(""),
     [planning, setPlanning] = useState(false),
+    [terminalRequest, setTerminalRequest] = useState(0),
     [events, setEvents] = useState<RunEvent[]>([]),
     [busy, setBusy] = useState(false),
     [toast, setToast] = useState(""),
@@ -196,6 +199,9 @@ export function App() {
     [loading, setLoading] = useState(true),
     [release, setRelease] = useState<ReleaseInfo>(),
     [checkingUpdate, setCheckingUpdate] = useState(false);
+  useEffect(() => {
+    if (page !== "IDE") setTerminalRequest(0);
+  }, [page]);
   const projectAnchor = useRef<HTMLButtonElement>(null);
   const [sessionMenu, setSessionMenu] = useState<{
     kind: "run" | "chat";
@@ -408,6 +414,10 @@ export function App() {
     approvalCount = projectRuns.filter((r) =>
       ["awaiting_approval", "awaiting_review"].includes(r.status),
     ).length;
+  const standaloneRuns = projectRuns.filter(
+    (candidate) =>
+      !data.chats.some((item) => item.runIds?.includes(candidate.id)),
+  );
   const openProject = async () => {
     if (!canLeaveEditor()) return;
     const p = await call<Project>("project.choose");
@@ -419,19 +429,23 @@ export function App() {
     }
     setProjectMenu(false);
   };
-  const openRun = (r: Run) => {
+  const openRun = (r: Run, conversations = data.chats) => {
     if (!canLeaveEditor()) return;
     setProjectId(r.projectId);
-    setRunId(r.id);
+    const conversation = conversations.find((item) =>
+      item.runIds?.includes(r.id),
+    );
+    setRunId(conversation ? "" : r.id);
     setPage("Workspace");
     setTab("Session");
     setSelectedTask("");
     setObjective("");
-    setChatId("");
+    setChatId(conversation?.id ?? "");
   };
   const openChat = (target: Chat) => {
     if (!canLeaveEditor()) return;
     setChatId(target.id);
+    if (target.projectId) setProjectId(target.projectId);
     setRunId("");
     setPage("Workspace");
     setObjective("");
@@ -446,7 +460,7 @@ export function App() {
           (candidate) => candidate.id === target.runId,
         );
         if (targetRun) {
-          openRun(targetRun);
+          openRun(targetRun, latest.chats);
           if (target.taskId) {
             setSelectedTask(target.taskId);
             setInspector(true);
@@ -476,6 +490,7 @@ export function App() {
       const conversation = await call<Chat>("chat.send", {
         content: objective.trim(),
         ...(chatId ? { chatId } : {}),
+        ...(project ? { projectId: project.id } : {}),
       });
       if (conversation) {
         await refresh();
@@ -732,7 +747,7 @@ export function App() {
         <div className="sidebar-section">
           <Collapsible id="activity" title="Latest activity">
             <div className="section-label">
-              SESSIONS <span>{projectRuns.length + data.chats.length}</span>
+              SESSIONS <span>{standaloneRuns.length + data.chats.length}</span>
               <button
                 aria-label="New chat"
                 title="New chat"
@@ -771,7 +786,14 @@ export function App() {
                       {item.pinned ? (
                         <PushPin size={12} weight="fill" />
                       ) : (
-                        <StatusDot status="completed" />
+                        <StatusDot
+                          status={
+                            data.runs.find(
+                              (candidate) =>
+                                candidate.id === item.runIds?.at(-1),
+                            )?.status ?? "completed"
+                          }
+                        />
                       )}
                     </button>
                     <button
@@ -791,7 +813,7 @@ export function App() {
                     </button>
                   </div>
                 ))}
-              {projectRuns.slice(0, 7).map((r) => (
+              {standaloneRuns.slice(0, 7).map((r) => (
                 <div
                   key={r.id}
                   className={
@@ -903,26 +925,17 @@ export function App() {
           </div>
           <div className="header-actions">
             {project && (
-              <button
-                className="project-folder-action"
-                aria-label="Show project folder"
-                title="Show project folder"
-                onClick={() => void call("project.reveal", project.id)}
-              >
-                <FolderOpen />
-                <span>Project folder</span>
-              </button>
-            )}
-            {page === "Workspace" && project && (
-              <button
-                className="open-ide-action"
-                title="Open IDE & terminal"
-                aria-label="Open IDE & terminal"
-                onClick={() => navigate("IDE")}
-              >
-                <TerminalWindow />
-                <span>Open IDE & terminal</span>
-              </button>
+              <ProjectActions
+                project={project}
+                call={call}
+                openIDE={() => navigate("IDE")}
+                openTerminal={() => {
+                  if (canLeaveEditor()) {
+                    setTerminalRequest((value) => value + 1);
+                    setPage("IDE");
+                  }
+                }}
+              />
             )}
             {release ? (
               <button
@@ -1378,8 +1391,8 @@ export function App() {
                     <span className="eyebrow">AVA / LOCAL CONVERSATION</span>
                     <h1 dir="auto">{chat.title}</h1>
                     <p>
-                      Ask anything. Ava will flag requests that need a project
-                      plan.
+                      Chat, plan and build here. Project work stays in this
+                      conversation.
                     </p>
                   </div>
                 </div>
@@ -1406,8 +1419,30 @@ export function App() {
                         <p dir="auto">
                           {message.content.replace(/^PROJECT_WORK:\s*/i, "")}
                         </p>
+                        {message.checkpoint && (
+                          <small className="checkpoint-note">
+                            Checkpoint saved ·{" "}
+                            {message.checkpoint.commit.slice(0, 7)}
+                            {message.checkpoint.excluded
+                              ? ` · ${message.checkpoint.excluded} sensitive or unsupported files excluded`
+                              : ""}
+                          </small>
+                        )}
+                        {message.checkpointError && (
+                          <small className="checkpoint-note" role="status">
+                            Checkpoint unavailable: {message.checkpointError}
+                          </small>
+                        )}
+                        {message.runId && (
+                          <ConversationRun
+                            id={message.runId}
+                            call={call}
+                            refresh={refresh}
+                          />
+                        )}
                         {message.role === "assistant" &&
-                          /^PROJECT_WORK:/i.test(message.content) && (
+                          /^PROJECT_WORK:/i.test(message.content) &&
+                          !chat.runIds?.length && (
                             <Button
                               onClick={() => {
                                 setObjective(
@@ -1434,6 +1469,19 @@ export function App() {
                       </div>
                     </div>
                   ))}
+                  {chat.runIds
+                    ?.filter(
+                      (id) =>
+                        !chat.messages.some((message) => message.runId === id),
+                    )
+                    .map((id) => (
+                      <ConversationRun
+                        key={id}
+                        id={id}
+                        call={call}
+                        refresh={refresh}
+                      />
+                    ))}
                 </div>
               </div>
             ) : (
@@ -1652,6 +1700,7 @@ export function App() {
           </>
         ) : page === "IDE" ? (
           <IDEWorkspace
+            terminalRequest={terminalRequest}
             onDirtyChange={onEditorDirty}
             project={project}
             call={call}
@@ -2220,7 +2269,7 @@ export function App() {
               ["running", "initializing"].includes(r.status),
             ).length
           }{" "}
-          active runs <span>·</span> Aether Code v0.1.10{" "}
+          active runs <span>·</span> Aether Code v0.1.11{" "}
           <AsteriskSimple size={12} />
         </span>
       </footer>

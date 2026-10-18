@@ -68,6 +68,41 @@ export class IDEView {
       this.view.webContents.focus();
     return true;
   }
+  setObscured(value: boolean) {
+    this.view?.setVisible(!value);
+    if (value) this.window.webContents.focus();
+  }
+  async openTerminal() {
+    if (!this.view || !this.attached)
+      throw new Error("Open the full IDE before opening its terminal.");
+    const view = this.view;
+    const generation = this.generation;
+    for (let attempt = 0; attempt < 50; attempt++) {
+      if (!this.attached || generation !== this.generation)
+        throw new Error("The IDE changed before the terminal opened.");
+      const ready = await view.webContents.executeJavaScript(
+        "Boolean(document.querySelector('.monaco-workbench'))",
+      );
+      if (ready) {
+        view.webContents.focus();
+        view.webContents.sendInputEvent({
+          type: "keyDown",
+          keyCode: "`",
+          modifiers: ["control", "shift"],
+        });
+        view.webContents.sendInputEvent({
+          type: "keyUp",
+          keyCode: "`",
+          modifiers: ["control", "shift"],
+        });
+        return true;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    throw new Error(
+      "The IDE is still loading. Try Open terminal again when it is ready.",
+    );
+  }
   resize(bounds: IDEBounds) {
     if (!this.view || !this.attached) return;
     const factor = this.window.webContents.getZoomFactor();

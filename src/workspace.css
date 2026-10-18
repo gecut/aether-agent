@@ -541,3 +541,134 @@
     padding: 0 10px;
   }
 }
+
+.project-actions-menu {
+  width: min(340px, calc(100vw - 24px));
+}
+.project-actions-menu strong {
+  display: block;
+  padding: 8px 10px 12px;
+  overflow-wrap: anywhere;
+}
+.project-actions-menu button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 10px;
+  text-align: left;
+}
+.project-actions-menu button span {
+  display: grid;
+  gap: 4px;
+}
+.project-actions-menu small,
+.checkpoint-note {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.detected-commands {
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+  padding: 14px 10px 4px;
+}
+.detected-commands > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 11px;
+}
+.detected-commands code {
+  overflow-wrap: anywhere;
+}
+.detected-commands p {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.conversation-run {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 18px 0;
+  min-width: 0;
+}
+.conversation-run header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.conversation-run header span {
+  font-size: 11px;
+  text-transform: capitalize;
+  color: var(--muted);
+}
+.conversation-run p,
+.conversation-run li {
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.conversation-task,
+.conversation-run > details {
+  border-top: 1px solid var(--border);
+  padding: 12px 0;
+}
+.conversation-run summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+.conversation-run summary small {
+  margin-left: 10px;
+  color: var(--muted);
+}
+.conversation-run ul {
+  padding-left: 20px;
+}
+.conversation-run pre {
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.conversation-run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.conversation-run-actions small {
+  width: 100%;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.conversation-run-actions button {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.checkpoint-note {
+  margin-top: 8px;
+}
+
+.conversation-task-contract {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  color: var(--muted);
+}
+.conversation-task-contract p {
+  margin: 0;
+  font-size: 11px;
+}

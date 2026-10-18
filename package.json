@@ -1,6 +1,6 @@
 {
   "name": "aether-code",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "private": true,
   "description": "A local-first supervised coding workspace",
   "author": "Aether Code contributors",
@@ -20,7 +20,8 @@
     "benchmark": "node scripts/performance.mjs",
     "test:live-ui": "npm run build && node scripts/live-ui.mjs",
     "test:widget": "npm run build && node scripts/widget-ui.mjs",
-    "test:ide": "npm run build && node scripts/ide-ui.mjs"
+    "test:ide": "npm run build && node scripts/ide-ui.mjs",
+    "test:conversation": "npm run build && node scripts/conversation-ui.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

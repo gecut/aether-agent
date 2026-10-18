@@ -165,7 +165,37 @@ try {
     ),
   );
   console.log("Actual Code-OSS file editing and save passed");
-  await command("Terminal: Create New Terminal");
+  await page
+    .getByRole("button", { name: "Project actions", exact: true })
+    .click();
+  const projectActions = page.getByRole("dialog", { name: "Project actions" });
+  await projectActions.waitFor();
+  const nativeVisible = () =>
+    app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()
+        .find((w) => w.getTitle() === "Aether Code")
+        .contentView.children.find(
+          (view) =>
+            "webContents" in view &&
+            view.webContents.getURL().startsWith("http://127.0.0.1:"),
+        )
+        .getVisible(),
+    );
+  assert.equal(
+    await nativeVisible(),
+    false,
+    "Project menu must stay above the native IDE",
+  );
+  await projectActions
+    .getByRole("button", { name: "Open terminal", exact: false })
+    .click();
+  await workbench.locator(".terminal .xterm-helper-textarea").first().waitFor();
+  assert.equal(
+    await nativeVisible(),
+    true,
+    "Workbench must return without losing the editor",
+  );
+  await workbench.locator(".terminal .xterm-helper-textarea").first().waitFor();
   if (await trust.isVisible()) await trust.click();
   for (let attempt = 0; attempt < 15; attempt++) {
     await workbench.locator(".terminal .xterm-helper-textarea").first().focus();

@@ -72,6 +72,7 @@ const profiles = {
 export type NexloadProfile = keyof typeof profiles;
 const roles: Record<string, NexloadProfile> = {
   planner: "kernel",
+  conversation: "discovery",
   architect: "design",
   implementer: "execution",
   "test-engineer": "execution",

@@ -64,3 +64,9 @@ The floating desktop widget reads persisted task/session status and receives bat
 ## Cross-platform downloads
 
 The [release workflow](../development/RELEASES.md) packages Windows, macOS and Linux applications on each push. Artifacts contain the desktop application; they do not bundle provider CLIs, OAuth sessions or credentials. Successful packaging and desktop launch do not establish provider inference, executable discovery or sandbox behavior on a new OS. The real Codex coding evidence above was obtained on macOS; Windows/Linux provider execution remains to be verified independently.
+
+## Conversation planning and feature checks (0.1.11)
+
+Ava's chat uses the immutable Aether/Nexload prefix plus compact reviewed working practices, with source provenance described in [Prompt core](../development/NEXLOAD_PROMPT_CORE.md). This does not substitute leaked vendor identities/tool contracts for actual provider capabilities. CLI providers retain their host policies, and compatible chat does not gain coding tools.
+
+A project-code request can create an approval-gated plan inside the same chat/IDE agent pane. Bounded conversation reference is passed as untrusted evidence. Local message checkpoints provide an immutable coding baseline without modifying the project's branch/index; source changes are checked before execution/application. No coding happens merely because the chat router returns `PROJECT_WORK:`. Detected commands guide the planner, and detected application plans receive an executable feature-verification task if one is missing. These commands remain visible in the plan and use the existing approved host-test executor. See [Conversation workflow](../development/CONVERSATION_WORKFLOW.md) for limits and fixture verification.

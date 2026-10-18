@@ -178,3 +178,9 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] Published v0.1.10 across all four native targets. The landing page offers direct architecture-specific downloads, browsable real screenshots and an optional six-second original Ava film with no initial MP4 load, native modal controls and accessible fallbacks.
 
 - [x] Adapt the public Hero 22 composition for Aether with a centered dark mesh hero, responsive pill actions and visibility/reduced-motion aware CSS animation; preserve Ava, optional film and workspace gallery.
+
+- [x] Pinned, compact reviewed working-practices adaptation beneath Nexload; retain Aether invariants, runtime contracts and source hashes.
+- [x] Separate terminal/folder/IDE dropdown actions, detected project commands and native-view overlay handling.
+- [x] Keep coding plans, approval, task/test evidence, review and follow-ups inside project conversations.
+- [x] Save bounded immutable message checkpoints in app-owned worktrees without touching the original branch/index; execute from snapshot and block applying over newer scoped edits.
+- [x] Add a dependent executable JavaScript feature-test task to detected application implementation plans when missing; tests remain visible and approval-gated.

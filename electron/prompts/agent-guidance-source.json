@@ -1,0 +1,20 @@
+{
+  "repository": "https://github.com/asgeirtj/system_prompts_leaks",
+  "revision": "dfa2e2855f65a8982b3360d6bd12eeabc049355f",
+  "adaptation": "aether-working-practices-1",
+  "license": "CC0-1.0 (repository declaration; upstream authenticity is not verified)",
+  "files": [
+    {
+      "path": "Google/antigravity-cli.md",
+      "sha256": "7bf1ef5a6fb8e7fc9973ebf1c62d84dbf678e2523512268313b506864eaae274"
+    },
+    {
+      "path": "OpenAI/Codex/gpt-6.1-sol.md",
+      "sha256": "a1966f58ae8e352bf924180e8717164544a1d1d3181d5850678b9b53173e4ce6"
+    },
+    {
+      "path": "Anthropic/claude-code/agents/general-purpose.md",
+      "sha256": "b711312d16c065efb86d12f51cd4e733e9d47e306a1d972dc138462bf923159e"
+    }
+  ]
+}

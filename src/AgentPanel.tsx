@@ -6,6 +6,7 @@ import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
 import type { Chat, Project, Settings, ProviderInfo } from "../shared/types";
 import { companionPose } from "./companion/state";
 import { ModelPicker } from "./ModelPicker";
+import { ConversationRun } from "./ConversationRun";
 const Avatar = lazy(() =>
   import("./companion/Avatar").then((module) => ({ default: module.Avatar })),
 );
@@ -132,6 +133,26 @@ export function AgentPanel({
           <article key={message.id} className={`agent-message ${message.role}`}>
             <small>{message.role === "assistant" ? "Ava" : "You"}</small>
             <p dir="auto">{message.content.replace(/^PROJECT_WORK:\s*/, "")}</p>
+            {message.checkpoint && (
+              <small className="checkpoint-note">
+                Checkpoint saved · {message.checkpoint.commit.slice(0, 7)}
+                {message.checkpoint.excluded
+                  ? ` · ${message.checkpoint.excluded} files excluded`
+                  : ""}
+              </small>
+            )}
+            {message.checkpointError && (
+              <small className="checkpoint-note">
+                Checkpoint unavailable: {message.checkpointError}
+              </small>
+            )}
+            {message.runId && (
+              <ConversationRun
+                id={message.runId}
+                call={call}
+                refresh={refresh}
+              />
+            )}
             {message.context && (
               <span className="agent-context">
                 ~{message.context.estimatedTokens.toLocaleString()} input tokens
@@ -143,6 +164,13 @@ export function AgentPanel({
             )}
           </article>
         ))}
+        {chat?.runIds
+          ?.filter(
+            (id) => !chat.messages.some((message) => message.runId === id),
+          )
+          .map((id) => (
+            <ConversationRun key={id} id={id} call={call} refresh={refresh} />
+          ))}
         {busy && (
           <div
             className="agent-thinking"
@@ -156,7 +184,8 @@ export function AgentPanel({
         )}
       </div>
       {last?.role === "assistant" &&
-        last.content.startsWith("PROJECT_WORK:") && (
+        last.content.startsWith("PROJECT_WORK:") &&
+        !chat?.runIds?.length && (
           <button
             className="agent-plan"
             onClick={() =>
@@ -201,7 +230,7 @@ export function AgentPanel({
           }}
         />
         <div>
-          <span>{settings.efficiency} · read-only chat</span>
+          <span>{settings.efficiency} · chat, plan & build</span>
           <button
             aria-label="Send to project agent"
             disabled={busy || !input.trim()}

@@ -57,8 +57,21 @@ export const defaults: Settings = {
 export const verificationSchema = z.enum([
   "none",
   "node --test",
+  "node --test aether-tests/features.test.mjs",
+  "python3 -m pytest",
   "npm test",
   "npm run build",
+  "npm run test:e2e",
+  "npm run test:features",
+  "npm run typecheck",
+  "npm run lint",
+  "pnpm run build",
+  "yarn test",
+  "dotnet test",
+  "mvn test",
+  "gradle test",
+  "swift test",
+  "make test",
   "pnpm test",
   "python3 -m unittest discover",
   "cargo test",
@@ -140,6 +153,7 @@ export interface Run {
   tasks: Task[];
   reason?: string;
   baseline?: string;
+  sourceCheckpoint?: { version: 1; sourceHead: string; commit: string };
   head?: string;
   workspace?: string;
   patch?: string;
@@ -181,13 +195,32 @@ export interface PromptAttachment {
   path: string;
   text?: string;
 }
+export interface ProjectCommands {
+  ecosystem: string;
+  commands: {
+    label: string;
+    command: string;
+    purpose: "run" | "build" | "test";
+  }[];
+  note: string;
+}
+export interface ChatCheckpoint {
+  version: 1;
+  sourceHead?: string;
+  commit: string;
+  at: string;
+  excluded: number;
+}
 export interface ChatMessage {
   id: string;
+  runId?: string;
   role: "user" | "assistant";
   content: string;
   at: string;
   context?: { included: number; omitted: number; estimatedTokens: number };
   usage?: Record<string, number>;
+  checkpoint?: ChatCheckpoint;
+  checkpointError?: string;
 }
 export interface EditorDocument {
   file: string;
@@ -201,6 +234,7 @@ export interface EditorVersion {
 }
 export interface Chat {
   id: string;
+  runIds?: string[];
   pinned?: boolean;
   projectId?: string;
   title: string;

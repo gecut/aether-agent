@@ -129,6 +129,14 @@ async function boot() {
         service.settings().theme,
       );
     }
+    if (command === "ide.view.overlay") {
+      ideView!.setObscured(z.boolean().parse(payload));
+      return true;
+    }
+    if (command === "ide.view.terminal") {
+      z.undefined().parse(payload);
+      return ideView!.openTerminal();
+    }
     if (command === "ide.view.bounds") {
       ideView!.resize(ideBounds.parse(payload));
       return true;

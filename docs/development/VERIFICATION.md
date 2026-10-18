@@ -142,3 +142,11 @@ Source and packaged Electron acceptance displayed those persisted helper states,
 ## 2026-10-18 — Hero 22 website adaptation
 
 Reviewed the public Hero 22 preview and independently adapted its centered launch composition using inline CSS gradients. Eight widths (320–1440 px), actual optional film playback, close/Escape/focus restoration, screenshot gallery keyboard navigation, downloads, anchors, reduced motion and no-JavaScript fallbacks passed in Chrome. Desktop and mobile screenshots were reviewed. Scope is the static website; desktop application code and packages are unchanged.
+
+## 2026-10-18 — Conversation workflow / 0.1.11
+
+Build and all 118 tests passed. The new deterministic project-workflow tests verify inline plan routing and preserved conversation context, required executable feature tasks, command detection without script execution or external symlink reads, immutable local message checkpoints, preserved original HEAD/index, snapshot-based coding with staged/dirty source, application blocked over newer edits, same-chat continuation and removal of deleted run references. No live provider/account connectivity is inferred from these fixtures.
+
+The disposable Electron conversation harness passed project dropdown actions, detected commands, real Git checkpoint persistence, inline coding/feature plans without pre-approval execution, rejection and follow-up in the same chat. Reviewed its screenshot and collapsed task details while keeping scopes and executable verification visible. Linked runs remain under the conversation in the sidebar. The real Code-OSS harness passed editing/save, terminal execution, VSIX activation, model/project chat, pane controls and Back to Aether; it additionally verified the project menu obscures/restores the native view and its terminal action opens a working shell in the project. Standard desktop E2E passed startup/IPC, project recovery, editor save/history, independent model settings, prompt compilation, skills, memory, persistence and restart. Formatting checks passed.
+
+These checks use disposable profiles/projects. The user's active application and saved sessions were not replaced or exercised. CI builds distribute the 0.1.11 update after the source push; macOS ad-hoc signing/notarization limitations remain as documented.

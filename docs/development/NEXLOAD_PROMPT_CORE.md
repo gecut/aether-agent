@@ -37,3 +37,11 @@ The core is local and deterministic. It needs no service account, telemetry, bac
 ## Verification
 
 Tests check mandatory-core ordering and override resistance, role routing, prototype-name rejection, deterministic offline compilation, source manifest shape, retained task contracts, redaction/untrusted boundaries, and validated role previews. The full fake-provider workflow checks that planner, worker and review snapshots contain their actual profiles and worker handoff pointers. Electron E2E checks source inspection and switching a preview from implementation to review. The real Codex smoke verifies the complete planning, implementation, test, review and approved-apply workflow on a disposable fixture.
+
+## Reviewed working practices beneath Nexload
+
+Aether 0.1.11 adds a compact, offline working-practices layer adapted from the user-selected [system_prompts_leaks repository](https://github.com/asgeirtj/system_prompts_leaks) at `dfa2e2855f65a8982b3360d6bd12eeabc049355f`. `electron/prompts/agent-guidance-source.json` records the three reviewed file paths, SHA-256 hashes and repository-declared CC0 provenance. The collection's authenticity as current vendor instructions is not verified. Aether does not download or update these prompts at runtime.
+
+The adaptation uses focused implementation, repository inspection, interface completeness, concise progress and evidence-based feature testing. It excludes vendor identity, unavailable tools, imported permission rules and automatic dependency-installation instructions. The fixed order is platform invariants, Nexload kernel/profile/runtime binding, then reviewed working practices, then invocation-specific layers. The compiler rejects attempts to replace reserved guidance IDs. Chat uses the same prefix with a conversational discovery profile; it never sends greetings through the structured task-plan schema. The compact adaptation replaces neither Nexload nor the provider's own system policy.
+
+See [Conversation workflow](CONVERSATION_WORKFLOW.md) for inline plans, automatic local checkpoints, command detection and approved executable feature checks.
