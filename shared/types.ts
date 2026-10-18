@@ -142,6 +142,23 @@ export interface Project {
   createdAt: string;
   lastOpenedAt?: string;
 }
+export interface ProjectImport {
+  version: 1;
+  id: string;
+  source: string;
+  parent: string;
+  status: "cloning" | "preparing" | "ready" | "failed" | "cancelled";
+  message: string;
+  projectId?: string;
+  updatedAt: string;
+}
+export interface StarterSkill {
+  id: "workflow" | "verification";
+  name: string;
+  description: string;
+  content: string;
+  hash: string;
+}
 export interface Run {
   id: string;
   projectId: string;

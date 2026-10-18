@@ -14,11 +14,13 @@ export function ProjectActions({
   call,
   openIDE,
   openTerminal,
+  openSetup,
 }: {
   project: Project;
   call: Call;
   openIDE: () => void;
   openTerminal: () => void;
+  openSetup?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [commands, setCommands] = useState<ProjectCommands>();
@@ -61,6 +63,20 @@ export function ProjectActions({
         >
           <div role="dialog" aria-label="Project actions">
             <strong>{project.name}</strong>
+            {openSetup && (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  openSetup();
+                }}
+              >
+                <Code />
+                <span>
+                  Project setup & skills
+                  <small>Review optional Aether skills</small>
+                </span>
+              </button>
+            )}
             <button
               onClick={() => {
                 setOpen(false);

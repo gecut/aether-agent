@@ -1,3 +1,4 @@
+import { GithubLogo } from "@phosphor-icons/react/dist/csr/GithubLogo";
 import { CodingTeamActivity } from "./CodingTeamActivity";
 import { Companion } from "./companion/Companion";
 import { companionPose } from "./companion/state";
@@ -64,6 +65,7 @@ import { CircleNotch } from "@phosphor-icons/react/dist/csr/CircleNotch";
 import { Paperclip } from "@phosphor-icons/react/dist/csr/Paperclip";
 import { PushPin } from "@phosphor-icons/react/dist/csr/PushPin";
 import { DotsThree } from "@phosphor-icons/react/dist/csr/DotsThree";
+import { ProjectImportDialog } from "./ProjectImport";
 import { RecentProjects } from "./RecentProjects";
 import type {
   Snapshot,
@@ -205,6 +207,7 @@ export function App() {
   }, [page]);
   const selection = useRef({ runId, chatId });
   selection.current = { runId, chatId };
+  const [projectImport, setProjectImport] = useState<{ project?: Project }>();
   const projectAnchor = useRef<HTMLButtonElement>(null);
   const [sessionMenu, setSessionMenu] = useState<{
     kind: "run" | "chat";
@@ -436,6 +439,7 @@ export function App() {
       setRunId("");
       setChatId("");
       setPage(page === "IDE" ? "IDE" : "Workspace");
+      setProjectImport({ project: p });
     }
     setProjectMenu(false);
   };
@@ -661,6 +665,34 @@ export function App() {
         (page === "IDE" ? "ide-mode" : "")
       }
     >
+      {projectImport && (
+        <ProjectImportDialog
+          initialProject={projectImport.project}
+          call={async <T,>(command: string, payload?: unknown) =>
+            bridge
+              ? bridge.invoke<T>(command, payload)
+              : call<T>(command, payload)
+          }
+          onClose={() => {
+            setProjectImport(undefined);
+            void refresh();
+          }}
+          onContinue={(opened, target) => {
+            setProjectId(opened.id);
+            setRunId("");
+            setChatId("");
+            setProjectImport(undefined);
+            setPage(
+              target === "ide"
+                ? "IDE"
+                : target === "skills"
+                  ? "Skills library"
+                  : "Workspace",
+            );
+            void refresh();
+          }}
+        />
+      )}
       <div className="titlebar">
         <div className="window-space" />
         <div className="titlebar-center">
@@ -715,6 +747,16 @@ export function App() {
                   {p.id === projectId && <Check />}
                 </button>
               ))}
+              <button
+                onClick={() => {
+                  if (!canLeaveEditor()) return;
+                  setProjectMenu(false);
+                  setProjectImport({});
+                }}
+              >
+                <GithubLogo />
+                Clone from GitHub / Git
+              </button>
               <button onClick={openProject}>
                 <Plus />
                 Open local folder <kbd>⌘ O</kbd>
@@ -945,6 +987,7 @@ export function App() {
                 project={project}
                 call={call}
                 openIDE={() => navigate("IDE")}
+                openSetup={() => setProjectImport({ project })}
                 openTerminal={() => {
                   if (canLeaveEditor()) {
                     setTerminalRequest((value) => value + 1);
@@ -1534,6 +1577,25 @@ export function App() {
                           Open project <ArrowUpRight />
                         </button>
                       </>
+                    )}
+                  </div>
+                  <div className="workspace-import-actions">
+                    <button
+                      className="button"
+                      onClick={() => {
+                        if (canLeaveEditor()) setProjectImport({});
+                      }}
+                    >
+                      <GithubLogo />
+                      Import project
+                    </button>
+                    {project && (
+                      <button
+                        className="button"
+                        onClick={() => setProjectImport({ project })}
+                      >
+                        Project setup & skills
+                      </button>
                     )}
                   </div>
                   <RecentProjects
@@ -2289,7 +2351,7 @@ export function App() {
               ["running", "initializing"].includes(r.status),
             ).length
           }{" "}
-          active runs <span>·</span> Aether Code v0.1.13{" "}
+          active runs <span>·</span> Aether Code v0.1.14{" "}
           <AsteriskSimple size={12} />
         </span>
       </footer>

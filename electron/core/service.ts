@@ -23,6 +23,8 @@ import {
   type ChatMessage,
   type ChatCheckpoint,
 } from "../../shared/types";
+import { ProjectImports } from "./project-import";
+import { starterSkills, installStarterSkills } from "./starter-skills";
 import { Store } from "./store";
 import { Registry, type Invocation } from "../providers/registry";
 import { ProviderConnections } from "../providers/connections";
@@ -62,6 +64,7 @@ function structured(text: string) {
 export class Service {
   readonly graph: LiveGraph;
   readonly catalog: SkillCatalog;
+  readonly imports: ProjectImports;
   readonly registry: Registry;
   readonly connections: ProviderConnections;
   readonly models: ModelDiscovery;
@@ -77,6 +80,9 @@ export class Service {
       throw new Error("Native login is available in the desktop application.");
     },
   ) {
+    this.imports = new ProjectImports(store, (folder) =>
+      this.addProject(folder),
+    );
     this.graph = new LiveGraph(path.join(store.directory, "graphs"));
     this.catalog = new SkillCatalog(
       fetch,
@@ -133,6 +139,7 @@ export class Service {
     return project;
   }
   async initialize({ background = false } = {}) {
+    this.imports.recover();
     for (const run of this.store.all<Run>("run")) {
       if (["running", "initializing", "retrying"].includes(run.status)) {
         run.status = "blocked";
@@ -1257,6 +1264,7 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
   async shutdown() {
     this.closing = true;
     this.registry.shutdown();
+    await this.imports.shutdown();
     await this.graph.close();
     await this.connections.shutdown();
     for (const controller of this.controllers.values()) controller.abort();
@@ -1310,6 +1318,45 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
       }
       case "diagnostics":
         return this.refreshProviders();
+      case "project.clone": {
+        const p = z
+          .object({
+            source: z.string().min(1).max(2000),
+            parent: z.string().min(1).max(4000),
+          })
+          .parse(payload);
+        return this.imports.start(p.source, p.parent);
+      }
+      case "project.import.status":
+        return this.imports.get(z.string().uuid().parse(payload));
+      case "project.import.cancel":
+        return this.imports.cancel(z.string().uuid().parse(payload));
+      case "skill.starters":
+        return starterSkills();
+      case "skill.starter.install": {
+        const p = z
+          .object({
+            projectId: z.string(),
+            reviewed: z.literal(true),
+            skills: z
+              .array(
+                z.object({
+                  id: z.enum(["workflow", "verification"]),
+                  hash: z.string().regex(/^[a-f0-9]{64}$/),
+                }),
+              )
+              .min(1)
+              .max(2),
+          })
+          .parse(payload);
+        const project = this.project(p.projectId);
+        if (this.activeProjects.has(project.id))
+          throw new Error("Wait for the active run before installing skills.");
+        await prepareProject(project.path);
+        const skills = await installStarterSkills(project, p.skills);
+        for (const skill of skills) this.store.put("skill", skill.id, skill);
+        return skills;
+      }
       case "project.open":
         return this.openProject(z.string().min(1).max(100).parse(payload));
       case "project.add":

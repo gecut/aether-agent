@@ -1,5 +1,13 @@
 # Verification record
 
+## October 18: Git project import and starter skills (0.1.14)
+
+Production build, formatting, all **139 tests across 23 files**, and the existing Electron desktop E2E passed on macOS arm64. New regression fixtures exercise HTTPS URL validation, actual Git history/file checkout with hostile global hooks and filters blocked, existing-destination preservation, cancellation/staging cleanup, interrupted import recovery, external dirty/staged repositories, reviewed hash-matched skill packages, symlink boundaries, existing skill preservation and bare/Git-metadata rejection.
+
+`node scripts/import-ui.mjs` passed in both source Electron and the packaged executable, using disposable projects/userData. Acceptance covered validation shown inside the native modal, opening an external repository, explicit review before skill enablement, unchanged original HEAD/index, an actual public GitHub clone, optional skill skipping/catalog navigation, narrow layout and no renderer errors. The import/skills screen was visually inspected. Private repository authentication and Windows/Linux runtime import remain unverified here. Clone uses an existing Git credential helper or native GitHub CLI sign-in; it does not install Git or acquire a new account session.
+
+The arm64 DMG/ZIP, strict recursive signatures of unpacked and DMG-contained bundles, ASAR/runtime contents, packaged launch/IPC and restart persistence passed. Signature integrity does not establish Apple notarization. The installed app was updated only after confirming no active runs, retaining its previous bundle as a rollback copy and preserving application data.
+
 ## October 18: published v0.1.10 and optional website film
 
 Release `build-39080580943` completed tests, Windows/Linux packaging, both macOS signature/DMG checks, packaged Windows/macOS smoke and publication of all eight distributions plus checksums. The website's direct download links use that verified release.

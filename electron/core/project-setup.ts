@@ -35,6 +35,14 @@ async function setup(cwd: string) {
     await git(cwd, ["rev-parse", "--show-toplevel"]).catch(() => "")
   ).trim();
   if (!root) {
+    const [bare, metadata] = await Promise.all([
+      git(cwd, ["rev-parse", "--is-bare-repository"]).catch(() => ""),
+      git(cwd, ["rev-parse", "--is-inside-git-dir"]).catch(() => ""),
+    ]);
+    if (bare.trim() === "true" || metadata.trim() === "true")
+      throw new Error(
+        "Choose the repository's working folder, not a bare repository or its Git metadata directory.",
+      );
     if (await lstat(path.join(cwd, ".git")).catch(() => undefined))
       throw new Error(
         "Existing Git metadata is invalid; repair it before opening this project.",

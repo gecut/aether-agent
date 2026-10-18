@@ -189,6 +189,13 @@ async function boot() {
       await shell.openExternal(url);
       return;
     }
+    if (command === "project.clone.parent") {
+      const result = await dialog.showOpenDialog(window!, {
+        properties: ["openDirectory", "createDirectory"],
+        title: "Choose where to clone the repository",
+      });
+      return result.canceled ? null : result.filePaths[0];
+    }
     if (command === "project.choose") {
       const result = await dialog.showOpenDialog(window!, {
         properties: ["openDirectory"],

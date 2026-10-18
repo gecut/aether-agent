@@ -201,3 +201,10 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] Project picker uses the same saved recency order and shows paths to distinguish equal names.
 - [x] Startup restores the latest project; successful opens persist a compatible optional timestamp, with creation dates as the legacy fallback.
 - [x] Missing folders produce a locate-folder message without advancing recency; project switching clears the previous project's chat context and preserves editor save guards.
+
+## Project import and optional skills (0.1.14)
+
+- [x] Import GitHub shorthand and HTTPS Git repositories into a chosen parent folder, with persisted clone phases, cancellation and restart recovery. Existing destinations are preserved.
+- [x] Open existing external Git projects while preserving their branch, history and staged edits; reject bare repositories and Git metadata folders.
+- [x] Offer hash-matched starter skill previews, explicit review and project-scoped installation before workspace/IDE continuation; existing skill files are preserved.
+- [x] Clone without checkout hooks, global smudge filters, submodule execution or dependency scripts. Private GitHub clones can use the existing native GitHub CLI login without copying credentials.

@@ -78,6 +78,8 @@ npm run dev
 
 Open **Settings**, run provider diagnostics, and choose your planner and coding model. Leave a model identifier empty to use the runtime default, or enter an account-supported identifier. Use the provider's supported sign-in flow if needed.
 
+Use **Import project** to clone a GitHub repository (`owner/repository`) or another HTTPS Git URL, or open an existing local project created with any tool. Choose a clone location, then optionally review and install Aether’s project workflow and feature verification skills before continuing to the workspace or IDE. **Project actions → Project setup & skills** reopens this step later. Private clones use an existing Git credential helper or signed-in GitHub CLI; Git must be installed. Import does not run dependencies, submodules or project scripts.
+
 The home screen lists your recent projects. Use **Continue in IDE** to reopen the latest one, or choose another project from the sidebar picker. Aether remembers the last project opened across restarts; folder paths distinguish projects with the same name.
 
 Open **IDE → Set up full IDE** to download the checksum-verified Code-OSS runtime. Install compatible extensions from Open VSX or VSIX in its Extensions view; Microsoft-only Marketplace extensions are not guaranteed. The lightweight Quick editor remains available without that download. See [IDE details](docs/development/EDITOR.md) and [measured context savings](docs/development/EFFICIENCY_RESEARCH.md).

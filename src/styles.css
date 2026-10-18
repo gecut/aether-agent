@@ -4222,3 +4222,203 @@ bdi {
     display: none;
   }
 }
+
+.workspace-import-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 20px;
+}
+.workspace-import-actions .button {
+  font-size: 11px;
+}
+.project-import-dialog {
+  width: min(660px, calc(100vw - 32px));
+  max-height: calc(100svh - 40px);
+  padding: 0;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 24px 100px #0005;
+  overflow: auto;
+}
+.project-import-dialog::backdrop {
+  background: #0009;
+  backdrop-filter: blur(4px);
+}
+.project-import-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 26px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.project-import-dialog header .eyebrow {
+  margin: 0 0 8px;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.14em;
+}
+.project-import-dialog header h2 {
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+.project-import-dialog header > button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+}
+.project-import-content {
+  padding: 22px 26px 26px;
+  display: grid;
+  gap: 18px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.project-import-content p {
+  margin: 0;
+  color: var(--muted);
+}
+.project-import-content > label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.project-import-content input:not([type="checkbox"]) {
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.project-import-content small {
+  color: var(--muted);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.project-import-content footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.import-local {
+  justify-content: center;
+  min-height: 46px;
+}
+.import-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--dim);
+  font-size: 10px;
+}
+.import-divider::before,
+.import-divider::after {
+  content: "";
+  height: 1px;
+  background: var(--border);
+  flex: 1;
+}
+.import-location {
+  display: flex;
+  gap: 10px;
+}
+.import-location .button {
+  flex-shrink: 0;
+}
+.import-progress {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.import-progress strong {
+  font-weight: 500;
+}
+.import-progress progress {
+  display: block;
+  width: 100%;
+  height: 5px;
+  margin-top: 12px;
+  accent-color: var(--accent);
+}
+.import-project-summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.import-project-summary > div {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+.import-project-summary > span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.import-skill-list {
+  display: grid;
+  gap: 12px;
+}
+.import-skill-list > section {
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.project-import-dialog .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--text);
+}
+.project-import-dialog .checkbox-label > span {
+  display: grid;
+  gap: 4px;
+}
+.import-skill-list details {
+  margin-top: 12px;
+  font-size: 11px;
+}
+.import-skill-list summary {
+  color: var(--accent);
+  cursor: pointer;
+}
+.import-skill-list pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 240px;
+  overflow: auto;
+  color: var(--muted);
+  font: 11px/1.7 var(--mono);
+  margin: 12px 0 0;
+}
+.import-skill-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+@media (max-width: 600px) {
+  .project-import-content {
+    padding: 18px;
+  }
+  .project-import-dialog > header {
+    padding: 18px;
+  }
+  .import-location {
+    flex-direction: column;
+  }
+}
