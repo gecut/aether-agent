@@ -36,7 +36,7 @@ export function ConversationRun({
         timer = setTimeout(() => void load(), 1500);
         return;
       }
-      const value = await call<Run>("run.get", id);
+      const value = await call<Run>("run.conversation", id);
       if (!live) return;
       if (value) setRun(value);
       if (value && !["completed", "failed", "cancelled"].includes(value.status))
@@ -51,7 +51,7 @@ export function ConversationRun({
   const action = async (command: string) => {
     setBusy(true);
     await call(command, id);
-    const value = await call<Run>("run.get", id);
+    const value = await call<Run>("run.conversation", id);
     if (value) setRun(value);
     await refresh();
     setBusy(false);

@@ -64,12 +64,15 @@ Filter by project, browse completed tasks, pin or collapse the widget, and open 
 
 ## Quick start
 
-**Tested on macOS arm64.** You need Node.js 24+, npm, Git, and an authenticated compatible official Codex CLI. Aether also detects the CLI bundled with the Codex desktop app. Rust is not required.
+Downloaded desktop builds include native Codex and its execution helpers; use Settings to sign in on each device. Claude and Antigravity offer **Install & sign in** through official installers.
+
+**From source, tested on macOS arm64:** you need Node.js 24+, npm and Git. Prepare the pinned Codex runtime below, or use a compatible official CLI installation. Rust is not required.
 
 ```sh
 gh repo clone gecut/aether-agent
 cd aether-agent
 npm ci
+npm run prepare:providers
 npm run dev
 ```
 
@@ -103,12 +106,12 @@ Execution needs a clean original working tree. Aether never stashes or resets yo
 
 ## Providers
 
-| Provider               | Current capability                                                                                                                                                            |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **OpenAI Codex**       | Verified planning, coding teams, isolated implementation, streaming, cancellation, and read-only final review through the official CLI. Uses an existing supported CLI login. |
-| **Claude Code**        | Read-only planning/review adapter. Actual integration remains unverified; coding is disabled pending a verified sandbox.                                                      |
-| **Google Antigravity** | Official CLI OAuth setup, model discovery, and connection checks. Coding remains disabled; the tested account/location was blocked by provider eligibility.                   |
-| **Compatible API**     | `/models` and `/chat/completions` SSE for planning/review. No filesystem coding tools.                                                                                        |
+| Provider               | Current capability                                                                                                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **OpenAI Codex**       | Verified planning, coding teams, isolated implementation, streaming, cancellation, and read-only final review through the official CLI. Uses an existing supported CLI login.                          |
+| **Claude Code**        | Read-only planning/review adapter. Actual integration remains unverified; coding is disabled pending a verified sandbox.                                                                               |
+| **Google Antigravity** | Text-only chat/planning/review with a tool-free temporary profile, official OAuth setup and model discovery. Coding remains disabled; the tested account/location was blocked by provider eligibility. |
+| **Compatible API**     | `/models` and `/chat/completions` SSE for planning/review. No filesystem coding tools.                                                                                                                 |
 
 Provider installation, authentication, and actual inference are separate states. See [setup and capability evidence](docs/providers/README.md) and [Hermes connector research](docs/providers/HERMES_CONNECTORS.md).
 

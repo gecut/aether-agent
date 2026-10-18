@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { listPackage, extractFile } from "@electron/asar";
 
 const [platform, arch] = process.argv.slice(2);
@@ -45,6 +46,33 @@ assert.equal(
   JSON.parse(extractFile(archive, "package.json").toString()).version,
   version,
 );
+const runtime = path.join(root, "provider-runtime");
+const codex = path.resolve(runtime, platform === "win" ? "codex.exe" : "codex");
+const pinned = JSON.parse(
+  await readFile("electron/providers/codex-release.json", "utf8"),
+);
+assert.match(
+  execFileSync(codex, ["--version"], {
+    encoding: "utf8",
+    env: { ...process.env, PATH: "" },
+  }),
+  new RegExp(pinned.version.replaceAll(".", "\\.")),
+);
+await access(path.join(runtime, "codex-LICENSE"));
+await access(
+  path.join(
+    runtime,
+    platform === "win" ? "codex-code-mode-host.exe" : "codex-code-mode-host",
+  ),
+);
+if (platform === "win") {
+  for (const helper of [
+    "codex-command-runner",
+    "codex-windows-sandbox-service",
+    "codex-windows-sandbox-setup",
+  ])
+    await access(path.join(runtime, `${helper}.exe`));
+}
 const extensions = {
   mac: ["dmg", "zip"],
   win: ["exe", "zip"],

@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { lstat, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import { git, worktree, changed } from "./repository";
@@ -73,6 +73,8 @@ export async function checkpointChat(
       );
     return result.stdout.trim();
   };
+  const pending: { file: string; mode: string; content?: Buffer }[] = [];
+  const marks = index + ".marks";
   let excluded = 0,
     bytes = 0;
   try {
@@ -94,7 +96,7 @@ export async function checkpointChat(
         info = await lstat(path.join(project.path, file));
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-        await run(["update-index", "--force-remove", "--", file]);
+        pending.push({ file, mode: "0" });
         continue;
       }
       if (!info.isFile() || info.size > 2_000_000) {
@@ -116,14 +118,48 @@ export async function checkpointChat(
         excluded++;
         continue;
       }
-      const blob = await run(["hash-object", "-w", "--stdin"], content);
-      await run([
-        "update-index",
-        "--add",
-        "--cacheinfo",
-        `${respectMode ? (info.mode & 0o111 ? "100755" : "100644") : (modes.get(file) ?? "100644")},${blob},${file}`,
-      ]);
+      pending.push({
+        file,
+        mode: respectMode
+          ? info.mode & 0o111
+            ? "100755"
+            : "100644"
+          : (modes.get(file) ?? "100644"),
+        content,
+      });
     }
+    const blobs = pending.filter((item) => item.content !== undefined);
+    if (blobs.length) {
+      const data = blobs.flatMap((item, i) => [
+        Buffer.from(`blob\nmark :${i + 1}\ndata ${item.content!.length}\n`),
+        item.content!,
+        Buffer.from("\n"),
+      ]);
+      data.push(Buffer.from("done\n"));
+      await run(
+        ["fast-import", "--quiet", "--done", `--export-marks=${marks}`],
+        Buffer.concat(data),
+      );
+    }
+    const hashes = new Map(
+      blobs.length
+        ? (await readFile(marks, "utf8"))
+            .trim()
+            .split("\n")
+            .map((line) => {
+              const [mark, hash] = line.split(" ");
+              return [Number(mark.slice(1)), hash];
+            })
+        : [],
+    );
+    let at = 0;
+    const updates = pending
+      .map(
+        (item) =>
+          `${item.mode} ${item.content === undefined ? "0".repeat(head.length) : hashes.get(++at)}\t${item.file}\0`,
+      )
+      .join("");
+    if (updates) await run(["update-index", "-z", "--index-info"], updates);
     const tree = await run(["write-tree"]);
     const parent = previous?.commit ?? head;
     const previousTree = await run(["rev-parse", parent + "^{tree}"]);
@@ -157,6 +193,7 @@ export async function checkpointChat(
     return { version: 1, commit, sourceHead: head, at: saved.at, excluded };
   } finally {
     await unlink(index).catch(() => undefined);
+    await unlink(marks).catch(() => undefined);
   }
 }
 
@@ -213,7 +250,10 @@ export async function matchesCheckpoint(
     bytes += content.length;
     if (bytes > 20_000_000)
       throw new Error("Checkpoint comparison exceeds 20 MB");
-    const hash = (await git(root, ["hash-object", "--stdin"], content)).trim();
+    const hash = createHash(expected.hash.length === 64 ? "sha256" : "sha1")
+      .update(`blob ${content.length}\0`)
+      .update(content)
+      .digest("hex");
     if (hash !== expected.hash) return false;
   }
   return true;

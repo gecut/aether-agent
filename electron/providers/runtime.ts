@@ -1,24 +1,41 @@
-import { access } from "node:fs/promises";
+import { access, stat } from "node:fs/promises";
 import { constants } from "node:fs";
 import path from "node:path";
 import os from "node:os";
-export async function findBinary(name: string) {
+import { executableDirectories } from "../core/environment";
+let bundledRoot: string | undefined;
+export function configureProviderRuntime(root: string) {
+  bundledRoot = root;
+}
+export function binaryCandidates(
+  name: string,
+  platform = process.platform,
+  env = process.env,
+  home = os.homedir(),
+  root = bundledRoot,
+) {
+  if (!/^[a-z][a-z0-9-]*$/i.test(name))
+    throw new Error("Invalid executable name");
+  const p = platform === "win32" ? path.win32 : path.posix;
+  const filename = platform === "win32" ? name + ".exe" : name;
   const candidates = [
-    ...(process.env.PATH ?? "")
-      .split(path.delimiter)
-      .map((p) => path.join(p, name)),
-    path.join("/opt/homebrew/bin", name),
-    path.join("/usr/local/bin", name),
-    path.join(os.homedir(), ".local/bin", name),
+    ...(root && name === "codex" ? [p.join(root, filename)] : []),
+    ...executableDirectories(platform, env, home).map((directory) =>
+      p.join(directory, filename),
+    ),
   ];
-  if (name === "codex")
+  if (platform === "darwin" && name === "codex")
     candidates.push(
       "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex",
     );
-  for (const candidate of candidates)
+  return candidates;
+}
+export async function findBinary(name: string) {
+  for (const candidate of binaryCandidates(name)) {
     try {
       await access(candidate, constants.X_OK);
-      return candidate;
+      if ((await stat(candidate)).isFile()) return candidate;
     } catch {}
+  }
   return undefined;
 }

@@ -1,6 +1,6 @@
 {
   "name": "aether-code",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": true,
   "description": "A local-first supervised coding workspace",
   "author": "Aether Code contributors",
@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:e2e": "npm run build && node scripts/e2e.mjs",
     "test:provider": "node scripts/provider-smoke.mjs",
-    "package": "npm run build && electron-builder --mac dir zip",
+    "package": "npm run build && npm run prepare:providers && electron-builder --mac dir zip",
     "format": "prettier --write .github src shared electron tests scripts docs website *.md *.json *.ts index.html",
     "format:check": "prettier --check .github src shared electron tests scripts docs website *.md *.json *.ts index.html",
     "analyze:graph": "graphify extract . --code-only --no-cluster --out artifacts/graphify --timing",
@@ -21,7 +21,8 @@
     "test:live-ui": "npm run build && node scripts/live-ui.mjs",
     "test:widget": "npm run build && node scripts/widget-ui.mjs",
     "test:ide": "npm run build && node scripts/ide-ui.mjs",
-    "test:conversation": "npm run build && node scripts/conversation-ui.mjs"
+    "test:conversation": "npm run build && node scripts/conversation-ui.mjs",
+    "prepare:providers": "node scripts/prepare-codex.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -94,7 +95,13 @@
       "category": "Development",
       "maintainer": "Aether Code contributors",
       "icon": "build/icon.png"
-    }
+    },
+    "extraResources": [
+      {
+        "from": ".cache/provider-runtime",
+        "to": "provider-runtime"
+      }
+    ]
   },
   "homepage": "https://github.com/gecut/aether-agent",
   "repository": {

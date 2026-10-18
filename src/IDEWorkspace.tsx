@@ -79,15 +79,27 @@ export function IDEWorkspace({
   };
   useEffect(() => {
     let live = true;
+    let timer: ReturnType<typeof setTimeout>;
     const load = async () => {
-      const value = await call<IDERuntimeStatus>("ide.runtime.status");
-      if (live && value) setStatus(value);
+      const value = document.hidden
+        ? undefined
+        : await call<IDERuntimeStatus>("ide.runtime.status");
+      if (!live) return;
+      if (value) setStatus(value);
+      timer = setTimeout(
+        () => void load(),
+        value &&
+          ["downloading", "verifying", "installing", "starting"].includes(
+            value.state,
+          )
+          ? 500
+          : 5000,
+      );
     };
     void load();
-    const timer = setInterval(() => void load(), 1000);
     return () => {
       live = false;
-      clearInterval(timer);
+      clearTimeout(timer);
     };
   }, [call]);
   useEffect(() => {

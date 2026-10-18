@@ -69,6 +69,7 @@ export class Service {
   private activeProjects = new Set<string>();
   private listeners = new Set<(event: RunEvent) => void>();
   private cache: Snapshot["providers"] = [];
+  private closing = false;
   constructor(
     public store: Store,
     private key: () => string | undefined = () => undefined,
@@ -119,7 +120,7 @@ export class Service {
   }
   save(run: Run) {
     run.updatedAt = now();
-    this.store.put("run", run.id, run);
+    this.store.put("run", run.id, run, run.status !== "running");
   }
   run(id: string) {
     const run = this.store.get<Run>("run", id);
@@ -131,7 +132,7 @@ export class Service {
     if (!project) throw new Error("Project not found");
     return project;
   }
-  async initialize() {
+  async initialize({ background = false } = {}) {
     for (const run of this.store.all<Run>("run")) {
       if (["running", "initializing", "retrying"].includes(run.status)) {
         run.status = "blocked";
@@ -147,10 +148,24 @@ export class Service {
         this.emit(run.id, "run.interrupted", run.reason);
       }
     }
-    this.cache = (await this.registry.diagnostics()).map((provider) => ({
+    if (background) this.cache = await this.registry.detect();
+    const check = this.refreshProviders();
+    if (background) void check.catch(() => {});
+    else await check;
+  }
+  private async refreshProviders() {
+    const providers = await this.registry.diagnostics();
+    if (this.closing) return providers;
+    this.cache = providers.map((provider) => ({
       ...provider,
       verified: !!this.store.get("providerEvidence", provider.id + ":code"),
     }));
+    this.emit(
+      "connections",
+      "provider.connection_changed",
+      "Provider diagnostics updated.",
+    );
+    return this.cache;
   }
   async importPromptAttachment(source: string): Promise<PromptAttachment> {
     const extension = path.extname(source).toLowerCase();
@@ -201,18 +216,24 @@ export class Service {
       attachment.text = (await readFile(source, "utf8")).slice(0, 100_000);
     return attachment;
   }
-  async snapshot(): Promise<Snapshot> {
-    const runs = this.store.all<Run>("run");
+  async snapshot(selection?: {
+    compact?: boolean;
+    runId?: string;
+    chatId?: string;
+  }): Promise<Snapshot> {
+    const runs = selection?.compact
+      ? this.store.uiRecords<Run>("run", selection.runId)
+      : this.store.all<Run>("run");
     return {
       projects: this.store.all("project"),
       runs,
-      chats: this.store
-        .all<Chat>("chat")
-        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
+      chats: (selection?.compact
+        ? this.store.uiRecords<Chat>("chat", selection.chatId)
+        : this.store.all<Chat>("chat")
+      ).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
       settings: this.settings(),
       providers: this.cache.map((provider) => {
-        if (provider.id !== "codex" && provider.id !== "antigravity")
-          return provider;
+        if (provider.id === "compatible") return provider;
         let connection = this.connections.status(provider.id);
         if (
           provider.id === "codex" &&
@@ -1214,6 +1235,8 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
     );
   }
   async shutdown() {
+    this.closing = true;
+    this.registry.shutdown();
     await this.graph.close();
     await this.connections.shutdown();
     for (const controller of this.controllers.values()) controller.abort();
@@ -1233,13 +1256,25 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
         return this.models.list(p.provider, p.refresh);
       }
       case "snapshot":
-        return this.snapshot();
+        return this.snapshot(
+          z
+            .object({
+              compact: z.boolean().optional(),
+              runId: z.string().max(100).optional(),
+              chatId: z.string().max(100).optional(),
+            })
+            .optional()
+            .parse(payload),
+        );
+      case "provider.setup":
       case "provider.connect":
       case "provider.verify": {
-        const id = z.enum(["codex", "antigravity"]).parse(payload);
-        const status = await (command === "provider.connect"
-          ? this.connections.connect(id)
-          : this.connections.verify(id));
+        const id = z.enum(["codex", "antigravity", "claude"]).parse(payload);
+        const status = await (command === "provider.setup"
+          ? this.connections.setup(id)
+          : command === "provider.connect"
+            ? this.connections.connect(id)
+            : this.connections.verify(id));
         const provider = this.cache.find((provider) => provider.id === id);
         if (provider)
           provider.authenticated =
@@ -1248,14 +1283,13 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
               : status.state === "signed-out"
                 ? false
                 : null;
+        if (command === "provider.verify") await this.refreshProviders();
+        else if (command === "provider.setup")
+          void this.refreshProviders().catch(() => {});
         return status;
       }
       case "diagnostics":
-        this.cache = (await this.registry.diagnostics()).map((provider) => ({
-          ...provider,
-          verified: !!this.store.get("providerEvidence", provider.id + ":code"),
-        }));
-        return this.cache;
+        return this.refreshProviders();
       case "project.add":
         return this.addProject(z.string().min(1).parse(payload));
       case "settings.model": {
@@ -1320,6 +1354,19 @@ Allowed roles: architect, implementer, test-engineer, reviewer, debugger, integr
           }
         }
         return this.graph.read(project.id, root, source, p.refresh);
+      }
+      case "run.conversation": {
+        const run = this.run(z.string().uuid().parse(payload));
+        const {
+          plannerSnapshot,
+          reviewSnapshot,
+          continuationContext,
+          ...value
+        } = run;
+        return {
+          ...value,
+          tasks: run.tasks.map(({ snapshot, team, ...task }) => task),
+        };
       }
       case "run.get":
         return this.run(z.string().uuid().parse(payload));

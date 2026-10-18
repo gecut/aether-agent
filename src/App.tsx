@@ -202,6 +202,8 @@ export function App() {
   useEffect(() => {
     if (page !== "IDE") setTerminalRequest(0);
   }, [page]);
+  const selection = useRef({ runId, chatId });
+  selection.current = { runId, chatId };
   const projectAnchor = useRef<HTMLButtonElement>(null);
   const [sessionMenu, setSessionMenu] = useState<{
     kind: "run" | "chat";
@@ -268,7 +270,10 @@ export function App() {
       );
       return;
     }
-    const result = await call<Snapshot>("snapshot");
+    const result = await call<Snapshot>("snapshot", {
+      compact: true,
+      ...selection.current,
+    });
     if (result) setData(result);
     window.setTimeout(
       () => setLoading(false),
@@ -282,6 +287,9 @@ export function App() {
       clearTimeout(refreshTimer.current);
     };
   }, [refresh]);
+  useEffect(() => {
+    void refresh();
+  }, [runId, chatId]);
   useEffect(() => {
     if (!projectId && data.projects.length) setProjectId(data.projects[0].id);
   }, [data.projects, projectId]);
@@ -2269,7 +2277,7 @@ export function App() {
               ["running", "initializing"].includes(r.status),
             ).length
           }{" "}
-          active runs <span>·</span> Aether Code v0.1.11{" "}
+          active runs <span>·</span> Aether Code v0.1.12{" "}
           <AsteriskSimple size={12} />
         </span>
       </footer>
@@ -2613,14 +2621,14 @@ function SettingsPage({
                       : "Planning / diagnostics"}
                   </span>
                 </div>
-                {(p.id === "codex" || p.id === "antigravity") && (
+                {p.id !== "compatible" && (
                   <div className="connection-actions">
                     <Button
-                      disabled={!p.installed || !!connectionBusy}
+                      disabled={!!connectionBusy}
                       onClick={async () => {
                         setConnectionBusy(p.id);
                         const result = await call<ConnectionStatus>(
-                          "provider.connect",
+                          p.installed ? "provider.connect" : "provider.setup",
                           p.id,
                         );
                         await refresh();
@@ -2629,12 +2637,16 @@ function SettingsPage({
                       }}
                     >
                       <ArrowUpRight />
-                      {p.id === "codex"
-                        ? "Sign in with ChatGPT"
-                        : "Sign in with Google"}
+                      {!p.installed
+                        ? "Install & sign in"
+                        : p.id === "codex"
+                          ? "Sign in with ChatGPT"
+                          : p.id === "claude"
+                            ? "Sign in to Claude"
+                            : "Sign in with Google"}
                     </Button>
                     <Button
-                      disabled={!p.installed || !!connectionBusy}
+                      disabled={!!connectionBusy}
                       title={
                         p.id === "antigravity"
                           ? "Verifies account access using a small model request."
@@ -2665,7 +2677,8 @@ function SettingsPage({
           ))}
         </div>
         <p dir="auto" className="muted connection-help">
-          Sign-in opens the official CLI in Terminal and its browser OAuth flow.
+          Install & sign in opens the official provider installer and browser
+          login in your terminal. Codex is included with packaged Aether builds.
           Finish onboarding, close that terminal, then verify here. Existing
           Codex sessions are reused. Antigravity verification uses a small model
           request; a model catalog alone does not prove account access.

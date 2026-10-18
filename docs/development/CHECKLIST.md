@@ -184,3 +184,13 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] Keep coding plans, approval, task/test evidence, review and follow-ups inside project conversations.
 - [x] Save bounded immutable message checkpoints in app-owned worktrees without touching the original branch/index; execute from snapshot and block applying over newer scoped edits.
 - [x] Add a dependent executable JavaScript feature-test task to detected application implementation plans when missing; tests remain visible and approval-gated.
+
+## Fresh-install providers and responsiveness (0.1.12)
+
+- [x] Bundle checksum-verified official native Codex for all release targets, including Windows sandbox helpers; validate package runtime without a global PATH.
+- [x] Native executable discovery and explicit provider PATH handle Windows filenames, spaces and standard installation locations.
+- [x] User-triggered official Claude/Antigravity installers and native terminal/browser login with separate verification; no shipped credentials or silent install.
+- [x] Antigravity text-only temporary agent, empty-tool initialization requirement, tool-attempt cancellation and account eligibility reporting; coding remains disabled.
+- [x] Nonblocking startup detection, coalesced/abortable diagnostics, inactive-history summaries, buffered running-state persistence and adaptive IDE polling.
+- [x] Batch message-checkpoint blobs/index updates and local scoped blob comparisons while preserving the original branch/index.
+- [x] Regression fixtures cover thirty-file checkpoint process count, more than 100× smaller inactive payloads, slow diagnostics and Windows login paths.

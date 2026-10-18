@@ -1289,8 +1289,9 @@
           <div class="hero-intro">
             <a
               class="release-note"
-              href="https://github.com/gecut/aether-agent/releases/tag/build-39080580943"
-              >Aether Code 0.1.10 <span aria-hidden="true">↗</span></a
+              data-release-notes
+              href="https://github.com/gecut/aether-agent/releases"
+              >Aether Code <span aria-hidden="true">↗</span></a
             >
             <h1 id="hero-title">
               Your idea.<br /><span>Ava by your side.</span>
@@ -1577,7 +1578,7 @@
       >
         <div class="download-heading">
           <div>
-            <p class="eyebrow">Aether Code 0.1.10</p>
+            <p class="eyebrow" data-release-version>Aether Code</p>
             <h2 id="download-title">Make your next idea a project.</h2>
             <p>
               Choose your system. Bring a local folder. Start a conversation.
@@ -1585,7 +1586,8 @@
           </div>
           <a
             class="text-link"
-            href="https://github.com/gecut/aether-agent/releases/tag/build-39080580943"
+            data-release-notes
+            href="https://github.com/gecut/aether-agent/releases"
             >Release notes <span aria-hidden="true">↗</span></a
           >
         </div>
@@ -1595,11 +1597,13 @@
             <p>Apple Silicon &amp; Intel</p>
             <a
               class="download-link"
-              href="https://github.com/gecut/aether-agent/releases/download/build-39080580943/aether-code-0.1.10-mac-arm64.dmg"
+              data-release-asset="mac-arm64.dmg"
+              href="https://github.com/gecut/aether-agent/releases"
               >Apple Silicon DMG <span aria-hidden="true">↗</span></a
             ><a
               class="download-link"
-              href="https://github.com/gecut/aether-agent/releases/download/build-39080580943/aether-code-0.1.10-mac-x64.dmg"
+              data-release-asset="mac-x64.dmg"
+              href="https://github.com/gecut/aether-agent/releases"
               >Intel DMG <span aria-hidden="true">↗</span></a
             ><small
               >Ad-hoc signed preview, not Apple-notarized.
@@ -1614,15 +1618,17 @@
             <p>64-bit desktop</p>
             <a
               class="download-link"
-              href="https://github.com/gecut/aether-agent/releases/download/build-39080580943/aether-code-0.1.10-win-x64.exe"
+              data-release-asset="win-x64.exe"
+              href="https://github.com/gecut/aether-agent/releases"
               >Download installer <span aria-hidden="true">↗</span></a
             ><a
               class="download-link"
-              href="https://github.com/gecut/aether-agent/releases/download/build-39080580943/aether-code-0.1.10-win-x64.zip"
+              data-release-asset="win-x64.zip"
+              href="https://github.com/gecut/aether-agent/releases"
               >Portable ZIP <span aria-hidden="true">↗</span></a
             ><small
-              >Unsigned development build. Provider CLIs are configured
-              separately.</small
+              >Unsigned development build. Sign in to your provider in
+              Settings.</small
             >
           </article>
           <article class="platform-download">
@@ -1630,16 +1636,19 @@
             <p>64-bit desktop</p>
             <a
               class="download-link"
-              href="https://github.com/gecut/aether-agent/releases/download/build-39080580943/aether-code-0.1.10-linux-x86_64.AppImage"
+              data-release-asset="linux-x86_64.AppImage"
+              href="https://github.com/gecut/aether-agent/releases"
               >Download AppImage <span aria-hidden="true">↗</span></a
             ><a
               class="download-link"
-              href="https://github.com/gecut/aether-agent/releases/download/build-39080580943/aether-code-0.1.10-linux-amd64.deb"
+              data-release-asset="linux-amd64.deb"
+              href="https://github.com/gecut/aether-agent/releases"
               >Debian / Ubuntu DEB <span aria-hidden="true">↗</span></a
             ><small
               >Choose the format for your distribution.
               <a
-                href="https://github.com/gecut/aether-agent/releases/download/build-39080580943/SHA256SUMS.txt"
+                data-release-asset="SHA256SUMS.txt"
+                href="https://github.com/gecut/aether-agent/releases"
                 >Verify checksums</a
               ></small
             >
@@ -2060,6 +2069,59 @@
           document.querySelector("#ava-message").textContent = captions[mood];
         }),
       );
+      // Select a complete published build, including development prereleases.
+      fetch(
+        "https://api.github.com/repos/gecut/aether-agent/releases?per_page=10",
+        {
+          signal: AbortSignal.timeout(5000),
+        },
+      )
+        .then(async (response) => {
+          if (!response.ok) return;
+          const releases = await response.json();
+          if (!Array.isArray(releases)) return;
+          for (const release of releases) {
+            if (release.draft || !Array.isArray(release.assets)) continue;
+            const version = release.assets
+              .map((asset) =>
+                /^aether-code-(\d+\.\d+\.\d+)-mac-arm64\.dmg$/.exec(asset.name),
+              )
+              .find(Boolean)?.[1];
+            if (!version) continue;
+            const prefix = `https://github.com/gecut/aether-agent/releases/download/${encodeURIComponent(release.tag_name)}/`;
+            const assets = new Map(
+              release.assets
+                .filter(
+                  (asset) =>
+                    typeof asset.browser_download_url === "string" &&
+                    asset.browser_download_url.startsWith(prefix),
+                )
+                .map((asset) => [asset.name, asset.browser_download_url]),
+            );
+            const links = [
+              ...document.querySelectorAll("[data-release-asset]"),
+            ];
+            const name = (link) =>
+              link.dataset.releaseAsset === "SHA256SUMS.txt"
+                ? "SHA256SUMS.txt"
+                : `aether-code-${version}-${link.dataset.releaseAsset}`;
+            if (!links.every((link) => assets.has(name(link)))) continue;
+            links.forEach((link) => (link.href = assets.get(name(link))));
+            document
+              .querySelectorAll("[data-release-notes]")
+              .forEach(
+                (link) =>
+                  (link.href = `https://github.com/gecut/aether-agent/releases/tag/${encodeURIComponent(release.tag_name)}`),
+              );
+            document
+              .querySelectorAll("[data-release-version]")
+              .forEach(
+                (label) => (label.textContent = `Aether Code ${version}`),
+              );
+            break;
+          }
+        })
+        .catch(() => {});
       const video = document.querySelector(".footer__video");
       const syncVideo = () => {
         if (motion.matches || document.hidden) video.pause();

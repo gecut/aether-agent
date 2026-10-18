@@ -97,7 +97,7 @@ it("requires a successful actual Antigravity response, not an installed binary o
   expect(connections.status("antigravity")?.state).toBe("blocked");
   await binary(
     "agy",
-    "console.log(JSON.stringify({status:'SUCCESS',response:'AETHER_CONNECTION_OK'}))",
+    "console.log(JSON.stringify({event:'init',init:{tools:[]}}));console.log(JSON.stringify({status:'SUCCESS',response:'AETHER_CONNECTION_OK'}))",
   );
   expect((await connections.verify("antigravity")).state).toBe("signed-in");
 });

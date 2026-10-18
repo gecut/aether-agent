@@ -50,6 +50,24 @@ export class Store {
     }
     return result;
   }
+  uiRecords<T>(kind: "run" | "chat", selected = ""): T[] {
+    const projection =
+      kind === "chat"
+        ? "json_set(value,'$.messages',json('[]'))"
+        : `json_set(json_remove(value,'$.plannerSnapshot','$.reviewSnapshot','$.continuationContext','$.patch','$.review','$.verification'),'$.tasks',json(COALESCE((SELECT json_group_array(json_remove(t.value,'$.snapshot','$.output','$.tests','$.team')) FROM json_each(records.value,'$.tasks') t),'[]')))`;
+    const statement = this.db.prepare(
+      `SELECT CASE WHEN id=? THEN value ELSE ${projection} END FROM records WHERE kind=? ORDER BY rowid DESC`,
+    );
+    statement.bind([selected, kind]);
+    const rows: T[] = [];
+    try {
+      while (statement.step())
+        rows.push(JSON.parse(String(statement.get()[0])));
+    } finally {
+      statement.free();
+    }
+    return rows;
+  }
   get<T>(kind: string, id: string): T | undefined {
     const statement = this.db.prepare(
       "SELECT value FROM records WHERE kind=? AND id=?",
@@ -63,12 +81,13 @@ export class Store {
       statement.free();
     }
   }
-  put(kind: string, id: string, value: unknown) {
+  put(kind: string, id: string, value: unknown, durable = true) {
     this.db.run(
       "INSERT INTO records VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET value=excluded.value",
       [kind, id, JSON.stringify(value)],
     );
-    this.flush();
+    if (durable) this.flush();
+    else this.scheduleFlush();
     return value;
   }
   remove(kind: string, id: string) {
@@ -116,6 +135,12 @@ export class Store {
       s.free();
     }
     return rows;
+  }
+  private scheduleFlush() {
+    if (!this.flushTimer) {
+      this.flushTimer = setTimeout(() => this.flush(), 200);
+      this.flushTimer.unref();
+    }
   }
   flush() {
     clearTimeout(this.flushTimer);

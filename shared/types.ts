@@ -252,7 +252,7 @@ export interface RunEvent {
   at: string;
 }
 export interface ConnectionStatus {
-  provider: "codex" | "antigravity";
+  provider: "codex" | "antigravity" | "claude";
   state:
     | "signed-in"
     | "signed-out"

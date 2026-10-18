@@ -220,7 +220,7 @@ export class DesktopWidget {
         return {
           ...widgetActivity(
             projects,
-            this.store.all<Run>("run"),
+            this.store.uiRecords<Run>("run"),
             this.prefs.projectId,
             offset,
           ),

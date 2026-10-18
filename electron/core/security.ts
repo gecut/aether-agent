@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { realpath, lstat } from "node:fs/promises";
 import path from "node:path";
+import { runtimePath } from "./environment";
 export const redact = (text: string) =>
   text
     .replace(
@@ -22,9 +23,26 @@ export function safeEnv(extra: Record<string, string> = {}) {
     "SystemRoot",
     "LANG",
     "LC_ALL",
+    "USERPROFILE",
+    "APPDATA",
+    "LOCALAPPDATA",
+    "HOMEDRIVE",
+    "HOMEPATH",
+    "COMSPEC",
+    "PATHEXT",
+    "WINDIR",
+    "XDG_CONFIG_HOME",
+    "XDG_DATA_HOME",
+    "XDG_RUNTIME_DIR",
+    "DBUS_SESSION_BUS_ADDRESS",
+    "SSL_CERT_FILE",
+    "SSL_CERT_DIR",
+    "HTTPS_PROXY",
+    "HTTP_PROXY",
+    "NO_PROXY",
   ])
     if (process.env[key]) env[key] = process.env[key];
-  return { ...env, NO_COLOR: "1", ...extra };
+  return { ...env, PATH: runtimePath(), NO_COLOR: "1", ...extra };
 }
 export async function inside(root: string, relative: string) {
   if (path.isAbsolute(relative) || relative.includes("\0"))

@@ -8,6 +8,7 @@ import {
   CompatibleProvider,
 } from "../electron/providers/registry";
 import { defaults } from "../shared/types";
+import { runtimePath } from "../electron/core/environment";
 let directory: string;
 let originalPath: string | undefined;
 beforeEach(async () => {
@@ -179,7 +180,7 @@ describe("CLI provider contract", () => {
     expect(args).toContain("hooks");
     expect(args).toContain('shell_environment_policy.inherit="none"');
     expect(args).toContain(
-      'shell_environment_policy.set={PATH="/usr/bin:/bin:/usr/sbin:/sbin"}',
+      `shell_environment_policy.set={PATH=${JSON.stringify(runtimePath())}}`,
     );
     expect(args).not.toContain("--dangerously-bypass-approvals-and-sandbox");
   });
@@ -197,7 +198,7 @@ describe("CLI provider contract", () => {
     );
     await expect(
       new CLIProvider("antigravity").run(invocation()),
-    ).rejects.toThrow("unverified");
+    ).rejects.toThrow("text-only");
   });
 });
 describe("compatible API contract", () => {

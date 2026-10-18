@@ -1,5 +1,7 @@
 import { runCodingTeam } from "./collaboration";
 import { findBinary } from "./runtime";
+import { runtimePath } from "../core/environment";
+import { antigravityText } from "./antigravity";
 import { execute } from "../core/process";
 import { redact } from "../core/security";
 import type {
@@ -32,7 +34,7 @@ export interface ProviderResult {
 }
 export interface Provider {
   id: ProviderId;
-  diagnose(): Promise<ProviderInfo>;
+  diagnose(signal?: AbortSignal): Promise<ProviderInfo>;
   run(input: Invocation): Promise<ProviderResult>;
 }
 const names = {
@@ -56,7 +58,7 @@ const waitForReconnect = (signal: AbortSignal, milliseconds: number) =>
   });
 export class CLIProvider implements Provider {
   constructor(public id: "codex" | "claude" | "antigravity") {}
-  async diagnose(): Promise<ProviderInfo> {
+  async diagnose(signal?: AbortSignal, probe = true): Promise<ProviderInfo> {
     const binary = await findBinary(
       this.id === "antigravity" ? "agy" : this.id,
     );
@@ -71,30 +73,31 @@ export class CLIProvider implements Provider {
         : `Install ${this.id === "antigravity" ? "agy" : this.id} using official setup instructions.`,
       models: [""],
       capabilities: {
-        planning: this.id !== "antigravity",
+        planning: true,
         coding: this.id === "codex",
         streaming: true,
         cancellation: true,
       },
       verified: false,
     };
-    if (!binary) return base;
+    if (!binary || !probe) return base;
     try {
       const version = await execute(binary, ["--version"], {
-        timeoutMs: 10000,
+        timeoutMs: 4000,
+        signal,
       });
       base.version = version.stdout.trim().slice(0, 120);
       if (this.id === "codex") {
         const auth = await execute(binary, ["login", "status"], {
-          timeoutMs: 10000,
+          timeoutMs: 4000,
+          signal,
         });
         base.authenticated = auth.code === 0;
         base.detail =
           redact((auth.stdout + auth.stderr).trim()) + " · CLI sandbox enabled";
       } else if (this.id === "antigravity") {
         base.detail =
-          "Official agy CLI detected. Use Sign in with Google, then Verify connection. Login credentials stay in the CLI keyring; coding is disabled until its execution sandbox is verified.";
-        base.capabilities.planning = false;
+          "Text-only chat, planning and review using a tool-free agent in an empty temporary workspace. Sign in with Google to enable account access. Coding uses Codex.";
       } else
         base.detail =
           "CLI installed. Read-only planning/review available; coding disabled until filesystem sandbox compatibility is verified.";
@@ -104,10 +107,16 @@ export class CLIProvider implements Provider {
     return base;
   }
   async run(input: Invocation): Promise<ProviderResult> {
-    if (this.id === "antigravity")
-      throw new Error(
-        "Antigravity execution is unverified on this installation. See provider diagnostics.",
-      );
+    if (this.id === "antigravity") {
+      if (input.mode === "code")
+        throw new Error(
+          "Antigravity supports text-only planning/review here. Choose Codex for sandboxed coding.",
+        );
+      const binary = await findBinary("agy");
+      if (!binary)
+        throw new Error("Set up Antigravity in Settings before using it.");
+      return antigravityText(binary, input);
+    }
     if (this.id === "claude" && input.mode === "code")
       throw new Error(
         "Claude coding is disabled until a strong local sandbox is configured. Use Codex for implementation.",
@@ -151,7 +160,7 @@ export class CLIProvider implements Provider {
         "-c",
         'shell_environment_policy.inherit="none"',
         "-c",
-        'shell_environment_policy.set={PATH="/usr/bin:/bin:/usr/sbin:/sbin"}',
+        `shell_environment_policy.set={PATH=${JSON.stringify(runtimePath())}}`,
         "-c",
         "mcp_servers={}",
         "-c",
@@ -280,7 +289,7 @@ export class CompatibleProvider implements Provider {
     private settings: () => Settings,
     private key: () => string | undefined,
   ) {}
-  async diagnose(): Promise<ProviderInfo> {
+  async diagnose(signal?: AbortSignal): Promise<ProviderInfo> {
     let models: string[] = [];
     let detail =
       "OpenAI-compatible chat API. Planning and review only; no file tools.";
@@ -290,7 +299,9 @@ export class CompatibleProvider implements Provider {
         this.settings().apiUrl.replace(/\/$/, "") + "/models",
         {
           headers: this.key() ? { Authorization: "Bearer " + this.key() } : {},
-          signal: AbortSignal.timeout(4000),
+          signal: signal
+            ? AbortSignal.any([signal, AbortSignal.timeout(4000)])
+            : AbortSignal.timeout(4000),
         },
       );
       if (response.ok) {
@@ -400,7 +411,46 @@ export class Registry {
   get(id: ProviderId) {
     return this.providers.get(id)!;
   }
-  async diagnostics() {
-    return Promise.all([...this.providers.values()].map((p) => p.diagnose()));
+  async detect(): Promise<ProviderInfo[]> {
+    const cli = await Promise.all(
+      (["codex", "claude", "antigravity"] as const).map((id) =>
+        (this.get(id) as CLIProvider).diagnose(undefined, false),
+      ),
+    );
+    return [
+      ...cli,
+      {
+        id: "compatible",
+        name: "Compatible API",
+        kind: "native-api",
+        installed: false,
+        authenticated: null,
+        verified: false,
+        detail: "Checking configured API endpoint in the background.",
+        models: [],
+        capabilities: {
+          planning: true,
+          coding: false,
+          streaming: true,
+          cancellation: true,
+        },
+      },
+    ];
+  }
+  private checking?: Promise<ProviderInfo[]>;
+  private diagnosticsAbort = new AbortController();
+  shutdown() {
+    this.diagnosticsAbort.abort();
+  }
+  diagnostics() {
+    if (this.checking) return this.checking;
+    this.checking = Promise.all(
+      [...this.providers.values()].map((p) =>
+        p.diagnose(this.diagnosticsAbort.signal),
+      ),
+    ).finally(() => {
+      this.checking = undefined;
+    });
+    return this.checking;
   }
 }

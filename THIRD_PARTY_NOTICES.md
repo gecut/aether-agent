@@ -155,3 +155,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## OpenAI Codex CLI
+
+Packaged applications include the official native Codex CLI 0.163.0, its code-mode host and, on Windows, its command runner and sandbox helpers, from [openai/codex](https://github.com/openai/codex). Codex is licensed under Apache-2.0. Its LICENSE and NOTICE are included beside the runtime in `resources/provider-runtime/` (macOS: `Contents/Resources/provider-runtime/`). Release artifacts are pinned by SHA256 in the build manifest; no account credentials are distributed.

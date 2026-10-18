@@ -5,21 +5,54 @@ import { execute } from "../core/process";
 import { redact } from "../core/security";
 import { Store } from "../core/store";
 import { findBinary } from "./runtime";
+import { antigravityText } from "./antigravity";
+import { defaults } from "../../shared/types";
 import type { ConnectionStatus } from "../../shared/types";
 export type OAuthProvider = ConnectionStatus["provider"];
-const names = { codex: "Codex", antigravity: "Antigravity" };
+const names = {
+  codex: "Codex",
+  antigravity: "Antigravity",
+  claude: "Claude Code",
+};
 const quote = (value: string) => "'" + value.replaceAll("'", "'\\''") + "'";
 export function loginScript(
   binary: string,
   provider: OAuthProvider,
   cwd: string,
+  platform: NodeJS.Platform = process.platform,
+  install = false,
 ) {
   const args =
-    provider === "codex" ? ["login"] : ["--mode", "plan", "--sandbox"];
+    provider === "codex"
+      ? ["login"]
+      : provider === "claude"
+        ? ["auth", "login"]
+        : ["--mode", "plan", "--sandbox"];
+  const messages = `Aether Code: ${names[provider]} setup. Complete official installation, onboarding and browser sign-in. Then verify in Aether.`;
+  if (platform === "win32") {
+    const psQuote = (text: string) => "'" + text.replaceAll("'", "''") + "'";
+    const setup =
+      provider === "codex"
+        ? "& npm.cmd install --global @openai/codex; if($LASTEXITCODE){throw 'Codex installation failed'}"
+        : `$installer=Join-Path ${psQuote(cwd)} 'vendor-install.cmd'; Invoke-WebRequest -Uri ${psQuote(provider === "claude" ? "https://claude.ai/install.cmd" : "https://antigravity.google/cli/install.cmd")} -OutFile $installer; & $env:ComSpec /d /c $installer; if($LASTEXITCODE){throw 'Provider installation failed'}`;
+    const ps = `$ErrorActionPreference='Stop'; Set-Location -LiteralPath ${psQuote(cwd)}; foreach($k in @('OPENAI_API_KEY','ANTHROPIC_API_KEY','GEMINI_API_KEY','GOOGLE_API_KEY','CODEX_API_KEY','CODEX_ACCESS_TOKEN')){[Environment]::SetEnvironmentVariable($k,$null,'Process')}; Write-Host ${psQuote(messages)}; ${install ? setup + "; $env:PATH=[Environment]::GetEnvironmentVariable('PATH','Machine')+';'+[Environment]::GetEnvironmentVariable('PATH','User')+';'+(Join-Path $env:USERPROFILE '.local/bin'); " : ""}& ${psQuote(binary)} ${args.map(psQuote).join(" ")}; Read-Host 'Press Enter to close'`;
+    return (
+      "@echo off\r\npowershell.exe -NoProfile -EncodedCommand " +
+      Buffer.from(ps, "utf16le").toString("base64") +
+      "\r\n"
+    );
+  }
+  const installer =
+    provider === "codex"
+      ? "npm install --global @openai/codex"
+      : `curl -fsSL ${provider === "claude" ? "https://claude.ai/install.sh" : "https://antigravity.google/cli/install.sh"} | bash`;
   return `#!/bin/sh
 # Official provider login; credentials remain in the provider's own store.
 unset OPENAI_API_KEY ANTHROPIC_API_KEY GEMINI_API_KEY GOOGLE_API_KEY CODEX_API_KEY CODEX_ACCESS_TOKEN
+set -e
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 cd -- ${quote(cwd)} || exit 1
+${install ? installer : ""}
 printf '%s\\n' ${quote(`Aether Code: ${names[provider]} sign-in. Complete the official onboarding and browser flow. Close this terminal when finished, then click Verify connection in Aether.`)}
 ${[binary, ...args].map(quote).join(" ")}
 `;
@@ -64,7 +97,7 @@ export class ProviderConnections {
   }
   async connect(provider: OAuthProvider) {
     const binary = await findBinary(
-      provider === "antigravity" ? "agy" : "codex",
+      provider === "antigravity" ? "agy" : provider,
     );
     if (!binary)
       return this.save({
@@ -90,13 +123,57 @@ export class ProviderConnections {
     await mkdir(cwd, { recursive: true, mode: 0o700 });
     const directory = path.join(this.store.directory, "login");
     await mkdir(directory, { recursive: true, mode: 0o700 });
-    const file = path.join(directory, `${provider}-${randomUUID()}.command`);
+    const suffix =
+      process.platform === "win32"
+        ? "cmd"
+        : process.platform === "darwin"
+          ? "command"
+          : "sh";
+    const file = path.join(directory, `${provider}-${randomUUID()}.${suffix}`);
     await writeFile(file, loginScript(binary, provider, cwd), { mode: 0o700 });
     await this.launch(file);
     return this.save({
       provider,
       state: "awaiting-signin",
       message: `Complete ${names[provider]}'s onboarding and browser OAuth in the opened Terminal, then close it and click Verify connection. Credentials stay with the official CLI.`,
+      checkedAt: new Date().toISOString(),
+    });
+  }
+  async setup(provider: OAuthProvider) {
+    const binary = await findBinary(
+      provider === "antigravity" ? "agy" : provider,
+    );
+    if (binary) return this.connect(provider);
+    const cwd = path.join(this.store.directory, "login-workspace");
+    const directory = path.join(this.store.directory, "login");
+    await mkdir(cwd, { recursive: true, mode: 0o700 });
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+    const suffix =
+      process.platform === "win32"
+        ? "cmd"
+        : process.platform === "darwin"
+          ? "command"
+          : "sh";
+    const file = path.join(
+      directory,
+      `${provider}-setup-${randomUUID()}.${suffix}`,
+    );
+    await writeFile(
+      file,
+      loginScript(
+        provider === "antigravity" ? "agy" : provider,
+        provider,
+        cwd,
+        process.platform,
+        true,
+      ),
+      { mode: 0o700 },
+    );
+    await this.launch(file);
+    return this.save({
+      provider,
+      state: "awaiting-signin",
+      message: `Install ${names[provider]} and complete sign-in in the opened terminal, then click Verify connection.`,
       checkedAt: new Date().toISOString(),
     });
   }
@@ -118,7 +195,7 @@ export class ProviderConnections {
       : controller.signal;
     try {
       const binary = await findBinary(
-        provider === "antigravity" ? "agy" : "codex",
+        provider === "antigravity" ? "agy" : provider,
       );
       if (!binary)
         return this.save({
@@ -143,63 +220,48 @@ export class ProviderConnections {
             : classifyConnection(provider, result.stdout + result.stderr),
         );
       }
-      const cwd = path.join(this.store.directory, "login-workspace");
-      await mkdir(cwd, { recursive: true, mode: 0o700 });
-      const result = await execute(
-        binary,
-        [
-          "--mode",
-          "plan",
-          "--sandbox",
-          "--disable-slash-commands",
-          "--print-timeout",
-          "30s",
-          "--output-format",
-          "json",
-          "-p",
-          "Reply exactly AETHER_CONNECTION_OK. Do not use tools, read files, or change anything.",
-        ],
-        {
-          cwd,
-          timeoutMs: 45000,
-          limit: 200000,
+      if (provider === "claude") {
+        const result = await execute(binary, ["auth", "status", "--json"], {
+          timeoutMs: 10000,
           signal,
-          completeWhen: (line) => {
-            try {
-              const envelope = JSON.parse(line);
-              return (
-                envelope.status === "SUCCESS" || envelope.status === "ERROR"
-              );
-            } catch {
-              return false;
-            }
-          },
-        },
-      );
-      let envelope:
-        { status?: string; response?: string; error?: string } | undefined;
-      for (const line of result.stdout.trim().split("\n").reverse())
-        try {
-          envelope = JSON.parse(line);
-          break;
-        } catch {}
-      if (
-        result.code === 0 &&
-        envelope?.status === "SUCCESS" &&
-        envelope.response?.trim() === "AETHER_CONNECTION_OK"
-      )
-        return this.save({
-          provider,
-          state: "signed-in",
-          message:
-            "Official Antigravity CLI completed an authenticated model request using its own saved login.",
-          checkedAt: new Date().toISOString(),
         });
+        let auth: { loggedIn?: boolean };
+        try {
+          auth = JSON.parse(result.stdout);
+        } catch {
+          auth = {};
+        }
+        return this.save(
+          result.code === 0 && auth.loggedIn === true
+            ? {
+                provider,
+                state: "signed-in",
+                message: "Claude Code authenticated using its own saved login.",
+                checkedAt: new Date().toISOString(),
+              }
+            : classifyConnection(
+                provider,
+                result.stderr || result.stdout || "Not signed in",
+              ),
+        );
+      }
+      const result = await antigravityText(binary, {
+        config: { ...defaults.planner, provider: "antigravity" },
+        prompt: "Reply exactly AETHER_CONNECTION_OK.",
+        signal,
+        timeoutMs: 45000,
+        onOutput: () => {},
+      });
       return this.save(
-        classifyConnection(
-          provider,
-          envelope?.error ?? result.stderr + result.stdout,
-        ),
+        result.text.trim() === "AETHER_CONNECTION_OK"
+          ? {
+              provider,
+              state: "signed-in",
+              message:
+                "Antigravity completed an authenticated text-only model request.",
+              checkedAt: new Date().toISOString(),
+            }
+          : classifyConnection(provider, result.text),
       );
     } catch (error) {
       return this.save(classifyConnection(provider, String(error)));

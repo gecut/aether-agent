@@ -18,6 +18,8 @@ import { checkForRelease } from "./core/release-check";
 import type { ReleaseInfo } from "../shared/types";
 import { IDERuntime } from "./ide/runtime";
 import { IDEView, ideBounds } from "./ide/view";
+import { configureProviderRuntime } from "./providers/runtime";
+import { launchProviderTerminal } from "./providers/terminal";
 let window: BrowserWindow | undefined,
   service: Service,
   store: Store,
@@ -53,6 +55,11 @@ async function boot() {
   if (process.env.AETHER_TEST_DATA)
     app.setPath("userData", path.resolve(process.env.AETHER_TEST_DATA));
   const data = app.getPath("userData");
+  configureProviderRuntime(
+    app.isPackaged
+      ? path.join(process.resourcesPath, "provider-runtime")
+      : path.resolve(".cache/provider-runtime"),
+  );
   store = new Store(data);
   await store.open(path.join(__dirname, "sql-wasm.wasm"));
   const keyFile = path.join(data, "api-key.enc");
@@ -62,10 +69,9 @@ async function boot() {
       throw new Error("OS secret storage unavailable");
     return safeStorage.decryptString(readFileSync(keyFile));
   };
-  service = new Service(store, key, async (file) => {
-    const error = await shell.openPath(file);
-    if (error) throw new Error(error);
-  });
+  service = new Service(store, key, (file) =>
+    launchProviderTerminal(file, (target) => shell.openPath(target)),
+  );
   window = new BrowserWindow({
     width: 1500,
     height: 980,
@@ -109,7 +115,7 @@ async function boot() {
     if (window && !window.isDestroyed())
       window.webContents.send("aether:event", event);
   });
-  const initialization = service.initialize();
+  const initialization = service.initialize({ background: true });
   ipcMain.handle("aether:command", async (event, command, payload) => {
     trusted(event);
     await initialization;

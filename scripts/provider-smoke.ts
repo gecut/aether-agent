@@ -5,6 +5,8 @@ import { Store } from "../electron/core/store";
 import { Service } from "../electron/core/service";
 import { git } from "../electron/core/repository";
 import { defaults, type Run } from "../shared/types";
+import { configureProviderRuntime } from "../electron/providers/runtime";
+configureProviderRuntime(path.resolve(".cache/provider-runtime"));
 const directory = await mkdtemp(
   path.join(os.tmpdir(), "aether-real-provider-"),
 );

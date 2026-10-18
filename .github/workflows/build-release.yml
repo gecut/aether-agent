@@ -65,6 +65,8 @@ jobs:
       - run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
+      - name: Prepare checksum-verified native Codex runtime
+        run: npm run prepare:providers
       - name: Package native distributions
         run: npx electron-builder --${{ matrix.platform }} --${{ matrix.arch }} --publish never
       - name: Verify package contents and distribution files

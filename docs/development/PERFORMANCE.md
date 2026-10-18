@@ -47,3 +47,9 @@ Run `npm run benchmark` for current synthetic measurements and a Node CPU profil
 `tests/performance.test.ts` checks excerpt relevance, direct dependency selection, ancestor instructions, cache invalidation, credential/path boundaries, output batching/checkpoints, final-tail shutdown persistence and complete test-status preservation. Existing end-to-end orchestration, Electron UI/restart, and actual Codex smoke checks cover execution behavior.
 
 Graphify source and local-only extraction behavior: [Graphify-Labs/graphify](https://github.com/Graphify-Labs/graphify).
+
+## Fresh-install and large-history regression (0.1.12)
+
+Provider diagnostics run after initial hydration, with concurrent checks coalesced and shutdown cancellation. Inactive chats/runs are projected to summaries inside SQLite before IPC serialization; only the selected record includes full detail. A fixture containing large prompt/output/diff/message payloads shrinks by over 100× while full records remain unchanged. Thirty changed source files now checkpoint with fewer than 24 Git subprocesses, using batched blob import and private-index updates; comparison hashes file blobs locally. The original source branch/index remain untouched.
+
+Idle IDE runtime polling is five seconds, 500 ms during setup, and suspended while hidden. Running-state exports share a 200 ms persistence buffer; completion/approval states remain immediate. The existing benchmark still restored all 501 events with nine database exports (35 ms enqueue and 11 ms mean context retrieval in this run); these measurements are local fixtures, not universal device latency guarantees.

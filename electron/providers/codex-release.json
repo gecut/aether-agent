@@ -1,0 +1,60 @@
+{
+  "version": "0.163.0",
+  "assets": [
+    {
+      "name": "codex-aarch64-apple-darwin.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-aarch64-apple-darwin.tar.gz",
+      "sha256": "61c4d9a92521bdb42b0c1d9f87c673f6da628a06de5945cbdd9a0010632f6d10"
+    },
+    {
+      "name": "codex-command-runner-x86_64-pc-windows-msvc.exe.zip",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-command-runner-x86_64-pc-windows-msvc.exe.zip",
+      "sha256": "e1ad67cd2e4e0b24a4c74e3c3fe5729f3ffdcf48a253af35053ea7684c783396"
+    },
+    {
+      "name": "codex-windows-sandbox-service-x86_64-pc-windows-msvc.exe.zip",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-windows-sandbox-service-x86_64-pc-windows-msvc.exe.zip",
+      "sha256": "9d1d13976b33c835097b3734f3f7250b7fe256c7e96c2faf30b4a8af06f6aa54"
+    },
+    {
+      "name": "codex-windows-sandbox-setup-x86_64-pc-windows-msvc.exe.zip",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-windows-sandbox-setup-x86_64-pc-windows-msvc.exe.zip",
+      "sha256": "47a1db354385dd5f4de9ab57452cf717db8029f8491eb84bb391fe2fbfa4a6da"
+    },
+    {
+      "name": "codex-x86_64-apple-darwin.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-x86_64-apple-darwin.tar.gz",
+      "sha256": "562a1aea0e5686283a467687d268ae33705f02fd4d40f1bc4110a415c5c1c7b1"
+    },
+    {
+      "name": "codex-x86_64-pc-windows-msvc.exe.zip",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-x86_64-pc-windows-msvc.exe.zip",
+      "sha256": "dabdb4d16aaf10fea40b74811c96efddcd9138f122163b69ed604fcb3eb704c3"
+    },
+    {
+      "name": "codex-x86_64-unknown-linux-musl.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-x86_64-unknown-linux-musl.tar.gz",
+      "sha256": "beb339e8ecd9ba057a6bb2dc81ad8ca474812edfbf0fc5056ca818797648dde4"
+    },
+    {
+      "name": "codex-code-mode-host-aarch64-apple-darwin.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-code-mode-host-aarch64-apple-darwin.tar.gz",
+      "sha256": "2e28f49a4767a97586843c92692b96481be74d837199b49038f731cec88e9941"
+    },
+    {
+      "name": "codex-code-mode-host-x86_64-apple-darwin.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-code-mode-host-x86_64-apple-darwin.tar.gz",
+      "sha256": "5211c6ed5062c84ba5796e555903c22a6e38fcccf6fe11ee11d7e1b5687ce1fd"
+    },
+    {
+      "name": "codex-code-mode-host-x86_64-pc-windows-msvc.exe.zip",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-code-mode-host-x86_64-pc-windows-msvc.exe.zip",
+      "sha256": "bc82fa6d8f449c818292eac35bd7400c4f7dae08908fc9bc67bfbad8c4a3de68"
+    },
+    {
+      "name": "codex-code-mode-host-x86_64-unknown-linux-musl.tar.gz",
+      "url": "https://github.com/openai/codex/releases/download/rust-v0.163.0/codex-code-mode-host-x86_64-unknown-linux-musl.tar.gz",
+      "sha256": "314263128ba6592e7e807c265deeaf928a692b72dcbfeb5e0b20c9423b703529"
+    }
+  ]
+}
