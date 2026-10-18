@@ -26,6 +26,10 @@ const target = targets[`${process.platform}-${process.arch}`];
 if (!target) throw new Error("No pinned Codex build for this platform");
 const root = path.resolve(".cache/provider-runtime");
 await mkdir(root, { recursive: true });
+const tar =
+  process.platform === "win32"
+    ? path.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe")
+    : "tar";
 for (const asset of manifest.assets.filter((a) => a.name.endsWith(target))) {
   const archive = path.join(root, asset.name);
   const response = await fetch(asset.url, {
@@ -37,7 +41,10 @@ for (const asset of manifest.assets.filter((a) => a.name.endsWith(target))) {
     throw new Error("Codex archive checksum mismatch");
   await writeFile(archive, bytes);
   // Only pinned official release archives are extracted; each entry must be a flat executable.
-  const list = execFileSync("tar", ["-tf", archive], { encoding: "utf8" })
+  const list = execFileSync(tar, ["-tf", asset.name], {
+    cwd: root,
+    encoding: "utf8",
+  })
     .trim()
     .split(/\r?\n/);
   if (
@@ -47,7 +54,7 @@ for (const asset of manifest.assets.filter((a) => a.name.endsWith(target))) {
     )
   )
     throw new Error("Unexpected Codex archive layout");
-  execFileSync("tar", ["-xf", archive, "-C", root]);
+  execFileSync(tar, ["-xf", asset.name], { cwd: root });
   await rm(archive);
 }
 for (const file of await readdir(root)) {
