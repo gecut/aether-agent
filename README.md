@@ -1,10 +1,11 @@
 <div align="center">
   <img src="docs/assets/banner.png" alt="Aether Code — Your code. Your agents. Your call." width="100%" />
+  <img src="build/ava.svg" alt="Ava, the Aether mascot" width="72" height="72" />
   <h1>Aether Code</h1>
   <p><strong>A local-first workspace for coding agents, with you in control.</strong></p>
   <p>Plan the change. Coordinate the team. Inspect the evidence. Approve what ships.</p>
   <p>
-    <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.10-a8c0ff?style=flat-square&amp;labelColor=202329" alt="Version 0.1.10" /></a>
+    <a href="package.json"><img src="https://img.shields.io/badge/version-0.1.15-a8c0ff?style=flat-square&amp;labelColor=202329" alt="Version 0.1.15" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-a8dfcf?style=flat-square&amp;labelColor=202329" alt="MIT license" /></a>
     <a href="#quick-start"><img src="https://img.shields.io/badge/tested_on-macOS_arm64-d2d5dd?style=flat-square&amp;labelColor=202329" alt="Tested on macOS arm64" /></a>
     <a href="docs/development/CHECKLIST.md"><img src="https://img.shields.io/badge/status-developer_preview-e9cc8a?style=flat-square&amp;labelColor=202329" alt="Developer preview" /></a>

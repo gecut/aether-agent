@@ -1,5 +1,11 @@
 # Verification record
 
+## October 18: Ava app logo (0.1.15)
+
+Replaced the star brand mark with a lightweight static logo sampled from the existing Ava/Bloub profile, including the native app icon, titlebar/sidebar, onboarding/welcome, supervisor avatar, inspector and footer. The README and website favicon use the same logo. The 1024px PNG and generated macOS ICNS were visually inspected and match; the icon generator no longer depends on an unrelated saved-session screenshot script.
+
+Production build, formatting, all 139 tests and final Electron desktop E2E passed. Dark/light desktop fixture screenshots were inspected. The arm64 package passed bundled asset/runtime checks, strict recursive app and DMG signature integrity, launch/IPC and restart persistence. This does not claim notarization or local Windows/Linux execution. The installed app was replaced only after confirming zero active runs, with the previous bundle retained for rollback and userData left intact.
+
 ## October 18: Git project import and starter skills (0.1.14)
 
 Production build, formatting, all **139 tests across 23 files**, and the existing Electron desktop E2E passed on macOS arm64. New regression fixtures exercise HTTPS URL validation, actual Git history/file checkout with hostile global hooks and filters blocked, existing-destination preservation, cancellation/staging cleanup, interrupted import recovery, external dirty/staged repositories, reviewed hash-matched skill packages, symlink boundaries, existing skill preservation and bare/Git-metadata rejection.

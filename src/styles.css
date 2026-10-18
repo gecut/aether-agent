@@ -4422,3 +4422,15 @@ bdi {
     flex-direction: column;
   }
 }
+
+.ava-logo {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.message-avatar.ava-brand-avatar {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  animation: none;
+}

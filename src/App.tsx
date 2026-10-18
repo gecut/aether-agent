@@ -1,3 +1,4 @@
+import { AvaLogo } from "./AvaLogo";
 import { GithubLogo } from "@phosphor-icons/react/dist/csr/GithubLogo";
 import { CodingTeamActivity } from "./CodingTeamActivity";
 import { Companion } from "./companion/Companion";
@@ -696,7 +697,7 @@ export function App() {
       <div className="titlebar">
         <div className="window-space" />
         <div className="titlebar-center">
-          <AsteriskSimple weight="bold" size={14} /> Aether Code <span>/</span>
+          <AvaLogo size={18} /> Aether Code <span>/</span>
           <bdi>{project?.name ?? "Local workspace"}</bdi>
         </div>
         <span className="local-label">
@@ -706,7 +707,7 @@ export function App() {
       <aside className="sidebar">
         <div className="brand">
           <span className="brand-symbol">
-            <AsteriskSimple size={24} weight="bold" />
+            <AvaLogo size={28} />
           </span>
           <span>
             AETHER<span className="brand-code">CODE</span>
@@ -1131,8 +1132,8 @@ export function App() {
                         </div>
                       </div>
                       <div className="assistant-message">
-                        <div className="message-avatar aether-avatar">
-                          <AsteriskSimple weight="bold" />
+                        <div className="message-avatar aether-avatar ava-brand-avatar">
+                          <AvaLogo size={30} />
                         </div>
                         <div className="message-content">
                           <div className="message-meta">
@@ -1548,13 +1549,13 @@ export function App() {
                 <div className="welcome">
                   <div className="welcome-kicker">
                     <span className="tiny-logo">
-                      <AsteriskSimple weight="bold" />
+                      <AvaLogo size={20} />
                     </span>{" "}
                     YOUR LOCAL COMMAND CENTER
                   </div>
                   <div className="welcome-question">
                     <span className="welcome-ava" aria-label="Ava is ready">
-                      <AsteriskSimple weight="bold" />
+                      <AvaLogo size={46} />
                     </span>
                     <h1>What are we building today?</h1>
                   </div>
@@ -2263,7 +2264,7 @@ export function App() {
               <>
                 <div className="inspector-intro">
                   <span className="inspector-orbit">
-                    <AsteriskSimple size={29} weight="bold" />
+                    <AvaLogo size={36} />
                   </span>
                   <h3 dir="auto">
                     A little structure.
@@ -2351,8 +2352,7 @@ export function App() {
               ["running", "initializing"].includes(r.status),
             ).length
           }{" "}
-          active runs <span>·</span> Aether Code v0.1.14{" "}
-          <AsteriskSimple size={12} />
+          active runs <span>·</span> Aether Code v0.1.15 <AvaLogo size={16} />
         </span>
       </footer>
       {sessionMenu && menuTarget && (

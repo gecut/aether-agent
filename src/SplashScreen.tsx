@@ -1,5 +1,5 @@
 import { ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
-import { AsteriskSimple } from "@phosphor-icons/react/dist/csr/AsteriskSimple";
+import { AvaLogo } from "./AvaLogo";
 import { GitBranch } from "@phosphor-icons/react/dist/csr/GitBranch";
 import { Paperclip } from "@phosphor-icons/react/dist/csr/Paperclip";
 import { TreeStructure } from "@phosphor-icons/react/dist/csr/TreeStructure";
@@ -15,7 +15,7 @@ export function SplashScreen({ onStart }: { onStart: () => void }) {
     >
       <section className="splash-card">
         <span className="splash-mark">
-          <AsteriskSimple weight="bold" />
+          <AvaLogo size={46} />
         </span>
         <p className="eyebrow">WELCOME TO AETHER CODE</p>
         <h1>Your local command center for thoughtful code work.</h1>

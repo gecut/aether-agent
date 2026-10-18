@@ -46,3 +46,7 @@ node scripts/verify-package.mjs mac arm64
 The workflow definitions follow the official [runner image labels](https://github.com/actions/runner-images), [Electron Builder platform guidance](https://www.electron.build/multi-platform-build.html), and [GitHub CLI release interface](https://cli.github.com/manual/gh_release).
 
 The website resolves the newest complete published release from GitHub's public release feed, including prereleases. It updates platform-specific download URLs, checksums and release notes together; incomplete releases are ignored. Without JavaScript or API access, links open GitHub Releases rather than pinning users to an obsolete installer.
+
+## Brand assets
+
+The native application icon is `build/icon.png` (1024 × 1024), generated with `node scripts/generate-icon.mjs` from Ava's existing vendored Bloub geometry and Aether profile. The script uses installed Google Chrome for SVG rasterization and writes matching `build/ava.svg` and `website/assets/ava-logo.svg` assets. Electron Builder produces the platform-specific icon formats. Regenerate before the production build if the profile changes; the runtime logos are static images with no additional animation loop. Vendor attribution remains in `THIRD_PARTY_NOTICES.md`.

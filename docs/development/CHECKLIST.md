@@ -208,3 +208,9 @@ Last updated: 2026-10-18. Checkboxes record implementation, not blanket producti
 - [x] Open existing external Git projects while preserving their branch, history and staged edits; reject bare repositories and Git metadata folders.
 - [x] Offer hash-matched starter skill previews, explicit review and project-scoped installation before workspace/IDE continuation; existing skill files are preserved.
 - [x] Clone without checkout hooks, global smudge filters, submodule execution or dependency scripts. Private GitHub clones can use the existing native GitHub CLI login without copying credentials.
+
+## Ava brand icon (0.1.15)
+
+- [x] Use Ava's existing Bloub-derived silhouette and expression for the app icon, sidebar/titlebar, welcome/onboarding, supervisor avatar and footer branding.
+- [x] Generate a reproducible 1024px native icon and lightweight SVG logos; keep the existing animated companion and vendor attribution.
+- [x] Share the Ava favicon with the static website; remove icon generation from the older desktop screenshot helper so it cannot restore the obsolete mark.
