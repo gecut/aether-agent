@@ -40,7 +40,7 @@ for (const asset of manifest.assets.filter((a) => a.name.endsWith(target))) {
   if (createHash("sha256").update(bytes).digest("hex") !== asset.sha256)
     throw new Error("Codex archive checksum mismatch");
   await writeFile(archive, bytes);
-  // Only pinned official release archives are extracted; each entry must be a flat executable.
+  // The official Windows bundle includes bin/ resources; reject paths leaving the cache.
   const list = execFileSync(tar, ["-tf", asset.name], {
     cwd: root,
     encoding: "utf8",
@@ -48,12 +48,17 @@ for (const asset of manifest.assets.filter((a) => a.name.endsWith(target))) {
     .trim()
     .split(/\r?\n/);
   if (
-    list.some(
-      (name) =>
-        name.includes("/") || name.includes("\\") || name.includes(".."),
-    )
+    list.some((name) => {
+      const entry = name.replaceAll("\\", "/");
+      return (
+        entry.startsWith("/") ||
+        /^[a-z]:/i.test(entry) ||
+        entry.split("/").includes("..") ||
+        entry.includes("\0")
+      );
+    })
   )
-    throw new Error("Unexpected Codex archive layout");
+    throw new Error(`Unsafe Codex archive path in ${asset.name}`);
   execFileSync(tar, ["-xf", asset.name], { cwd: root });
   await rm(archive);
 }
